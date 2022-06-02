@@ -1,5 +1,3 @@
-import MLIR.AST
-
 -- https://mlir.llvm.org/docs/Dialects/EmitC/
 -- https://www.lysator.liu.se/c/ANSI-C-grammar-y.html
 
