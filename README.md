@@ -6,14 +6,13 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
 ```
 + assignment_expression
     - assignment_operator
-    - cast_expression
-    - type_name [leads to specifier_qualifier_list]
     - unary_expression
     - unary_operator
     - postfix_expression
     - primary_expression
     - argument_expression_list
     - expression
+    - conditional_expression ... cast_expression [leads to type_name]
 
 + init_declarator_list
     - init_declarator
@@ -29,7 +28,6 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     - abstract_declaration
     - direct_abstract_declarator
     - constant_expression
-    - conditional_expression
 
 + declarator_list
     - declaration
@@ -43,11 +41,12 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     - enum_specifier
     - enumerator_list
     - enumerator
-    - const_expression ... cast_expression
+    - const_expression
     - struct_or_union_specifier
     - struct_or_union
     - struct_declaration_list
     - struct_declaration
+    - type_name
     - specifier_qualifier_list
     - struct_declarator_list
     - struct_declarator [leads to declarator]
