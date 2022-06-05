@@ -1,22 +1,22 @@
 import CParser.SyntaxDecl
 
-inductive Expression : Type where
-  | Foo: Int → Expression
-
--- declare_syntax_cat expression
-
-syntax num : expression
-
-syntax "`[Expression| " expression "]" : term
-
-macro_rules
-  | `(`[Expression| $n:num]) => `(Expression.Foo $n)
-
-inductive PrimaryExpr where
-  | Identifier : String → PrimaryExpr
-  | Constant : Int → PrimaryExpr
-  | StringLit : String → PrimaryExpr
-  | BracketExpr : Expression → PrimaryExpr
+-- inductive Expression : Type where
+--   | Foo: Int → Expression
+-- 
+-- -- declare_syntax_cat expression
+-- 
+-- syntax num : expression
+-- 
+-- syntax "`[Expression| " expression "]" : term
+-- 
+-- macro_rules
+--   | `(`[Expression| $n:num]) => `(Expression.Foo $n)
+-- 
+-- inductive PrimaryExpr where
+--   | Identifier : String → PrimaryExpr
+--   | Constant : Int → PrimaryExpr
+--   | StringLit : String → PrimaryExpr
+--   | BracketExpr : Expression → PrimaryExpr
 
 -- declare_syntax_cat primary_expr
 -- syntax str : primary_expr
