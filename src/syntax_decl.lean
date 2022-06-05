@@ -1,26 +1,26 @@
 -- https://mlir.llvm.org/docs/Dialects/EmitC/
 -- https://www.lysator.liu.se/c/ANSI-C-grammar-y.html
 
-declare_syntax_cat primary_expression
-declare_syntax_cat postfix_expression
-declare_syntax_cat argument_expression_list
-declare_syntax_cat unary_expression
-declare_syntax_cat unary_operator
-declare_syntax_cat cast_expression
-declare_syntax_cat multiplicative_expression
-declare_syntax_cat additive_expression
-declare_syntax_cat shift_expression
-declare_syntax_cat relational_expression
-declare_syntax_cat equality_expression
-declare_syntax_cat and_expression
-declare_syntax_cat exclusive_or_expression
-declare_syntax_cat inclusive_or_expression
-declare_syntax_cat logical_and_expression
-declare_syntax_cat logical_or_expression
-declare_syntax_cat conditional_expression
+-- declare_syntax_cat primary_expression
+-- declare_syntax_cat postfix_expression
+-- declare_syntax_cat argument_expression_list
+-- declare_syntax_cat unary_expression
+-- declare_syntax_cat unary_operator
+-- declare_syntax_cat cast_expression
+-- declare_syntax_cat multiplicative_expression
+-- declare_syntax_cat additive_expression
+-- declare_syntax_cat shift_expression
+-- declare_syntax_cat relational_expression
+-- declare_syntax_cat equality_expression
+-- declare_syntax_cat and_expression
+-- declare_syntax_cat exclusive_or_expression
+-- declare_syntax_cat inclusive_or_expression
+-- declare_syntax_cat logical_and_expression
+-- declare_syntax_cat logical_or_expression
+-- declare_syntax_cat conditional_expression
 declare_syntax_cat assignment_expression
-declare_syntax_cat assignment_operator
-declare_syntax_cat expression
+-- declare_syntax_cat assignment_operator
+-- declare_syntax_cat expression
 declare_syntax_cat constant_expression
 declare_syntax_cat declaration
 declare_syntax_cat declaration_specifiers

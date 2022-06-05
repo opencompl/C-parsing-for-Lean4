@@ -1,6 +1,6 @@
 -- primary_expression
 def primary_expr_ident : PrimaryExpr := [primary_expr| foo]
-def primary_expr_num : PrimaryExpr := `[primary_expr| 42]
+def primary_expr_num : PrimaryExpr := [primary_expr| 42]
 def primary_expr_str : PrimaryExpr := [primary_expr| "bar"]
 
 -- postfix_expression
