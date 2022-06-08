@@ -26,9 +26,6 @@ syntax num : expression
 
 syntax "`[Expression| " expression "]" : term
 
-macro_rules
-  | `(`[Expression| $n:num]) => `(Expression.Foo $n)
-
 inductive PrimaryExpr where
   | Identifier : String → PrimaryExpr
   | Constant : Int → PrimaryExpr
@@ -45,12 +42,6 @@ syntax "`[primary_expression| " primary_expression "]" : term
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(`[primary_expression| $s:ident]) => return (PrimaryExpr.Identifier s.getId.toString)
   | u => throw "unexpected syntax"
-    
-macro_rules
-  | `(`[primary_expression| $s:ident]) => `(PrimaryExpr.Identifier $(Lean.quote s.getId.toString))
-  | `(`[primary_expression| $n:num]) => `(PrimaryExpr.Constant $n)
-  | `(`[primary_expression| $s:str]) => `(PrimaryExpr.StringLit $s)
-  | `(`[primary_expression| ($s:expression)]) => `(PrimaryExpr.BracketExpr `[Expression| $s ])
 
 def primary_expr_ident : PrimaryExpr := `[primary_expression| foo]
 def primary_expr_num : PrimaryExpr := `[primary_expression| 42]
