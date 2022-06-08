@@ -1,0 +1,34 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  build-lean-code:
+    name: Build lean-code
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Install Elan (Ubuntu)
+        run: |
+          curl -sSL https://raw.githubusercontent.com/leanprover/elan/master/elan-init.sh > elan-init.sh
+          chmod +x elan-init.sh
+          ./elan-init.sh -y
+          echo "$HOME/.elan/bin" >> $GITHUB_PATH
+
+      # Necessary for utils/. Ordering is important as this clone wipes the folder clean.
+      - name: Clone lean-code
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 1
+
+      - name: Check Lean
+        run: lean --version
+
+      - name: Build package
+        run: |
+          rm -rf build/ || true # nuke build folder
+          lake build # run build
