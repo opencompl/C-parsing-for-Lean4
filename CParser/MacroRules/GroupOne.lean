@@ -1,5 +1,5 @@
-import ..SyntaxDecl
-import ..AST.GroupOne
+import CParser.SyntaxDecl
+import CParser.AST.GroupOne
 
 macro_rules
   | `(`[Expression| $n:num]) => `(Expression.Foo $n)
