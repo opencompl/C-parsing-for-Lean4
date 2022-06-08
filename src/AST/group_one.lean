@@ -18,6 +18,7 @@ declare_syntax_cat additive_expression
 declare_syntax_cat multiplicative_expression
 declare_syntax_cat cast_expression
 
+-- Expression is incomplete, temporarily made for primary_expression
 inductive Expression : Type where
   | Foo: Int → Expression
 
@@ -34,19 +35,34 @@ inductive PrimaryExpr where
   | StringLit : String → PrimaryExpr
   | BracketExpr : Expression → PrimaryExpr
 
-declare_syntax_cat primary_expr
+syntax str : primary_expression
+syntax ident : primary_expression
+syntax num : primary_expression
+syntax "(" expression ")" : primary_expression
 
-syntax str : primary_expr
-syntax num : primary_expr
-syntax "(" expression ")" : primary_expr
+syntax "`[primary_expression| " primary_expression "]" : term
 
-syntax "`[PrimaryExpr| " primary_expr "]" : term
-
+partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
+  | `(`[primary_expression| $s:ident]) => return (PrimaryExpr.Identifier s.getId.toString)
+  | u => throw "unexpected syntax"
+    
 macro_rules
-  | `(`[PrimaryExpr| $s:str]) => `(PrimaryExpr.Identifier $s)
-  | `(`[PrimaryExpr| $n:num]) => `(PrimaryExpr.Constant $n)
-  | `(`[PrimaryExpr| $s:str]) => `(PrimaryExpr.StringLit $s)
-  | `(`[PrimaryExpr| ($s:expression)]) => `(PrimaryExpr.BracketExpr `[Expression| $s ])
+  | `(`[primary_expression| $s:ident]) => `(PrimaryExpr.Identifier $(Lean.quote s.getId.toString))
+  | `(`[primary_expression| $n:num]) => `(PrimaryExpr.Constant $n)
+  | `(`[primary_expression| $s:str]) => `(PrimaryExpr.StringLit $s)
+  | `(`[primary_expression| ($s:expression)]) => `(PrimaryExpr.BracketExpr `[Expression| $s ])
 
-#check `[PrimaryExpr| "foo"]
-#check `[PrimaryExpr| (420)]
+def primary_expr_ident : PrimaryExpr := `[primary_expression| foo]
+def primary_expr_num : PrimaryExpr := `[primary_expression| 42]
+def primary_expr_expr : PrimaryExpr := `[primary_expression| (42)]
+def primary_expr_str : PrimaryExpr := `[primary_expression| "bar"]
+
+def getVal (p : PrimaryExpr) : String :=
+  match p with
+  | PrimaryExpr.Identifier x => x
+  | PrimaryExpr.Constant x => toString x
+  | PrimaryExpr.StringLit x => x
+  | _ => "lmao"
+
+#check primary_expr_ident
+#eval getVal primary_expr_ident
