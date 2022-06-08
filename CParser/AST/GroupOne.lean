@@ -43,18 +43,9 @@ partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(`[primary_expression| $s:ident]) => return (PrimaryExpr.Identifier s.getId.toString)
   | u => throw "unexpected syntax"
 
-def primary_expr_ident : PrimaryExpr := `[primary_expression| foo]
-def primary_expr_num : PrimaryExpr := `[primary_expression| 42]
-def primary_expr_expr : PrimaryExpr := `[primary_expression| (42)]
-def primary_expr_str : PrimaryExpr := `[primary_expression| "bar"]
-
-def getVal (p : PrimaryExpr) : String :=
-  match p with
-  | PrimaryExpr.Identifier x => x
-  | PrimaryExpr.Constant x => toString x
-  | PrimaryExpr.StringLit x => x
-  | _ => "lmao"
-
-#check primary_expr_ident
-#eval getVal primary_expr_ident
-
+-- def getVal (p : PrimaryExpr) : String :=
+--   match p with
+--   | PrimaryExpr.Identifier x => x
+--   | PrimaryExpr.Constant x => toString x
+--   | PrimaryExpr.StringLit x => x
+--   | _ => "error"
