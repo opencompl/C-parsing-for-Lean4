@@ -54,12 +54,12 @@ syntax postfix_expression "--" : postfix_expression
 syntax "`[postfix_expression| " postfix_expression "]" : term
 
 inductive UnaryOp where
-  | Address : String → UnaryOp
-  | Indirection : String → UnaryOp
-  | Plus : String → UnaryOp
-  | Minus : String → UnaryOp
-  | Complement : String → UnaryOp
-  | LogicalNegation: String → UnaryOp
+  | Address : UnaryOp
+  | Indirection : UnaryOp
+  | Plus : UnaryOp
+  | Minus : UnaryOp
+  | Complement : UnaryOp
+  | LogicalNegation : UnaryOp
 
 syntax "&" : unary_operator
 syntax "*" : unary_operator
