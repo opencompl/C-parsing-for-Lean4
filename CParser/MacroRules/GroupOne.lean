@@ -1,4 +1,3 @@
-import CParser.SyntaxDecl
 import CParser.AST.GroupOne
 
 macro_rules
