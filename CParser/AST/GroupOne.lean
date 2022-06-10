@@ -43,13 +43,13 @@ inductive PostfixExpr where
   | DecOp : String → PostfixExpr
 
 syntax primary_expression : postfix_expression
-syntax "[" expression "]" : postfix_expression
-syntax "(" ")"  : postfix_expression
-syntax "(" argument_expression_list ")" : postfix_expression
-syntax "." ident : postfix_expression
-syntax "->" ident : postfix_expression
-syntax "++" : postfix_expression
-syntax "--" : postfix_expression
+syntax postfix_expression "[" expression "]" : postfix_expression
+syntax postfix_expression "(" ")"  : postfix_expression
+syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
+syntax postfix_expression "." ident : postfix_expression
+syntax postfix_expression "->" ident : postfix_expression
+syntax postfix_expression "++" : postfix_expression
+syntax postfix_expression "--" : postfix_expression
 
 syntax "`[postfix_expression| " postfix_expression "]" : term
 
@@ -87,7 +87,14 @@ syntax "sizeof" unary_expression : unary_expression
 
 syntax "`[unary_expression| " unary_expression "]" : term
 
+inductive CastExpr where
+  | Unary : UnaryExpr → CastExpr
+  | TypeNameCase : TypeName → CastExpr
 
+syntax unary_expression : cast_expression
+syntax "(" type_name ")" cast_expression : cast_expression
+
+syntax "`[cast_expression| " cast_expression "]" : term
 
 -- Expression is incomplete, temporarily made for primary_expression
 inductive Expression : Type where
