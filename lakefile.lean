@@ -5,6 +5,6 @@ package «CParser» {
   -- add configuration options here
   supportInterpreter := true
   libName := "CParser"
-  binRoot := `CParser
+  binRoot := `Main
   libRoots := #[`CParser] 
 }
