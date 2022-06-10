@@ -102,4 +102,4 @@ inductive Expression : Type where
 
 syntax num : expression
 
-syntax "`[Expression| " expression "]" : term
+syntax "`[expression| " expression "]" : term
