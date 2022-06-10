@@ -4,6 +4,7 @@ import Init.Data.String
 open Lean
 
 -- for now: just single-line comments
+-- TODO: this also isn't good enough, it will break if there's a string literal with // inside it, and it shouldn't
 def removeCommentsLineCharList : List Char → List Char
 | c1::c2::cs => if c1 == '/' && c2 == '/' then [] else c1::(removeCommentsLineCharList (c2::cs))
 | l => l
