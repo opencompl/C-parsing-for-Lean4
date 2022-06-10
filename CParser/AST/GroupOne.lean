@@ -89,7 +89,7 @@ syntax "`[unary_expression| " unary_expression "]" : term
 
 inductive CastExpr where
   | Unary : UnaryExpr → CastExpr
-  | TypeNameCase : TypeName → CastExpr
+  | TypeNameCast : TypeName → CastExpr
 
 syntax unary_expression : cast_expression
 syntax "(" type_name ")" cast_expression : cast_expression
