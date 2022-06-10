@@ -34,13 +34,13 @@ syntax "`[primary_expression| " primary_expression "]" : term
 
 inductive PostfixExpr where
   | Primary : PrimaryExpr → PostfixExpr
-  | SquareBrack : Expression → PostfixExpr
-  | CurlyBrack : PostfixExpr → PostfixExpr      -- I am not sure of this case
-  | AEL : ArgumentExpressionList → PostfixExpr
-  | Identifier : String → PostfixExpr
-  | PtrIdent : String → PostfixExpr
-  | IncOp : String → PostfixExpr
-  | DecOp : String → PostfixExpr
+  | SquareBrack : PostfixExpr → Expression → PostfixExpr
+  | CurlyBrack : PostfixExpr → PostfixExpr
+  | AEL : PostfixExpr → ArgumentExpressionList → PostfixExpr
+  | Identifier : PostfixExpr → String → PostfixExpr
+  | PtrIdent : PostfixExpr → String → PostfixExpr
+  | IncOp : PostfixExpr → PostfixExpr
+  | DecOp : PostfixExpr → PostfixExpr
 
 syntax primary_expression : postfix_expression
 syntax postfix_expression "[" expression "]" : postfix_expression
