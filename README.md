@@ -1,6 +1,10 @@
 # C-parsing-for-Lean4
 A parser for ANSI C, in Lean4.
 
+# Running
+
+Run `lake build` at the toplevel folder.
+
 # TODOS
 The order in which the nonterminals of the C grammar ([reference](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html#shift-expression)) is as follows:
 ```
