@@ -1,3 +1,4 @@
+
 -- primary_expression
 def primary_expr_ident : PrimaryExpr := `[primary_expression| foo]
 def primary_expr_num : PrimaryExpr := `[primary_expression| 42]
@@ -35,17 +36,17 @@ def cast_expr_unary1 : CastExpr := `[cast_expression| \-\-foo]
 def cast_expr_unary2 : CastExpr := `[cast_expression| *idtf]
 
 -- multiplicative_expression
-def mult_expr_mult : MultExpr := `[mult_expression| 3 * 5]
-def mult_expr_div : MultExpr := `[mult_expression| i / (j + 7)]
-def mult_expr_mod : MultExpr := `[mult_expression| (foo->idx_ptr + bar.idx) % baz[5++]]
+def multiplicative_expr_mult : MultExpr := `[multiplicative_expression| 3 * 5]
+def mult_expr_div : MultExpr := `[multiplicative_expression| i / (j + 7)]
+def mult_expr_mod : MultExpr := `[multiplicative_expression| (foo->idx_ptr + bar.idx) % baz[5++]]
 
 -- additive_expression
-def add_expr_plus : AddExpr := `[add_expression| 5 + 8 - 3]
-def add_expr_minus : AddExpr := `[add_expression| 8 - (i >> j)]
+def add_expr_plus : AddExpr := `[additive_expression| 5 + 8 - 3]
+def add_expr_minus : AddExpr := `[additive_expression| 8 - (i >> j)]
 def add_expr_complex_1 : AddExpr :=
-  `[add_expression| baz[k] - expr.op[0] * expr.ops[1] * expr.ops[2]]
+  `[additive_expression| baz[k] - expr.op[0] * expr.ops[1] * expr.ops[2]]
 def add_expr_complex_2 : AddExpr :=
-  `[add_expression| expr->op_ptrs[0] / expr->op_ptrs[1] - strlen("foo")]
+  `[additive_expression| expr->op_ptrs[0] / expr->op_ptrs[1] - strlen("foo")]
 
 -- shift_expression
 def shift_expr_left : ShiftExpr := `[shift_expression| 7 << 2 >> 1]
@@ -56,20 +57,20 @@ def shift_expr_complex_2 : ShiftExpr :=
   `[shift_expression| vals[j++] * pair->fst >> len(arr) - 10]
 
 -- relational_expression
-def rel_expr_lt : RelExpr := `[rel_expression| 3 < 6]
-def rel_expr_ge : RelExpr := `[rel_expression| 4 >= k << 2]
+def rel_expr_lt : RelExpr := `[relational_expression| 3 < 6]
+def rel_expr_ge : RelExpr := `[relational_expression| 4 >= k << 2]
 def rel_expr_complex_1 : RelExpr :=
-  `[rel_expression| stack.pop() * arr[5] > 3 - 4]
+  `[relational_expression| stack.pop() * arr[5] > 3 - 4]
 def rel_expr_complex_2 : RelExpr :=
-  `[rel_expression| i++ <= student->roll_no + student.age]
+  `[relational_expression| i++ <= student->roll_no + student.age]
 
 -- equality_expression
-def eq_expr_eq : EqExpr := `[eq_expression| 4 == baz]
-def eq_expr_ne : EqExpr := `[eq_expression| &(bar == "foo")]
+def eq_expr_eq : EqExpr := `[equality_expression| 4 == baz]
+def eq_expr_ne : EqExpr := `[equality_expression| &(bar == "foo")]
 def eq_expr_complex_1 : EqExpr :=
-  `[eq_expression| len("foo") < len("foo2") == baz[i++]->bool]
+  `[equality_expression| len("foo") < len("foo2") == baz[i++]->bool]
 def eq_expr_complex_2 : EqExpr :=
-  `[eq_expression| bar != gcd(15, 25) + lcm(4, 12)]
+  `[equality_expression| bar != gcd(15, 25) + lcm(4, 12)]
 
 -- and_expression
 def and_expr : AndExpr := `[and_expression| 5 & 6 & 7]
@@ -93,44 +94,44 @@ def or_expr_complex_2 : OrExpr :=
   `[or_expression| arr[j*k] % baz | &var_ptr ^ foo]
 
 -- logical_and_expression
-def land_expr : LAndExpr := `[land_expression| foo & bar & baz]
+def land_expr : LAndExpr := `[logical_and_expression| foo & bar & baz]
 def land_expr_complex_1 : LAndExpr :=
-  `[land_expression| len(strcat("hello", "world")) == bar & 5 >= foo ^ baz]
+  `[logical_and_expression| len(strcat("hello", "world")) == bar & 5 >= foo ^ baz]
 def land_expr_complex_2 : LAndExpr :=
-  `[land_expression| 5 != baz & 4 << 2 > bar[foo]->val]
+  `[logical_and_expression| 5 != baz & 4 << 2 > bar[foo]->val]
 
 -- logical_or_expression
-def lor_expr : LOrExpr := `[lor_expression| foo || bar || baz]
+def lor_expr : LOrExpr := `[logical_or_expression| foo || bar || baz]
 def lor_expr_complex_1 : LOrExpr :=
-  `[lor_expression| bar[foo * baz] > 5 || foo ^ baz == 3981]
+  `[logical_or_expression| bar[foo * baz] > 5 || foo ^ baz == 3981]
 def lor_expr_complex_2 : LOrExpr :=
-  `[lor_expression| foo == bar || yer->bar() && baz]
+  `[logical_or_expression| foo == bar || yer->bar() && baz]
 
 -- conditional_expression
-def cond_expr_tern : CondExpr := `[cond_expression| foo ? bar : baz]
+def cond_expr_tern : CondExpr := `[conditional_expression| foo ? bar : baz]
 def cond_expr_complex_1 : CondExpr :=
-  `[cond_expression| 5 > bar[baz ^ 2] ? arr[j++] : arr[i\-\-]]
+  `[conditional_expression| 5 > bar[baz ^ 2] ? arr[j++] : arr[i\-\-]]
 def cond_expr_complex_2 : CondExpr :=
-  `[cond_expression| obj->vals[j+i] == obj->stack.pop() ? max(j, i) : len("world")]
+  `[conditional_expression| obj->vals[j+i] == obj->stack.pop() ? max(j, i) : len("world")]
 
 -- assignment_operator
-def assmt_op_eq : AssmtOp := `[assmt_op| =]
-def assmt_op_mul : AssmtOp := `[assmt_op| *=]
-def assmt_op_right : AssmtOp := `[assmt_op | >>=]
+def assignment_operator_eq : AssmtOp := `[assignment_operator| =]
+def assignment_operator_mul : AssmtOp := `[assignment_operator| *=]
+def assignment_operator_right : AssmtOp := `[assignment_operator | >>=]
 
 -- assignment_expression
-def assmt_expr : AssmtExpr := `[assmt_expression| j = 5]
+def assmt_expr : AssmtExpr := `[assignment_expression| j = 5]
 def assmt_expr_complex_1 : AssmtExpr :=
-  `[assmt_expression| arr[bar] = foo->baz() *= 6 ^ 7 >> 2]
+  `[assignment_expression| arr[bar] = foo->baz() *= 6 ^ 7 >> 2]
 def assmt_expr_complex_2 : AssmtExpr :=
-  `[assmt_expression| person.ss_num /= &ptr = stack.pop()]
+  `[assignment_expression| person.ss_num /= &ptr = stack.pop()]
 
 -- argument_expression_list
-def arg_expr_list : ArgExprList := `[arg_expr_list| 5, 6, i * j]
-def arg_expr_list_complex_1 : ArgExprList :=
-  `[arg_expr_list| in_features = 7 | 5, out_features = ~arr[i++], bias=True]
-def arg_expr_list_complex_2 : ArgExprList :=
-  `[arg_expr_list| 310 * 6, foo[bar] % baz - 4, named = obj->ptr.attr[sysarg(4)]]
+def argument_expression_list : ArgExprList := `[argument_expression_list| 5, 6, i * j]
+def argument_expression_list_complex_1 : ArgExprList :=
+  `[argument_expression_list| in_features = 7 | 5, out_features = ~arr[i++], bias=True]
+def argument_expression_list_complex_2 : ArgExprList :=
+  `[argument_expression_list| 310 * 6, foo[bar] % baz - 4, named = obj->ptr.attr[sysarg(4)]]
 
 -- expression
 def expr_complex_1 : Expr :=
