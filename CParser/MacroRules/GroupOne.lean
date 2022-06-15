@@ -1,11 +1,12 @@
-import CParser.SyntaxDecl
-import CParser.AST.GroupOne
+import CParser.AST
+import CParser.Syntax
+open AST
 
 macro_rules
   | `(`[primary_expression| $s:ident]) => `(PrimaryExpr.Identifier $(Lean.quote s.getId.toString))
   | `(`[primary_expression| $n:num]) => `(PrimaryExpr.Constant $n)
   | `(`[primary_expression| $s:str]) => `(PrimaryExpr.StringLit $s)
-  | `(`[primary_expression| ($s:expression)]) => `(PrimaryExpr.BracketExpr `[Expression| $s ])
+  | `(`[primary_expression| ($s:expression)]) => `(PrimaryExpr.BracketExpr `[expression| $s ])
 
 macro_rules
   | `(`[postfix_expression| $p:primary_expression]) => `(PostfixExpr.Primary `[primary_expression| $p])
@@ -38,4 +39,4 @@ macro_rules
 --  | `(`[cast_expression| ( $t:type_name ) $c:cast_expression]) => `(CastExpr.TypeNameCast `[type_name| $t] `[cast_expression| $c])
 
 macro_rules
-  | `(`[Expression| $n:num]) => `(Expression.Foo $n)
+  | `(`[expression| $n:num]) => `(Expression.Foo $n)

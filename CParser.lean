@@ -1,7 +1,4 @@
-import CParser.AST.AST
-import CParser.AST.GroupOne
+import CParser.AST
 import CParser.MacroRules.GroupOne
-import CParser.SyntaxDecl
-
-def main : IO Unit := println! "hello, world"
-
+import CParser.Syntax
+import CParser.Parser

@@ -1,4 +1,4 @@
-import CParser.SyntaxDecl
+namespace AST
 -- declare_syntax_cat assignment_operator
 -- declare_syntax_cat primary_expression
 -- declare_syntax_cat postfix_expression
@@ -19,18 +19,12 @@ import CParser.SyntaxDecl
 -- declare_syntax_cat multiplicative_expression
 -- declare_syntax_cat cast_expression
 
+mutual
 inductive PrimaryExpr where
   | Identifier : String → PrimaryExpr
   | Constant : Int → PrimaryExpr
   | StringLit : String → PrimaryExpr
   | BracketExpr : Expression → PrimaryExpr
-
-syntax str : primary_expression
-syntax ident : primary_expression
-syntax num : primary_expression
-syntax "(" expression ")" : primary_expression
-
-syntax "`[primary_expression| " primary_expression "]" : term
 
 inductive PostfixExpr where
   | Primary : PrimaryExpr → PostfixExpr
@@ -42,17 +36,6 @@ inductive PostfixExpr where
   | IncOp : PostfixExpr → PostfixExpr
   | DecOp : PostfixExpr → PostfixExpr
 
-syntax primary_expression : postfix_expression
-syntax postfix_expression "[" expression "]" : postfix_expression
-syntax postfix_expression "(" ")"  : postfix_expression
-syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
-syntax postfix_expression "." ident : postfix_expression
-syntax postfix_expression "->" ident : postfix_expression
-syntax postfix_expression "++" : postfix_expression
-syntax postfix_expression "--" : postfix_expression
-
-syntax "`[postfix_expression| " postfix_expression "]" : term
-
 inductive UnaryOp where
   | Address : UnaryOp
   | Indirection : UnaryOp
@@ -60,15 +43,6 @@ inductive UnaryOp where
   | Minus : UnaryOp
   | Complement : UnaryOp
   | LogicalNegation : UnaryOp
-
-syntax "&" : unary_operator
-syntax "*" : unary_operator
-syntax "+" : unary_operator
-syntax "-" : unary_operator
-syntax "~" : unary_operator
-syntax "!" : unary_operator
-
-syntax "`[unary_operator| " unary_operator "]" : term
 
 inductive UnaryExpr where
   | PostFix : PostfixExpr → UnaryExpr
@@ -78,28 +52,23 @@ inductive UnaryExpr where
   | SizeOf : UnaryExpr → UnaryExpr
   | SizeOfType : TypeName → UnaryExpr
 
-syntax postfix_expression : unary_expression
-syntax "++" unary_expression : unary_expression
-syntax "--" unary_expression : unary_expression
-syntax unary_operator cast_expression : unary_expression
-syntax "sizeof" unary_expression : unary_expression
--- syntax "sizeof" "(" type_name ")" : unary_expression   -- type_name not in group one
-
-syntax "`[unary_expression| " unary_expression "]" : term
-
 inductive CastExpr where
   | Unary : UnaryExpr → CastExpr
   | TypeNameCast : TypeName → CastExpr
 
-syntax unary_expression : cast_expression
-syntax "(" type_name ")" cast_expression : cast_expression
-
-syntax "`[cast_expression| " cast_expression "]" : term
-
 -- Expression is incomplete, temporarily made for primary_expression
 inductive Expression : Type where
-  | Foo: Int → Expression
+| Foo: Int → Expression
+end
 
-syntax num : expression
+instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
 
-syntax "`[Expression| " expression "]" : term
+def primaryExprToString : PrimaryExpr → String
+  | .Identifier s => s
+  | .Constant c => toString c
+  | .StringLit s => "\"" ++ s ++ "\""
+  | .BracketExpr _ => "" -- TODO: implement when Expression is there
+
+instance : ToString PrimaryExpr where toString := primaryExprToString
+
+end AST
