@@ -10,7 +10,7 @@ macro_rules
 
 macro_rules
   | `(`[postfix_expression| $p:primary_expression]) => `(PostfixExpr.Primary `[primary_expression| $p])
-  | `(`[postfix_expression| $p:postfix_expression [ $e:expression ]]) => `(PostfixExpr.SquareBrack `[postfix_expression| $p] `[Expression| $e])
+  | `(`[postfix_expression| $p:postfix_expression [ $e:expression ]]) => `(PostfixExpr.SquareBrack `[postfix_expression| $p] `[expression| $e])
   | `(`[postfix_expression| $p:postfix_expression ( )]) => `(PostfixExpr.CurlyBrack `[postfix_expression| $p])
 --   | `(`[postfix_expression| $p($args)]) => `(PostfixExpr.AEL `[postfix_expression| $p] `[argument_expression_list| $args])
   | `(`[postfix_expression| $p:postfix_expression . $i:ident]) => `(PostfixExpr.Identifier `[postfix_expression| $p] $(Lean.quote i.getId.toString))
