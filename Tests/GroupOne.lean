@@ -18,8 +18,8 @@ def postfix_expr_complex_2 : PostfixExpr :=
   `[postfix_expression| arrays[j]->data.push_at_posn(stack.pop(), pos\-\-)]
 
 -- unary_operator
-def unary_op := UnaryOp := `[unary_operator| &]
-def unary_op := UnaryOp := `[unary_operator| ~]
+def unary_op : UnaryOp := `[unary_operator| &]
+def unary_op : UnaryOp := `[unary_operator| ~]
 
 -- unary_expression
 def unary_expr_incr : UnaryExpr := `[unary_expression| ++bar]
