@@ -60,7 +60,7 @@ inductive MultExpr where
   | Cast : CastExpr → MultExpr
   | MulCast : MultExpr → CastExpr → MultExpr
   | MulDiv : MultExpr → CastExpr → MultExpr
-  | MulPercent : MultExpr → CastExpr → MultExpr
+  | MulMod : MultExpr → CastExpr → MultExpr
 
 inductive AddExpr where
   | Mult : MultExpr → AddExpr
