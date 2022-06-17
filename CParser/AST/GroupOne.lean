@@ -79,9 +79,60 @@ inductive RelExpr where
   | RelLE : RelExpr → ShiftExpr → RelExpr
   | RelGE : RelExpr → ShiftExpr → RelExpr
 
--- Expression is incomplete, temporarily made for primary_expression
+inductive EqExpr where
+  | Rel : RelExpr → EqExpr
+  | EqEqual : EqExpr →  RelExpr → EqExpr
+  | EqNotEqual : EqExpr →  RelExpr → EqExpr
+
+inductive AndExpr where
+  | Eq : EqExpr → AndExpr
+  | AndAmp : AndExpr → EqExpr → AndExpr
+
+inductive XOrExpr where
+  | And : AndExpr → XOrExpr
+  | XOrCaret : XOrExpr → AndExpr → XOrExpr
+
+inductive IOrExpr where
+  | XOr : XOrExpr → IOrExpr
+  | IOrPipe : IOrExpr → XOrExpr → IOrExpr
+
+inductive LAndExpr where 
+  | IOr : IOrExpr → LAndExpr
+  | LAndDblAmp : LAndExpr → IOrExpr → LAndExpr
+
+inductive LOrExpr where
+  | LAnd : LAndExpr → LOrExpr
+  | LOrDblPipe : LOrExpr → LAndExpr → LOrExpr
+
+inductive CondExpr where
+  | LOr : LOrExpr → CondExpr
+  | CondTernary : LOrExpr → Expression → CondExpr → CondExpr
+
+inductive AssmtOp where
+  | Assign : AssmtOp
+  | MulAssign : AssmtOp
+  | DivAssign : AssmtOp
+  | ModAssign : AssmtOp
+  | AddAssign : AssmtOp
+  | SubAssign : AssmtOp
+  | LeftAssign : AssmtOp
+  | RightAssign : AssmtOp
+  | AndAssign : AssmtOp
+  | XOrAssign : AssmtOp
+  | OrAssign : AssmtOp
+
+inductive AssmtExpr where
+  | Cond : CondExpr → AssmtExpr
+  | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
+
+inductive ArgExprList where
+  | AssmtExpr : AssmtExpr → ArgExprList
+  | ArgExprListAssign : ArgExprList → AssmtExpr → ArgExprList
+
 inductive Expression : Type where
-| Foo: Int → Expression
+  | ExprAssmtExpr : AssmtExpr → Expression
+  | ExprAssign : Expression → AssmtExpr → Expression
+
 end
 
 end AST
