@@ -10,6 +10,7 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
 ```
 + assignment_expression
     - assignment_operator
+    - assignment_expression
     - unary_expression
     - unary_operator
     - postfix_expression
