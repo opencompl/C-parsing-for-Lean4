@@ -20,8 +20,8 @@ partial def mkPostfixExpression : Lean.Syntax → Except String PostfixExpr
   | `(postfix_expression| $p:primary_expression) => PostfixExpr.Primary <$> (mkPrimaryExpression p)
   | `(postfix_expression| $p:postfix_expression [ $e:expression ]) => PostfixExpr.SquareBrack <$> (mkPostfixExpression p) <*> (mkExpression e)
   | `(postfix_expression| $p:postfix_expression ( )) => PostfixExpr.CurlyBrack <$> (mkPostfixExpression p)
---  | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) (mkAEL args)
   | `(postfix_expression| $p:postfix_expression . $i:ident) => PostfixExpr.Identifier <$> (mkPostfixExpression p) <*> (return i.getId.toString)
+  | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) <*> (mkArgExprList args)
   | `(postfix_expression| $p:postfix_expression -> $i:ident) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (return i.getId.toString)
   | `(postfix_expression| $p:postfix_expression ++) => PostfixExpr.IncOp <$> (mkPostfixExpression p)
 --  | `(postfix_expression| $p:postfix_expression --) => PostfixExpr.DecOp <$> (mkPostfixExpression p)
@@ -77,8 +77,69 @@ partial def mkRelExpression : Lean.Syntax → Except String RelExpr
   | `(relational_expression| $r:relational_expression >= $s:shift_expression) => RelExpr.RelGE <$> (mkRelExpression r) <*> (mkShiftExpression s)
   | _ => throw "unexpected syntax"
 
+partial def mkEqExpression : Lean.Syntax → Except String EqExpr
+  | `(equality_expression| $r:relational_expression) => EqExpr.Rel <$> (mkRelExpression r)
+  | `(equality_expression| $e:equality_expression == $r:relational_expression) => EqExpr.EqEqual <$> (mkEqExpression e) <*> (mkRelExpression r)
+  | `(equality_expression| $e:equality_expression != $r:relational_expression) => EqExpr.EqNotEqual <$> (mkEqExpression e) <*> (mkRelExpression r)
+  | _ => throw "unexpected syntax"
+
+partial def mkAndExpression : Lean.Syntax → Except String AndExpr
+  | `(and_expression| $e:equality_expression) => AndExpr.Eq <$> (mkEqExpression e)
+  | `(and_expression| $a:and_expression & $e:equality_expression) => AndExpr.AndAmp <$> (mkAndExpression a) <*> (mkEqExpression e)
+  | _ => throw "unexpected syntax"
+
+partial def mkXOrExpression : Lean.Syntax → Except String XOrExpr
+  | `(exclusive_or_expression| $a:and_expression) => XOrExpr.And <$> (mkAndExpression a)
+  | `(exclusive_or_expression| $x:exclusive_or_expression ^ $a:and_expression) => XOrExpr.XOrCaret <$> (mkXOrExpression x) <*> (mkAndExpression a)
+  | _ => throw "unexpected syntax"
+
+partial def mkIOrExpression : Lean.Syntax → Except String IOrExpr
+  | `(inclusive_or_expression| $x:exclusive_or_expression) => IOrExpr.XOr <$> (mkXOrExpression x)
+  | `(inclusive_or_expression| $i:inclusive_or_expression | $x:exclusive_or_expression) => IOrExpr.IOrPipe <$> (mkIOrExpression i) <*> (mkXOrExpression x)
+  | _ => throw "unexpected syntax"
+
+partial def mkLAndExpression : Lean.Syntax → Except String LAndExpr
+  | `(logical_and_expression| $i:inclusive_or_expression) => LAndExpr.IOr <$> (mkIOrExpression i)
+    | `(logical_and_expression| $l:logical_and_expression && $i:inclusive_or_expression) => LAndExpr.LAndDblAmp <$> (mkLAndExpression l) <*> (mkIOrExpression i)
+  | _ => throw "unexpected syntax"
+
+partial def mkLOrExpression : Lean.Syntax → Except String LOrExpr
+  | `(logical_or_expression| $l:logical_and_expression) => LOrExpr.LAnd <$> (mkLAndExpression l)
+  | `(logical_or_expression| $lo:logical_or_expression || $la:logical_and_expression) => LOrExpr.LOrDblPipe <$> (mkLOrExpression lo) <*> (mkLAndExpression la)
+  | _ => throw "unexpected syntax"
+
+partial def mkCondExpression : Lean.Syntax → Except String CondExpr
+  | `(conditional_expression| $l:logical_or_expression) => CondExpr.LOr <$> (mkLOrExpression l)
+  | `(conditional_expression| $l:logical_or_expression ? $e:expression : $c:conditional_expression) => CondExpr.CondTernary <$> (mkLOrExpression l) <*> (mkExpression e) <*> (mkCondExpression c)
+  | _ => throw "unexpected syntax"
+
+partial def mkAssmtOperator : Lean.Syntax → Except String AssmtOp
+  | `(assignment_operator| =) => return AssmtOp.Assign
+  | `(assignment_operator| *=) => return AssmtOp.MulAssign
+  | `(assignment_operator| /=) => return AssmtOp.DivAssign
+  | `(assignment_operator| %=) => return AssmtOp.ModAssign
+  | `(assignment_operator| +=) => return AssmtOp.AddAssign
+  | `(assignment_operator| -=) => return AssmtOp.SubAssign
+  | `(assignment_operator| <<=) => return AssmtOp.LeftAssign
+  | `(assignment_operator| >>=) => return AssmtOp.RightAssign
+  | `(assignment_operator| &=) => return AssmtOp.AndAssign
+  | `(assignment_operator| ^=) => return AssmtOp.XOrAssign
+  | `(assignment_operator| |=) => return AssmtOp.OrAssign
+  | _ => throw "unexpected syntax"
+
+partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
+  | `(assignment_expression| $c:conditional_expression) => AssmtExpr.Cond <$> (mkCondExpression c)
+  | `(assignment_expression| $u:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression u) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
+  | _ => throw "unexpected syntax"
+
+partial def mkArgExprList : Lean.Syntax → Except String ArgExprList
+  | `(argument_expression_list| $a:assignment_expression) => ArgExprList.AssmtExpr <$> (mkAssmtExpression a)
+  | `(argument_expression_list| $ael:argument_expression_list , $ae:assignment_expression) => ArgExprList.ArgExprListAssign <$> (mkArgExprList ael) <*> (mkAssmtExpression ae)
+  | _ => throw "unexpected syntax"
+
 partial def mkExpression : Lean.Syntax → Except String Expression
-  | `(expression| $n:num) => return (Expression.Foo n.toNat)
+  | `(expression| $a:assignment_expression) => Expression.ExprAssmtExpr <$> (mkAssmtExpression a)
+  | `(expression| $e:expression , $ae:assignment_expression) => Expression.ExprAssign <$> (mkExpression e) <*> (mkAssmtExpression ae)
   | _ => throw "unexpected syntax"
 
 end
@@ -111,11 +172,41 @@ def parseShiftExpression : String → Lean.Environment → Option String × Shif
 def parseRelExpression : String → Lean.Environment → Option String × RelExpr :=
   mkNonTerminalParser `relational_expression mkRelExpression
 
+def parseEqExpression : String → Lean.Environment → Option String × EqExpr :=
+  mkNonTerminalParser `equality_expression mkEqExpression
+
+def parseAndExpression : String → Lean.Environment → Option String × AndExpr :=
+  mkNonTerminalParser `and_expression mkAndExpression
+
+def parseXOrExpression : String → Lean.Environment → Option String × XOrExpr :=
+  mkNonTerminalParser `exclusive_or_expression mkXOrExpression
+
+def parseIOrExpression : String → Lean.Environment → Option String × IOrExpr :=
+  mkNonTerminalParser `inclusive_or_expression mkIOrExpression
+
+def parseLAndExpression : String → Lean.Environment → Option String × LAndExpr :=
+  mkNonTerminalParser `logical_and_expression mkLAndExpression
+
+def parseLOrExpression : String → Lean.Environment → Option String × LOrExpr :=
+  mkNonTerminalParser `logical_or_expression mkLOrExpression
+
+def parseCondExpression : String → Lean.Environment → Option String × CondExpr :=
+  mkNonTerminalParser `conditional_expression mkCondExpression
+
+def parseAssmtOperator : String → Lean.Environment → Option String × AssmtOp :=
+  mkNonTerminalParser `assignment_operator mkAssmtOperator
+
+def parseAssmtExpression : String → Lean.Environment → Option String × AssmtExpr :=
+  mkNonTerminalParser `assignment_expression mkAssmtExpression
+
+def parseArgExprList : String → Lean.Environment → Option String × ArgExprList :=
+  mkNonTerminalParser `argument_expression_list mkArgExprList
+
 def parseExpression : String → Lean.Environment → Option String × Expression :=
   mkNonTerminalParser `expression mkExpression
 
 -- Parse the top-level nonterminal of our grammar.
-def parseToplevelNonterminal := parseRelExpression
+def parseToplevelNonterminal := parseExpression
 
 -- C parser, which invokes the top level nonterminal parser.
 def parse := parseToplevelNonterminal
