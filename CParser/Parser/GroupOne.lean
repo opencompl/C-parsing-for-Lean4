@@ -50,6 +50,33 @@ partial def mkCastExpression : Lean.Syntax → Except String CastExpr
 --  | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
   | _ => throw "unexpected syntax"
 
+partial def mkMultExpression : Lean.Syntax → Except String MultExpr
+  | `(multiplicative_expression| $c:cast_expression) => MultExpr.Cast <$> (mkCastExpression c)
+  | `(multiplicative_expression| $m:multiplicative_expression * $c:cast_expression) => MultExpr.MultStar <$> (mkMultExpression m) <*> (mkCastExpression c)
+  | `(multiplicative_expression| $m:multiplicative_expression / $c:cast_expression) => MultExpr.MultDiv <$> (mkMultExpression m) <*> (mkCastExpression c)
+  | `(multiplicative_expression| $m:multiplicative_expression % $c:cast_expression) => MultExpr.MultMod <$> (mkMultExpression m) <*> (mkCastExpression c)
+  | _ => throw "unexpected syntax"
+
+partial def mkAddExpression : Lean.Syntax → Except String AddExpr
+  | `(additive_expression| $m:multiplicative_expression) => AddExpr.Mult <$> (mkMultExpression m)
+  | `(additive_expression| $a:additive_expression + $m:multiplicative_expression) => AddExpr.AddPlus <$> (mkAddExpression a) <*> (mkMultExpression m)
+  | `(additive_expression| $a:additive_expression - $m:multiplicative_expression) => AddExpr.AddMinus <$> (mkAddExpression a) <*> (mkMultExpression m)
+  | _ => throw "unexpected syntax"
+
+partial def mkShiftExpression : Lean.Syntax → Except String ShiftExpr
+  | `(shift_expression| $a:additive_expression) => ShiftExpr.Add <$> (mkAddExpression a)
+  | `(shift_expression| $s:shift_expression << $a:additive_expression) => ShiftExpr.ShiftLeft <$> (mkShiftExpression s) <*> (mkAddExpression a)
+  | `(shift_expression| $s:shift_expression >> $a:additive_expression) => ShiftExpr.ShiftRight <$> (mkShiftExpression s) <*> (mkAddExpression a)
+  | _ => throw "unexpected syntax"
+
+partial def mkRelExpression : Lean.Syntax → Except String RelExpr
+  | `(relational_expression| $s:shift_expression) => RelExpr.Shift <$> (mkShiftExpression s)
+  | `(relational_expression| $r:relational_expression < $s:shift_expression) => RelExpr.RelLesser <$> (mkRelExpression r) <*> (mkShiftExpression s)
+  | `(relational_expression| $r:relational_expression > $s:shift_expression) => RelExpr.RelGreater <$> (mkRelExpression r) <*> (mkShiftExpression s)
+  | `(relational_expression| $r:relational_expression <= $s:shift_expression) => RelExpr.RelLE <$> (mkRelExpression r) <*> (mkShiftExpression s)
+  | `(relational_expression| $r:relational_expression >= $s:shift_expression) => RelExpr.RelGE <$> (mkRelExpression r) <*> (mkShiftExpression s)
+  | _ => throw "unexpected syntax"
+
 partial def mkExpression : Lean.Syntax → Except String Expression
   | `(expression| $n:num) => return (Expression.Foo n.toNat)
   | _ => throw "unexpected syntax"
@@ -72,11 +99,23 @@ def parseUnaryExpression : String → Lean.Environment → Option String × Unar
 def parseCastExpression : String → Lean.Environment → Option String × CastExpr :=
   mkNonTerminalParser `cast_expression mkCastExpression
 
+def parseMultExpression : String → Lean.Environment → Option String × MultExpr :=
+  mkNonTerminalParser `multiplicative_expression mkMultExpression
+
+def parseAddExpression : String → Lean.Environment → Option String × AddExpr :=
+  mkNonTerminalParser `additive_expression mkAddExpression
+
+def parseShiftExpression : String → Lean.Environment → Option String × ShiftExpr :=
+  mkNonTerminalParser `shift_expression mkShiftExpression
+
+def parseRelExpression : String → Lean.Environment → Option String × RelExpr :=
+  mkNonTerminalParser `relational_expression mkRelExpression
+
 def parseExpression : String → Lean.Environment → Option String × Expression :=
   mkNonTerminalParser `expression mkExpression
 
 -- Parse the top-level nonterminal of our grammar.
-def parseToplevelNonterminal := parseCastExpression
+def parseToplevelNonterminal := parseRelExpression
 
 -- C parser, which invokes the top level nonterminal parser.
 def parse := parseToplevelNonterminal
