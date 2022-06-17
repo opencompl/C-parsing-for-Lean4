@@ -1,4 +1,5 @@
 import CParser.AST
+import CParser.AST.ClassDec
 import CParser.Syntax
 import CParser.Util
 open AST
