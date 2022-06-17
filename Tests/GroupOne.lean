@@ -80,18 +80,18 @@ def and_expr_complex_2 :=
   `[and_expression| 5 & stack.pop() > foo.baz(bar)]
 
 -- exclusive_or_expression
-def xor_expr : XOrExpr := `[xor_expression| 8 ^ 5 & 0]
+def xor_expr : XOrExpr := `[exclusive_or_expression| 8 ^ 5 & 0]
 def xor_expr_complex_1 : XOrExpr :=
-  `[xor_expression| yer[\-\-i] + 5 * baz ^ addr1.house_no % addr2.house_no]
+  `[exclusive_or_expression| yer[\-\-i] + 5 * baz ^ addr1.house_no % addr2.house_no]
 def xor_expr_complex_2 :XOrExpr :=
-  `[xor_expression| bar / baz[i+j] ^ 5 - i++]
+  `[exclusive_or_expression| bar / baz[i+j] ^ 5 - i++]
 
 -- inclusive_or_expression
-def or_expr : OrExpr := `[or_expression| 3 | 7 | 3]
-def or_expr_complex_1 : OrExpr :=
-  `[or_expression| foo * bar[i] | queue.pop_back() & 56]
-def or_expr_complex_2 : OrExpr :=
-  `[or_expression| arr[j*k] % baz | &var_ptr ^ foo]
+def or_expr : IOrExpr := `[inclusive_or_expression| 3 | 7 | 3]
+def or_expr_complex_1 : IOrExpr :=
+  `[inclusive_or_expression| foo * bar[i] | queue.pop_back() & 56]
+def or_expr_complex_2 : IOrExpr :=
+  `[inclusive_or_expression| arr[j*k] % baz | &var_ptr ^ foo]
 
 -- logical_and_expression
 def land_expr : LAndExpr := `[logical_and_expression| foo & bar & baz]
