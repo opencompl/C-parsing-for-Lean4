@@ -58,9 +58,9 @@ inductive CastExpr where
 
 inductive MultExpr where 
   | Cast : CastExpr → MultExpr
-  | MulCast : MultExpr → CastExpr → MultExpr
-  | MulDiv : MultExpr → CastExpr → MultExpr
-  | MulMod : MultExpr → CastExpr → MultExpr
+  | MultStar : MultExpr → CastExpr → MultExpr
+  | MultDiv : MultExpr → CastExpr → MultExpr
+  | MultMod : MultExpr → CastExpr → MultExpr
 
 inductive AddExpr where
   | Mult : MultExpr → AddExpr
