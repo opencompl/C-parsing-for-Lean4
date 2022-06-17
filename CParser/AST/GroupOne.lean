@@ -56,6 +56,29 @@ inductive CastExpr where
   | Unary : UnaryExpr → CastExpr
   | TypeNameCast : TypeName → CastExpr
 
+inductive MultExpr where 
+  | Cast : CastExpr → MultExpr
+  | MulCast : MultExpr → CastExpr → MultExpr
+  | MulDiv : MultExpr → CastExpr → MultExpr
+  | MulPercent : MultExpr → CastExpr → MultExpr
+
+inductive AddExpr where
+  | Mult : MultExpr → AddExpr
+  | AddPlus : AddExpr → MultExpr → AddExpr
+  | AddMinus : AddExpr → MultExpr → AddExpr
+
+inductive ShiftExpr where
+  | Add : AddExpr → ShiftExpr
+  | ShiftLeft : ShiftExpr → AddExpr → ShiftExpr
+  | ShiftRight : ShiftExpr → AddExpr → ShiftExpr
+
+inductive RelExpr where
+  | Shift : ShiftExpr → RelExpr
+  | RelLesser : RelExpr → ShiftExpr → RelExpr
+  | RelGreater : RelExpr → ShiftExpr → RelExpr
+  | RelLE : RelExpr → ShiftExpr → RelExpr
+  | RelGE : RelExpr → ShiftExpr → RelExpr
+
 -- Expression is incomplete, temporarily made for primary_expression
 inductive Expression : Type where
 | Foo: Int → Expression
