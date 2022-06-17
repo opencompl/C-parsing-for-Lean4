@@ -30,7 +30,7 @@ inductive PostfixExpr where
   | Primary : PrimaryExpr → PostfixExpr
   | SquareBrack : PostfixExpr → Expression → PostfixExpr
   | CurlyBrack : PostfixExpr → PostfixExpr
-  | AEL : PostfixExpr → ArgumentExpressionList → PostfixExpr
+  | AEL : PostfixExpr → ArgExprList → PostfixExpr
   | Identifier : PostfixExpr → String → PostfixExpr
   | PtrIdent : PostfixExpr → String → PostfixExpr
   | IncOp : PostfixExpr → PostfixExpr
