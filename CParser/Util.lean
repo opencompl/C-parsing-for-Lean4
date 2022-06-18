@@ -42,10 +42,10 @@ inductive Regex where
   | Base : Char → Regex
 
 open Regex
+def empty : Regex := Concat []
 def qmark (r : Regex) : Regex := Union [empty, r]
 def plus  (r : Regex) : Regex := Concat [r, Star r]
 
-def empty : Regex := Concat []
 def d : Regex := Union (List.map Base ['0','1','2','3','4','5','6','7','8','9'])
 def l : Regex := Union (List.map Base ['a','b','c','d','e','f','g','h',
                                        'i','j','k','l','m','n','o','p',
