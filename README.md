@@ -9,36 +9,36 @@ Run `lake build` at the toplevel folder.
 The order in which the nonterminals of the C grammar ([reference](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html#shift-expression)) is as follows:
 ```
 + assignment_expression
-    - assignment_operator
-    - assignment_expression
-    - unary_expression
-    - unary_operator
-    - postfix_expression
-    - primary_expression
-    - argument_expression_list
-    - expression
-    - conditional_expression ... cast_expression [leads to type_name]
+    + assignment_operator
+    + assignment_expression
+    + unary_expression
+    + unary_operator
+    + postfix_expression
+    + primary_expression
+    + argument_expression_list
+    + expression
+    + conditional_expression ... cast_expression [leads to type_name]
 
 + init_declarator_list
-    - init_declarator
-    - initializer [leads to assignment_expression]
-    - declarator
-    - pointer
-    - type_qualifier_list
-    - direct_declarator
-    - identifier_list
-    - parameter_type_list
-    - parameter_list
-    - parameter_declaration [leads to declaration_specifiers]
-    - abstract_declaration
-    - direct_abstract_declarator
-    - constant_expression
+    + init_declarator
+    + initializer [leads to assignment_expression]
+    + initializer_list
+    + declarator
+    + pointer
+    + type_qualifier_list
+    + direct_declarator [leads to parameter_type_list]
+    + identifier_list
+    + abstract_declarator
+    + direct_abstract_declarator [leads to parameter_type_list]
+    + constant_expression
 
 + declarator_list
     - declaration
     - init_declarator_list
     - init_declarator [leads to declarator]
-    - initializer [leads to assignment_expression]
+    - parameter_type_list
+    - parameter_list
+    - parameter_declaration
     - declaration_specifiers
     - storage_class_specifier
     - type_qualifier
