@@ -51,7 +51,7 @@ inductive Declarator where
 
 inductive InitList where
   | Init : Initializer → InitList
-  | InitListInitlz : InitList → Initializer → InitList
+  | InitListInit : InitList → Initializer → InitList
 
 inductive Initializer where
   | AssmtExpr : AssmtExpr → Initializer
