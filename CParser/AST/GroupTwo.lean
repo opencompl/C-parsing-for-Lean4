@@ -32,7 +32,7 @@ inductive DirDecl where
   | DirDecConst : DirDecl → ConstantExpr → DirDecl
   | DirDecSqr : DirDecl → DirDecl
   -- | DirDecParamList : DirDecl → ParamTypeList → DirDecl
-  | DirDecIdenList : DirDecl → IdentList → DirDecl
+  | DirDecIdentList : DirDecl → IdentList → DirDecl
   | DirDecRnd : DirDecl → DirDecl
 
 inductive TypeQualList where 
