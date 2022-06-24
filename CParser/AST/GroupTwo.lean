@@ -39,6 +39,10 @@ inductive TypeQualList where
   | TypeQual : TypeQual → TypeQualList
   | TypeQuaListTypeQuq : TypeQualList → TypeQual → TypeQualList
 
+inductive TypeQual where
+  | Const : TypeQual
+  | Volatile : TypeQual
+
 inductive Pointer where
   | Star : Pointer
   | StarTypeQualList : TypeQualList → Pointer
