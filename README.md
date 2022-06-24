@@ -25,7 +25,8 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     + initializer_list
     + declarator
     + pointer
-    + type_qualifier_list [leads to type_qualifier]
+    + type_qualifier
+    + type_qualifier_list
     + direct_declarator [leads to parameter_type_list]
     + identifier_list
     + abstract_declarator
@@ -41,7 +42,6 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     - parameter_declaration
     - declaration_specifiers
     - storage_class_specifier
-    - type_qualifier
     - type_specifier
     - enum_specifier
     - enumerator_list
