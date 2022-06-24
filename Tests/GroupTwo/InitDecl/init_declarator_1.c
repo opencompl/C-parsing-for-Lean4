@@ -1,0 +1,1 @@
+* * volatile bar[foo ? bar : baz]
