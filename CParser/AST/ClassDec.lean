@@ -1,4 +1,5 @@
 import CParser.AST.GroupOne
+import CParser.AST.GroupTwo
 
 open AST
 instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
@@ -21,6 +22,19 @@ instance : Inhabited AssmtOp where default := AssmtOp.Assign
 instance : Inhabited AssmtExpr where default := AssmtExpr.Cond (default : CondExpr)
 instance : Inhabited ArgExprList where default := ArgExprList.AssmtExpr (default : AssmtExpr)
 instance : Inhabited Expression where default := Expression.ExprAssmtExpr (default : AssmtExpr)
+
+instance : Inhabited ConstantExpr where default := ConstantExpr.ConExpr (default: CondExpr)
+instance : Inhabited DirAbstrDecl where default := DirAbstrDecl.DirAbDecConSqr (default : ConstantExpr)
+instance : Inhabited AbstrDecl where default := AbstrDecl.AbstrDirAbDec (default : DirAbstrDecl)
+instance : Inhabited IdentList where default := IdentList.Identifier "foo"
+instance : Inhabited DirDecl where default := DirDecl.Identifier "foo"
+instance : Inhabited TypeQual where default := TypeQual.Const
+instance : Inhabited TypeQualList where default := TypeQualList.TypeQual (default : TypeQual)
+instance : Inhabited Pointer where default := Pointer.StarTypeQualList (default : TypeQualList)
+instance : Inhabited Declarator where default := Declarator.DirDecl (default : DirDecl)
+instance : Inhabited Initializer where default := Initializer.AssmtExpr (default : AssmtExpr)
+instance : Inhabited InitList where default := InitList.Init (default : Initializer)
+instance : Inhabited InitDecl where default := InitDecl.Declarator (default : Declarator)
 
 mutual
 partial def primaryExprToString : PrimaryExpr → String
@@ -138,6 +152,69 @@ partial def exprToString : Expression → String
   | .ExprAssmtExpr a => (assmtExprToString a)
   | .ExprAssign e a => (exprToString e) ++ " , " ++ (assmtExprToString a)
 
+partial def constExprToString : ConstantExpr → String
+  | .ConExpr c => (condExprToString c)
+
+partial def dirAbstrDeclToString : DirAbstrDecl → String
+  | .DirAbDecAbsRnd a => "(" ++ (abstrDeclToString a) ++ ")"
+  | .DirAbDecSqr => "[]"
+  | .DirAbDecConSqr c => "[" ++ (constExprToString c) ++ "]"
+  | .DirAbDecDirSqr d => (dirAbstrDeclToString d) ++ "[]"
+  | .DirAbDecDirConst d c => (dirAbstrDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
+  | .DirAbDecRnd => "()"
+--  | .DirAbDecDirParamList ptl => "(" ++ (paramTypeListToString ptl) ++ ")"
+  | .DirAbDecDirRnd d => (dirAbstrDeclToString d) ++ "()"
+--  | .DirAbDecDirParamList d ptl => (dirAbstrDeclToString d) ++ "(" ++ (paramTypeListToString ptl) ++ ")"
+
+partial def abstrDeclToString : AbstrDecl → String
+  | .AbstrPtr p => (pointerToString p)
+  | .AbstrDirAbDec d => (dirAbstrDeclToString d)
+  | .AbstrPtrDirAbDec p d => (pointerToString p) ++ " " ++ (dirAbstrDeclToString d)
+
+partial def identListToString : IdentList → String
+  | .Identifier s => s
+  | .IdentListIdent i s => (identListToString i) ++ " , " ++ s
+
+partial def dirDeclToString : DirDecl → String
+  | .Identifier s => s
+  | .DeclRnd d => "(" ++ (declaratorToString d) ++ ")"
+  | .DirDecConst d c => (dirDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
+  | .DirDecSqr d => (dirDeclToString d) ++ "[]"
+--  | .DirDecParamList d ptl => (dirDeclToString d) ++ "(" ++ (ptlToString ptl) ++ ")"
+  | .DirDecIdentList d il => (dirDeclToString d) ++ "(" ++ (identListToString il) ++ ")"
+  | .DirDecRnd d => (dirDeclToString d) ++ "()"
+
+partial def tqlToString : TypeQualList → String
+  | .TypeQual tq => (typeQualToString tq)
+  | .TypeQuaListTypeQuq tql tq => (tqlToString tql) ++ " " ++ (typeQualToString tq)
+
+partial def typeQualToString : TypeQual → String
+  | .Const => "const"
+  | .Volatile => "volatile"
+
+partial def pointerToString : Pointer → String
+  | .Star => "*"
+  | .StarTypeQualList tql => "* " ++ (tqlToString tql)
+  | .StarPtr p => "* " ++ (pointerToString p)
+  | .StarTypeQualListPtr tql p => "* " ++ (tqlToString tql) ++ " " ++ (pointerToString p)
+
+partial def declaratorToString : Declarator → String
+  | .PtrDirDecl p d => (pointerToString p) ++ " " ++ (dirDeclToString d)
+  | .DirDecl d => (dirDeclToString d)
+
+partial def initListToString : InitList → String
+  | .Init i => (initializerToString i)
+  | .InitListInit il i => (initListToString il) ++ " , " ++ (initializerToString i)
+
+partial def initializerToString : Initializer → String
+  | .AssmtExpr a => (assmtExprToString a)
+  | .InitListCurl il => "{" ++ (initListToString il) ++ "}"
+  | .InitListCurlComma il => "{" ++ (initListToString il) ++ ",}"
+
+partial def initDeclToString : InitDecl → String
+  | .Declarator d => (declaratorToString d)
+  | .DeclInit d i => (declaratorToString d) ++ " = " ++ (initializerToString i)
+
 end
 
 instance : ToString PrimaryExpr where toString := primaryExprToString
@@ -160,3 +237,15 @@ instance : ToString AssmtOp where toString := assmtOpToString
 instance : ToString AssmtExpr where toString := assmtExprToString
 instance : ToString ArgExprList where toString := aelToString
 instance : ToString Expression where toString := exprToString
+instance : ToString ConstantExpr where toString := constExprToString
+instance : ToString DirAbstrDecl where toString := dirAbstrDeclToString
+instance : ToString AbstrDecl where toString := abstrDeclToString
+instance : ToString IdentList where toString := identListToString
+instance : ToString DirDecl where toString := dirDeclToString
+instance : ToString TypeQualList where toString := tqlToString
+instance : ToString TypeQual where toString := typeQualToString
+instance : ToString Pointer where toString := pointerToString
+instance : ToString Declarator where toString := declaratorToString
+instance : ToString InitList where toString := initListToString
+instance : ToString Initializer where toString := initializerToString
+instance : ToString InitDecl where toString := initDeclToString
