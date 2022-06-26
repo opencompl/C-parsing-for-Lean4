@@ -45,6 +45,34 @@ syntax type_qualifier_list type_qualifier : type_qualifier_list
 syntax "`[type_qualifier_list| " type_qualifier_list "]" : term
 
 syntax num : type_qualifier
-syntax volatile : type_qualifier
+-- syntax volatile : type_qualifier
 
 syntax "`[type_qualifier| " type_qualifier "]" : term
+
+syntax "*" : pointer
+syntax "*" type_qualifier_list : pointer
+syntax "*" pointer : pointer
+syntax "*" type_qualifier_list pointer : pointer
+
+syntax "`[pointer| " pointer "]" : term
+
+syntax pointer direct_declarator : declarator
+syntax direct_declarator : declarator
+
+syntax "`[declarator| " declarator "]" : term
+
+syntax initializer : initializer_list
+syntax initializer_list "," initializer : initializer_list
+
+syntax "`[initializer_list| " initializer_list "]" : term
+
+syntax assignment_expression : initializer
+syntax "{" initializer_list "}" : initializer
+syntax "{" initializer_list "," "}" : initializer
+
+syntax "`[initializer| " initializer "]" : term
+
+syntax declarator : init_declarator
+syntax declarator "=" initializer : init_declarator
+
+syntax "`[init_declarator| " init_declarator "]" : term
