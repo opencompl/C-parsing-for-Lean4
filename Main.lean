@@ -1,17 +1,16 @@
 import Lean
 import CParser
 
+open Lean
 
-def default_filename := "Tests/primary_expression.c"
-
-def main (args : List String): IO Unit := do
-  let filename := match args.get? 0 with
-    | some fn => fn
-    | none => default_filename
-  let lines <- IO.FS.lines filename
+-- Check that a file parses correctly.
+-- TODO: collect the information into a struct, which
+-- prints the information at the end as a CSV.
+def check_file (filepath: String): IO Unit := do
+  let lines <- IO.FS.lines filepath
   let preprocessed := preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
-  println! s!"parsing {filename}: \n {fileStr}"
+  println! s!"parsing {filepath}: \n {fileStr}"
   -- let pipeline := Lean.quote [file]
   Lean.initSearchPath (← Lean.findSysroot) ["build/lib"]
   let env ← Lean.importModules [{ module := `CParser }] {}
@@ -21,3 +20,9 @@ def main (args : List String): IO Unit := do
     | none => s!"parse ok! parsed: \n---\n{parsed.2}\n---\n"
   println! res_str
   return ()
+
+-- treat each argument as a filepath, and then run the syntax check.
+def main (args : List String): IO Unit := do
+  let filepaths := args
+  for path in filepaths do
+    check_file path
