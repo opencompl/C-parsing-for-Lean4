@@ -44,8 +44,8 @@ syntax type_qualifier_list type_qualifier : type_qualifier_list
 
 syntax "`[type_qualifier_list| " type_qualifier_list "]" : term
 
-syntax num : type_qualifier
-syntax str : type_qualifier
+syntax "const" : type_qualifier
+syntax "volatile" : type_qualifier
 
 syntax "`[type_qualifier| " type_qualifier "]" : term
 
