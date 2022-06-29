@@ -4,8 +4,6 @@ import CParser.Syntax
 import CParser.Util
 open AST
 
-
--- Parse a piece of lean Syntax into a PrimaryExpr.
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
@@ -142,71 +140,78 @@ partial def mkExpression : Lean.Syntax → Except String Expression
   | `(expression| $e:expression , $ae:assignment_expression) => Expression.ExprAssign <$> (mkExpression e) <*> (mkAssmtExpression ae)
   | _ => throw "unexpected syntax"
 
+partial def mkConstExpr : Lean.Syntax → Except String ConstantExpr
+  | `(constant_expression| $c:conditional_expression) => ConstantExpr.ConExpr <$> (mkCondExpression c)
+  | _ => throw "unexpected syntax"
+
+partial def mkDirAbstrDecl : Lean.Syntax → Except String DirAbstrDecl
+  | `(direct_abstract_declarator| ( $a:abstract_declarator )) => DirAbstrDecl.DirAbDecAbsRnd <$> (mkAbstrDecl a)
+  | `(direct_abstract_declarator| [ ]) => return (DirAbstrDecl.DirAbDecSqr)
+  | `(direct_abstract_declarator| [ $c:constant_expression ]) => DirAbstrDecl.DirAbDecConSqr <$> (mkConstExpr c)
+  | `(direct_abstract_declarator| $d:direct_abstract_declarator [ ]) => DirAbstrDecl.DirAbDecDirSqr <$> (mkDirAbstrDecl d)
+  | `(direct_abstract_declarator| $d:direct_abstract_declarator [ $c:constant_expression ]) => DirAbstrDecl.DirAbDecDirConst <$> (mkDirAbstrDecl d) <*> (mkConstExpr c)
+  | `(direct_abstract_declarator| ( )) => return (DirAbstrDecl.DirAbDecRnd)
+--  | `(direct_abstract_declarator| ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecParamList <$> (mkParamList p)
+  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( )) => DirAbstrDecl.DirAbDecDirRnd <$> (mkDirAbstrDecl d)
+--  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecDirParamList <$> (mkDirAbstrDecl d) <*> (mkParamList p)
+  | _ => throw "unexpected syntax"
+
+partial def mkAbstrDecl : Lean.Syntax → Except String AbstrDecl
+  | `(abstract_declarator| $p:pointer) => AbstrDecl.AbstrPtr <$> (mkPointer p)
+  | `(abstract_declarator| $d:direct_abstract_declarator) => AbstrDecl.AbstrDirAbDec <$> (mkDirAbstrDecl d)
+  | `(abstract_declarator| $p:pointer $d:direct_abstract_declarator) => AbstrDecl.AbstrPtrDirAbDec <$> (mkPointer p) <*> (mkDirAbstrDecl d)
+  | _ => throw "unexpected syntax"
+
+partial def mkIdentList : Lean.Syntax → Except String IdentList
+  | `(identifier_list| $i:ident) => return (IdentList.Identifier i.getId.toString)
+  | `(identifier_list| $il:identifier_list , $i:ident) => IdentList.IdentListIdent <$> (mkIdentList il) <*> (return i.getId.toString)
+  | _ => throw "unexpected syntax"
+
+partial def mkDirDecl : Lean.Syntax → Except String DirDecl
+  | `(direct_declarator| $i:ident) => return (DirDecl.Identifier i.getId.toString)
+  | `(direct_declarator| ( $d:declarator )) => DirDecl.DeclRnd <$> (mkDeclarator d)
+  | `(direct_declarator| $d:direct_declarator [ $c:constant_expression ]) => DirDecl.DirDecConst <$> (mkDirDecl d) <*> (mkConstExpr c)
+  | `(direct_declarator| $d:direct_declarator [ ]) => DirDecl.DirDecSqr <$> (mkDirDecl d)
+  | `(direct_declarator| $d:direct_declarator ( $i:identifier_list )) => DirDecl.DirDecIdentList <$> (mkDirDecl d) <*> (mkIdentList i)
+  | `(direct_declarator| $d:direct_declarator ( )) => DirDecl.DirDecRnd <$> (mkDirDecl d)
+  | _ => throw "unexpected syntax"
+
+partial def mkTypeQualList : Lean.Syntax → Except String TypeQualList
+  | `(type_qualifier_list| $t:type_qualifier) => TypeQualList.TypeQual <$> (mkTypeQual t)
+  | `(type_qualifier_list| $tql:type_qualifier_list $t:type_qualifier) => TypeQualList.TypeQuaListTypeQuq <$> (mkTypeQualList tql) <*> (mkTypeQual t)
+  | _ => throw "unexpected syntax"
+
+partial def mkTypeQual : Lean.Syntax → Except String TypeQual
+  | `(type_qualifier| const) => return (TypeQual.Const)
+  | `(type_qualifier| volatile) => return (TypeQual.Volatile)
+  | _ => throw "unexpected syntax"
+
+partial def mkPointer : Lean.Syntax → Except String Pointer
+  | `(pointer| *) => return (Pointer.Star)
+  | `(pointer| * $t:type_qualifier_list) => Pointer.StarTypeQualList <$> (mkTypeQualList t)
+  | `(pointer| * $p:pointer) => Pointer.StarPtr <$> (mkPointer p)
+  | `(pointer| * $t:type_qualifier_list $p:pointer) => Pointer.StarTypeQualListPtr <$> (mkTypeQualList t) <*> (mkPointer p)
+  | _ => throw "unexpected syntax"
+
+partial def mkDeclarator : Lean.Syntax → Except String Declarator
+  | `(declarator| $p:pointer $d:direct_declarator) => Declarator.PtrDirDecl <$> (mkPointer p) <*> (mkDirDecl d)
+  | `(declarator| $d:direct_declarator) => Declarator.DirDecl <$> (mkDirDecl d)
+  | _ => throw "unexpected syntax"
+
+partial def mkInitList : Lean.Syntax → Except String InitList
+  | `(initializer_list| $i:initializer) => InitList.Init <$> (mkInitializer i)
+  | `(initializer_list| $il:initializer_list , $i:initializer) => InitList.InitListInit <$> (mkInitList il) <*> (mkInitializer i)
+  | _ => throw "unexpected syntax"
+
+partial def mkInitializer : Lean.Syntax → Except String Initializer
+  | `(initializer| $a:assignment_expression) => Initializer.AssmtExpr <$> (mkAssmtExpression a)
+  | `(initializer| { $i:initializer_list }) => Initializer.InitListCurl <$> (mkInitList i)
+--  | `(initializer| { $i:initializer_list , } ) => Initializer.InitListCurlComma <$> (mkInitList i)
+  | _ => throw "unexpected syntax"
+
+partial def mkInitDecl : Lean.Syntax → Except String InitDecl
+  | `(init_declarator| $d:declarator) => InitDecl.Declarator <$> (mkDeclarator d)
+  | `(init_declarator| $d:declarator = $i:initializer) => InitDecl.DeclInit <$> (mkDeclarator d) <*> (mkInitializer i)
+  | _ => throw "unexpected syntax"
+
 end
-
--- Parse a primary expression into 
-def parsePrimaryExpression : String → Lean.Environment → Option String × PrimaryExpr := 
-  mkNonTerminalParser `primary_expression mkPrimaryExpression
-
-def parsePostfixExpression : String → Lean.Environment → Option String × PostfixExpr :=
-  mkNonTerminalParser `postfix_expression mkPostfixExpression
-
-def parseUnaryOperator : String → Lean.Environment → Option String × UnaryOp :=
-  mkNonTerminalParser `unary_operator mkUnaryOperator
-
-def parseUnaryExpression : String → Lean.Environment → Option String × UnaryExpr :=
-  mkNonTerminalParser `unary_expression mkUnaryExpression
-
-def parseCastExpression : String → Lean.Environment → Option String × CastExpr :=
-  mkNonTerminalParser `cast_expression mkCastExpression
-
-def parseMultExpression : String → Lean.Environment → Option String × MultExpr :=
-  mkNonTerminalParser `multiplicative_expression mkMultExpression
-
-def parseAddExpression : String → Lean.Environment → Option String × AddExpr :=
-  mkNonTerminalParser `additive_expression mkAddExpression
-
-def parseShiftExpression : String → Lean.Environment → Option String × ShiftExpr :=
-  mkNonTerminalParser `shift_expression mkShiftExpression
-
-def parseRelExpression : String → Lean.Environment → Option String × RelExpr :=
-  mkNonTerminalParser `relational_expression mkRelExpression
-
-def parseEqExpression : String → Lean.Environment → Option String × EqExpr :=
-  mkNonTerminalParser `equality_expression mkEqExpression
-
-def parseAndExpression : String → Lean.Environment → Option String × AndExpr :=
-  mkNonTerminalParser `and_expression mkAndExpression
-
-def parseXOrExpression : String → Lean.Environment → Option String × XOrExpr :=
-  mkNonTerminalParser `exclusive_or_expression mkXOrExpression
-
-def parseIOrExpression : String → Lean.Environment → Option String × IOrExpr :=
-  mkNonTerminalParser `inclusive_or_expression mkIOrExpression
-
-def parseLAndExpression : String → Lean.Environment → Option String × LAndExpr :=
-  mkNonTerminalParser `logical_and_expression mkLAndExpression
-
-def parseLOrExpression : String → Lean.Environment → Option String × LOrExpr :=
-  mkNonTerminalParser `logical_or_expression mkLOrExpression
-
-def parseCondExpression : String → Lean.Environment → Option String × CondExpr :=
-  mkNonTerminalParser `conditional_expression mkCondExpression
-
-def parseAssmtOperator : String → Lean.Environment → Option String × AssmtOp :=
-  mkNonTerminalParser `assignment_operator mkAssmtOperator
-
-def parseAssmtExpression : String → Lean.Environment → Option String × AssmtExpr :=
-  mkNonTerminalParser `assignment_expression mkAssmtExpression
-
-def parseArgExprList : String → Lean.Environment → Option String × ArgExprList :=
-  mkNonTerminalParser `argument_expression_list mkArgExprList
-
-def parseExpression : String → Lean.Environment → Option String × Expression :=
-  mkNonTerminalParser `expression mkExpression
-
--- Parse the top-level nonterminal of our grammar.
-def parseToplevelNonterminal := parseExpression
-
--- C parser, which invokes the top level nonterminal parser.
-def parse := parseToplevelNonterminal

@@ -1,1 +1,1 @@
-* CONST * *
+* const * *

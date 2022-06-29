@@ -1,6 +1,6 @@
 import CParser.AST.GroupOne
 
-namespace AST
+open AST
 
 mutual
 inductive ConstantExpr where
@@ -68,4 +68,4 @@ inductive InitDecl where
 
 end
 
-end AST
+-- end AST
