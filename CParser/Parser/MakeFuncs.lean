@@ -217,9 +217,8 @@ partial def mkInitList : Lean.Syntax → Except String InitList
 
 
 partial def mkInitializer : Lean.Syntax → Except String Initializer
---   | `(initializer| $a:assignment_expression) => Initializer.AssmtExpr <$> (mkAssmtExpression a)
+  | `(initializer| $a:assignment_expression) => Initializer.AssmtExpr <$> (mkAssmtExpression a)
   | `(initializer| { $i:initializer_list }) => Initializer.InitListCurl <$> (mkInitList i)
---  | `(initializer| { $i:initializer_list , } ) => Initializer.InitListCurlComma <$> (mkInitList i)
   | _ => throw "unexpected syntax"
 
 partial def mkInitDecl : Lean.Syntax → Except String InitDecl

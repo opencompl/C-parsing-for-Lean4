@@ -100,7 +100,8 @@ Change to grammar:
 We use Lean4's higher level `sepBy` to create a parser.
 -/
 
-syntax sepBy(assignment_expression, "," , ",", allowTrailingSep) : initializer_list
+syntax sepBy(initializer, "," , ",", allowTrailingSep) : initializer_list
+syntax assignment_expression : initializer
 syntax "{" initializer_list "}" : initializer
 syntax "`[initializer| " initializer "]" : term
 
