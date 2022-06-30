@@ -60,13 +60,13 @@ def TestResult.success? : TestResult -> Bool
 
 -- Run the checker, output CSV formatted info about parse
 -- success / failure
-def checkFileParse (filepath: FilePath) (checker: Checker) : IO TestResult := do
+def checkFileParse (env: Lean.Environment)
+  (filepath: FilePath)
+  (checker: Checker) : IO TestResult := do
   let lines <- IO.FS.lines filepath
   let preprocessed := preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
   -- let pipeline := Lean.quote [file]
-  Lean.initSearchPath (← Lean.findSysroot) ["build/lib"]
-  let env ← Lean.importModules [{ module := `CParser }] {}
   match checker fileStr env with
     | some msg => do 
        IO.println $ s!"{filepath}, error, {msg}"
@@ -79,12 +79,17 @@ def runTestHarness: IO UInt32 := do
   let isFile (p: FilePath) : IO Bool := do
       return (<- p.metadata).type == FileType.file
 
+  Lean.initSearchPath (← Lean.findSysroot) ["build/lib"]
+  let env ← Lean.importModules [{ module := `CParser }] {}
+
   let mut returnValue := TestResult.Success
   for (dir_path, checker) in directory_checker_map do
     let paths <- dir_path.walkDir -- walk the directory
     let paths <- paths.filterM isFile -- keep only files
-    let results <- paths.mapM (checkFileParse (checker := checker))
-    let result := results.foldl (f := TestResult.and) (init := .Success)
+    let result <- paths.toList.foldlM (init := TestResult.Success)
+         (f := fun resultAccum file => do
+           let result <- checkFileParse env (checker := checker) file
+           return resultAccum.and result)
     returnValue := TestResult.and result returnValue
   return (if returnValue.success? then 0 else 1)
  
