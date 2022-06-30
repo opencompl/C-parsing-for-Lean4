@@ -2,8 +2,10 @@ import CParser.AST
 import CParser.AST.ClassDec
 import CParser.Syntax
 import CParser.Util
-open AST
+import Lean
 
+open AST
+open Lean -- for SepArray
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
@@ -198,20 +200,32 @@ partial def mkDeclarator : Lean.Syntax → Except String Declarator
   | `(declarator| $d:direct_declarator) => Declarator.DirDecl <$> (mkDirDecl d)
   | _ => throw "unexpected syntax"
 
+/-
 partial def mkInitList : Lean.Syntax → Except String InitList
   | `(initializer_list| $i:initializer) => InitList.Init <$> (mkInitializer i)
   | `(initializer_list| $il:initializer_list , $i:initializer) => InitList.InitListInit <$> (mkInitList il) <*> (mkInitializer i)
   | _ => throw "unexpected syntax"
+-/
+
+partial def mkInitList : Lean.Syntax → Except String InitList
+  | `(initializer_list| $xs) => do
+      let listOfSyntaxNodes := xs[0].getArgs
+      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let inits <- sarr.mapM mkInitializer
+      return InitList.InitList inits.toList
+  | _ => throw "unexpected syntax"
+
 
 partial def mkInitializer : Lean.Syntax → Except String Initializer
-  | `(initializer| $a:assignment_expression) => Initializer.AssmtExpr <$> (mkAssmtExpression a)
+--   | `(initializer| $a:assignment_expression) => Initializer.AssmtExpr <$> (mkAssmtExpression a)
   | `(initializer| { $i:initializer_list }) => Initializer.InitListCurl <$> (mkInitList i)
 --  | `(initializer| { $i:initializer_list , } ) => Initializer.InitListCurlComma <$> (mkInitList i)
   | _ => throw "unexpected syntax"
 
 partial def mkInitDecl : Lean.Syntax → Except String InitDecl
   | `(init_declarator| $d:declarator) => InitDecl.Declarator <$> (mkDeclarator d)
-  | `(init_declarator| $d:declarator = $i:initializer) => InitDecl.DeclInit <$> (mkDeclarator d) <*> (mkInitializer i)
+  | `(init_declarator| $d:declarator = $i:initializer) => 
+       InitDecl.DeclInit <$> (mkDeclarator d) <*> (mkInitializer i)
   | _ => throw "unexpected syntax"
 
 end

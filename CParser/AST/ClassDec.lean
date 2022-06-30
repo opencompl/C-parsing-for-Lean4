@@ -33,7 +33,7 @@ instance : Inhabited TypeQualList where default := TypeQualList.TypeQual (defaul
 instance : Inhabited Pointer where default := Pointer.StarTypeQualList (default : TypeQualList)
 instance : Inhabited Declarator where default := Declarator.DirDecl (default : DirDecl)
 instance : Inhabited Initializer where default := Initializer.AssmtExpr (default : AssmtExpr)
-instance : Inhabited InitList where default := InitList.Init (default : Initializer)
+instance : Inhabited InitList where default := InitList.InitList []
 instance : Inhabited InitDecl where default := InitDecl.Declarator (default : Declarator)
 
 mutual
@@ -203,8 +203,7 @@ partial def declaratorToString : Declarator → String
   | .DirDecl d => (dirDeclToString d)
 
 partial def initListToString : InitList → String
-  | .Init i => (initializerToString i)
-  | .InitListInit il i => (initListToString il) ++ " , " ++ (initializerToString i)
+  | .InitList inits => ", ".intercalate (inits.map initializerToString)
 
 partial def initializerToString : Initializer → String
   | .AssmtExpr a => (assmtExprToString a)
