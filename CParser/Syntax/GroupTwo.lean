@@ -1,6 +1,14 @@
 import CParser.SyntaxDecl
 import CParser.AST
+import CParser.AST.GroupOne
+import CParser.Syntax.GroupOne
+import Lean
+
 open AST
+open Lean -- for (sepBy ...)
+open Lean.Parser -- for (sepBy ...)
+open Lean.Elab
+open Lean.Elab.Command
 
 syntax conditional_expression : constant_expression
 
@@ -61,6 +69,9 @@ syntax direct_declarator : declarator
 
 syntax "`[declarator| " declarator "]" : term
 
+/-
+Original:
+--------
 syntax initializer : initializer_list
 syntax initializer_list "," initializer : initializer_list
 
@@ -70,9 +81,37 @@ syntax assignment_expression : initializer
 syntax "{" initializer_list "}" : initializer
 syntax "{" initializer_list "," "}" : initializer
 
+Reformat:
+---------
+Consider `init_declarator_2.c`:
+foo(bar, bat, baz) = {i = 5, j = 6 | 2, }
+
+The right-hand-size { i = 5, j = 6 | 2   , } should be parsed as:
+initializer ->      { initializer_list  ","} 
+
+However, the Lean parser parses this as:
+                    { i = 5, j = 6 | 2    ,                  }
+initializer      -> { initializer_list                       } 
+initializer_list -> { initializer_list    , initializer      }
+                                            ^^^^^^^^^^^
+
+Change to grammar:
+------------------
+We use Lean4's higher level `sepBy` to create a parser.
+-/
+
+syntax sepBy(initializer, "," , ",", allowTrailingSep) : initializer_list
+syntax assignment_expression : initializer
+syntax "{" initializer_list "}" : initializer
 syntax "`[initializer| " initializer "]" : term
 
+/-
+Original:
+---------
 syntax declarator : init_declarator
 syntax declarator "=" initializer : init_declarator
+-/
 
+syntax declarator ("=" initializer)? : init_declarator
 syntax "`[init_declarator| " init_declarator "]" : term
+
