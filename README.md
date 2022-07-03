@@ -33,30 +33,28 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     + direct_abstract_declarator [leads to parameter_type_list]
     + constant_expression
 
-+ declarator_list
-    - declaration
-    - init_declarator_list
-    - init_declarator [leads to declarator]
-    - parameter_type_list
-    - parameter_list
-    - parameter_declaration
-    - declaration_specifiers
-    - storage_class_specifier
-    - type_specifier
-    - enum_specifier
-    - enumerator_list
-    - enumerator
-    - const_expression
-    - struct_or_union_specifier
-    - struct_or_union
-    - struct_declaration_list
-    - struct_declaration
-    - type_name
-    - specifier_qualifier_list
-    - struct_declarator_list
-    - struct_declarator [leads to declarator]
++ declaration_list
+    + declaration
+    + init_declarator_list
+    + parameter_type_list
+    + parameter_list
+    + parameter_declaration
+    + declaration_specifiers
+    + storage_class_specifier
+    + type_specifier
+    + enum_specifier
+    + enumerator_list
+    + enumerator
+    + struct_or_union_specifier
+    + struct_or_union
+    + struct_declaration_list
+    + struct_declaration
+    + type_name
+    + specifier_qualifier_list
+    + struct_declarator_list
+    + struct_declarator
 
-+ compound_statement [leads to declarator_list]
++ compound_statement [leads to declaration_list]
     - statement_list
     - statement
     - labeled_statement
