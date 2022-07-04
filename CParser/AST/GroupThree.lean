@@ -69,7 +69,7 @@ inductive StructDecl where
   | DeclConstExpr : Declarator → ConstantExpr → StructDecl
 
 inductive StructDeclaration where
-  | SpecQualListStructDecList : SpecQualList → StructDecList → StructDeclaration
+  | SpecQualListStructDecList : SpecQualList → StructDeclList → StructDeclaration
 
 inductive StructDeclarationList where
   | StructDeclaration : StructDeclaration → StructDeclarationList
