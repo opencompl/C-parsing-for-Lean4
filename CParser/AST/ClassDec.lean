@@ -37,9 +37,10 @@ instance : Inhabited Initializer where default := Initializer.AssmtExpr (default
 instance : Inhabited InitList where default := InitList.InitList []
 instance : Inhabited InitDecl where default := InitDecl.Declarator (default : Declarator)
 
+instance : Inhabited StorClassSpec where default := StorClassSpec.TypeDef
+instance : Inhabited DeclSpec where default := DeclSpec.StorClassSpec (default : StorClassSpec)
 instance : Inhabited Declaration where default := Declaration.DeclSpec (default : DeclSpec)
 instance : Inhabited DeclList where default := DeclList.Decl (default : Declaration)
-instance : Inhabited DeclSpec where default := DeclSpec.StorClassSpec (default : StorClassSpec)
 instance : Inhabited Enumerator where default := Enumerator.Ident "foo"     -- Default for Identifier?
 instance : Inhabited EnumList where default := EnumList.Enum (default : Enumerator)
 instance : Inhabited EnumSpec where default := EnumSpec.EnumList (default : EnumList)
@@ -47,16 +48,15 @@ instance : Inhabited InitDeclList where default := InitDeclList.InitDecl (defaul
 instance : Inhabited ParamDecl where default := ParamDecl.DeclSpec (default : DeclSpec)
 instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
 instance : Inhabited ParamTypeList where default := ParamTypeList.ParamList (default : ParamList)
+instance : Inhabited TypeSpec where default := TypeSpec.Void
 instance : Inhabited SpecQualList where default := SpecQualList.TypeSpec (default : TypeSpec)
-instance : Inhabited StorClassSpec where default := StorClassSpec.TypeDef
 instance : Inhabited StructDecl where default := StructDecl.Dec (default : Declarator)
+instance : Inhabited StructDeclList where default := StructDeclList.StructDecl (default : StructDecl)
 instance : Inhabited StructDeclaration where default := StructDeclaration.SpecQualListStructDecList (default : SpecQualList) (default : StructDeclList)
 instance : Inhabited StructDeclarationList where default := StructDeclarationList.StructDeclaration (default : StructDeclaration)
-instance : Inhabited StructDeclList where default := StructDeclList.StructDecl (default : StructDecl)
 instance : Inhabited StructOrUnion where default := StructOrUnion.Struct
-instance : Inhabited StructOrUnionSpec where default := StructOrUnionSpec.SoUStructDeclarationList (default : StructOrUnion) (default StructDeclarationList)
+instance : Inhabited StructOrUnionSpec where default := StructOrUnionSpec.SoUStructDeclarationList (default : StructOrUnion) (default : StructDeclarationList)
 instance : Inhabited TypeName where default := TypeName.SpecQualList (default : SpecQualList)
-instance : Inhabited TypeSpec where default := TypeSpec.Void
 
 mutual
 partial def primaryExprToString : PrimaryExpr → String
