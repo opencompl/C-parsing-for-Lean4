@@ -227,4 +227,73 @@ partial def mkInitDecl : Lean.Syntax → Except String InitDecl
        InitDecl.DeclInit <$> (mkDeclarator d) <*> (mkInitializer i)
   | _ => throw "unexpected syntax"
 
+partial def mkDeclList : Lean.Syntax → Except String DeclList
+  | `(declaration_list| $d:declaration) => DeclList.Decl <$> (mkDeclaration d)
+  | `(declaration_list| $dl:declaration_list $d:declaration) => DeclList.DeclListDecl <$> (mkDeclList dl) <*> (mkDeclaration d)
+  | _ => throw "unexpected syntax"
+
+partial def mkDeclaration : Lean.Syntax → Except String _root_.Declaration
+  | `(declaration| $ds:declaration_specifiers ;) => Declaration.DeclSpec <$> (mkDeclSpec ds)
+  | `(declaration| $ds:declaration_specifiers $idl:init_declarator_list ;) => Declaration.DeclSpecInitDecList <$> (mkDeclSpec ds) <*> (mkInitDeclList idl)
+  | _ => throw "unexpected syntax"
+
+partial def mkInitDeclList : Lean.Syntax → Except String InitDeclList
+  | `(init_declarator_list| $i:init_declarator) => InitDeclList.InitDecl <$> (mkInitDecl i)
+  | `(init_declarator_list| $idl:init_declarator_list , $id:init_declarator) => InitDeclList.InitDeclListInitDecl <$> (mkInitDeclList idl) <*> (mkInitDecl id)
+  | _ => throw "unexpected syntax"
+
+partial def mkParamTypeList : Lean.Syntax → Except String ParamTypeList
+  | `(parameter_type_list| $p:parameter_list) => ParamTypeList.ParamList <$> (mkParamList p)
+  | `(parameter_type_list| $p:parameter_type_list , ...) => ParamTypeList.ParamListEllipsis <$> (mkParamList p)
+  | _ => throw "unexpected syntax"
+
+partial def mkParamList : Lean.Syntax → Except String ParamList
+  | `(parameter_list| $p:parameter_declaration) => ParamList.ParamDecl <$> (mkParamDecl p)
+  | `(parameter_list| $pl:parameter_list , $p:parameter_declaration) => ParamList.ParamListParamDecl <$> (mkParamList pl) <*> (mkParamDecl p)
+  | _ => throw "unexpected syntax"
+
+partial def mkParamDecl : Lean.Syntax → Except String ParamDecl
+  | `(parameter_declaration| $ds:declaration_specifiers $d:declarator) => ParamDecl.DeclSpecDecl <$> (mkDeclSpec ds) <*> (mkDeclarator d)
+  | `(parameter_declaration| $ds:declaration_specifiers $ad:abstract_declarator) => ParamDecl.DeclSpecAbsDecl <$> (mkDeclSpec ds) <*> (mkAbstrDecl ad)
+  | `(parameter_declaration| $ds:declaration_specifiers) => ParamDecl.DeclSpec <$> (mkDeclSpec ds)
+  | _ => throw "unexpected syntax"
+
+partial def mkDeclSpec : Lean.Syntax → Except String DeclSpec
+  | `(declaration_specifiers| $s:storage_class_specifier) => DeclSpec.StorClassSpec <$> (mkStorClassSpec s)
+  | `(declaration_specifiers| $s:storage_class_specifier $d:declaration_specifiers) => DeclSpec.StorClassSpecDeclSpec <$> (mkStorClassSpec s) <*> (mkDeclSpec d)
+  | `(declaration_specifiers| $t:type_specifier) => DeclSpec.TypeSpec <$> (mkTypeSpec t)
+  | `(declaration_specifiers| $t:type_specifier $d:declaration_specifiers) => DeclSpec.TypeSpecDeclSpec <$> (mkTypeSpec t) <*> (mkDeclSpec d)
+  | `(declaration_specifiers| $t:type_qualifier) => DeclSpec.TypeQual <$> (mkTypeQual t)
+  | `(declaration_specifiers| $t:type_qualifier $d:declaration_specifiers) => DeclSpec.TypeQualDeclSpec <$> (mkTypeQual t) <*> (mkDeclSpec d)
+  | _ => throw "unexpected syntax"
+
+partial def mkStorClassSpec : Lean.Syntax → Except String StorClassSpec
+  | `(storage_class_specifier| typedef) => return StorClassSpec.TypeDef
+  | `(storage_class_specifier| extern) => return StorClassSpec.Extern
+  | `(storage_class_specifier| static) => return StorClassSpec.Static
+  | `(storage_class_specifier| auto) => return StorClassSpec.Auto
+  | `(storage_class_specifier| register) => return StorClassSpec.Register
+  | _ => throw "unexpected syntax"
+
+partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
+  | `(type_specifier| void) => return TypeSpec.Void
+  | `(type_specifier| char) => return TypeSpec.Char
+  | `(type_specifier| short) => return TypeSpec.Short
+  | `(type_specifier| int) => return TypeSpec.Int
+  | `(type_specifier| long) => return TypeSpec.Long
+  | `(type_specifier| float) => return TypeSpec.Float
+  | `(type_specifier| double) => return TypeSpec.Double
+  | `(type_specifier| signed) => return TypeSpec.Signed
+  | `(type_specifier| unsigned) => return TypeSpec.Unsigned
+  | `(type_specifier| $s:struct_or_union_specifier) => TypeSpec.SoUSpec <$> (mkSoUSpec s)
+  | `(type_specifier| $e:enum_specifier) => TypeSpec.EnumSpec <$> (mkEnumSpec e)
+  | `(type_specifier| typename) => return TypeSpec.TypeName
+  | _ => throw "unexpected syntax"
+
+partial def mkEnumSpec : Lean.Syntax → Except String EnumSpec
+  | `(enum_specifier| enum { $e:enumerator_list }) => EnumSpec.EnumList <$> (mkEnumList e)
+  | `(enum_specifier| enum $i:ident { $e:enumerator_list }) => EnumSpec.IdentEnumList <$> (return i.getId.toString) <*> (mkEnumList e)
+  | `(enum_specifier| enum $i:ident) => return EnumSpec.EnumIdent (i.getId.toString)
+  | _ => throw "unexpected syntax"
+
 end

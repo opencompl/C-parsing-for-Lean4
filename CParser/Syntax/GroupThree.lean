@@ -2,6 +2,7 @@ import CParser.SyntaxDecl
 import CParser.AST
 import CParser.AST.GroupOne
 import CParser.Syntax.GroupOne
+import CParser.Syntax.GroupTwo
 import Lean
 
 open AST
@@ -15,7 +16,8 @@ syntax declaration_specifiers ";" : declaration
 syntax declaration_specifiers init_declarator_list ";" : declaration
 
 -- declaration_list
-syntax (declaration_list)? declaration : declaration_list
+syntax declaration : declaration_list
+syntax declaration_list declaration : declaration_list
 
 -- declaration_specifiers
 syntax storage_class_specifier : declaration_specifiers
