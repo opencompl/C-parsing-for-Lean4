@@ -48,7 +48,7 @@ inductive ParamList where
 
 inductive ParamTypeList where
   | ParamList : ParamList → ParamTypeList
-  | ParamListElipsis : ParamList → ParamTypeList
+  | ParamListEllipsis : ParamList → ParamTypeList
 
 inductive SpecQualList where
   | TypeSpecSpecQualList : TypeSpec → SpecQualList → SpecQualList
