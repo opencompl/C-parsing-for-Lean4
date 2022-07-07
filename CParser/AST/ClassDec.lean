@@ -225,16 +225,118 @@ partial def declaratorToString : Declarator → String
   | .DirDecl d => (dirDeclToString d)
 
 partial def initListToString : InitList → String
-  | .InitList inits => ", ".intercalate (inits.map initializerToString)
+  | .InitList inits => " , ".intercalate (inits.map initializerToString)
 
 partial def initializerToString : Initializer → String
   | .AssmtExpr a => (assmtExprToString a)
   | .InitListCurl il => "{" ++ (initListToString il) ++ "}"
   | .InitListCurlComma il => "{" ++ (initListToString il) ++ ",}"
 
+partial def declarationToString : Declaration → String
+  | .DeclSpec d => (declSpecToString d) ++ ";"
+  | .DeclSpecInitDecList d i => (declSpecToString d) ++ (initDeclListToString i) ++ ";"
+
+partial def declListToString : DeclList → String
+  | .Decl d => (declarationToString d)
+  | .DeclListDecl d i => (declListToString d) ++ (declarationToString i)
+
+partial def initDeclListToString : InitDeclList → String
+  | .InitDecl d => (initDeclToString d)
+  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
+
+partial def declSpecToString : DeclSpec → String
+  | .StorClassSpec d => (storClassSpecToString d)
+  | .StorClassSpecDeclSpec d i => (storClassSpecToString d) ++ (declSpecToString i)
+  | .TypeSpec d => (typeSpecToString d)
+  | .TypeSpecDeclSpec d i => (typeSpecToString d) ++ (declSpecToString i)
+  | .TypeQual d => (typeQualToString d)
+  | .TypeQualDeclSpec d i => (typeQualToString d) ++ (declSpecToString i)
+
 partial def initDeclToString : InitDecl → String
   | .Declarator d => (declaratorToString d)
   | .DeclInit d i => (declaratorToString d) ++ " = " ++ (initializerToString i)
+
+partial def storClassSpecToString : StorClassSpec → String
+  | .TypeDef => "typedef"
+  | .Extern => "extern"
+  | .Static => "static"
+  | .Auto => "auto"
+  | .Register => "register"
+
+partial def typeSpecToString : TypeSpec → String
+  | .Void
+  | .Char => "char"
+  | .Short => "short"
+  | .Int => "int"
+  | .Long => "long"
+  | .Float => "float"
+  | .Double => "double"
+  | .Signed => "signed"
+  | .Unsigned => "unsigned"
+  | .SoUSpec d => (structOrUnionSpecToString d)
+  | .EnumSpec d => (enumSpecToString d)
+  | .TypeName => "typename"
+
+partial def structOrUnionSpecToString : StructOrUnionSpec → String
+  | .SoUIdentStructDeclarationList a b c => (structOrUnionToString a) ++ b ++ "{" ++ (structDeclarationListToString c) ++ "}"
+  | .SoUStructDeclarationList a b => (structOrUnionToString a) ++ "{" ++ (structDeclarationListToString b) ++ "}"
+  | .SoUIdent a b => (structOrUnionToString a) ++ b
+
+partial def structOrUnionToString : StructOrUnion → String
+  | .Struct => "struct"
+  | .Union => "union"
+
+partial def structDeclarationToString : StructDeclaration → String
+  | .SpecQualListStructDecList d i => (specQualListToString d) ++ (structDeclListToString i) ++ ";" 
+
+partial def structDeclarationListToString : StructDeclarationList → String
+  | .StructDeclaration d => (structDeclarationToString d)
+  | .StructDeclListStructDecl d i => (structDeclarationListToString d) ++ (structDeclarationToString i)
+
+partial def enumeratorToString : Enumerator → String
+  | .Ident s => s
+  | .IdentAssignConst s d => s ++ " = " ++ (constExprToString d)
+
+partial def enumListToString : EnumList → String
+  | .Enum d => (enumeratorToString d)
+  | .EnumListEnum d i => (enumListToString d) ++ " , " ++ (enumeratorToString i)
+
+partial def enumSpecToString : EnumSpec → String
+  | .EnumList d => "enum " ++ "{" ++ (enumListToString d) ++ "}"
+  | .IdentEnumList s d => "enum " ++ s ++ "{" ++ (enumListToString d) ++ "}"
+  | .EnumIdent s => "enum " ++ s
+
+partial def paramDeclToString : ParamDecl → String
+  | .DeclSpecDecl d i => (declSpecToString d) ++ (declaratorToString i)
+  | .DeclSpecAbsDecl d i => (declSpecToString d) ++ (abstrDeclToString i)
+  | .DeclSpec d => (declSpecToString d)
+
+partial def paramListToString : ParamList → String
+  | .ParamDecl d => (paramDeclToString d)
+  | .ParamListParamDecl d i => (paramListToString d) ++ " , " ++ (paramDeclToString i)
+
+partial def paramTypeListToString : ParamTypeList → String
+  | .ParamList d => (paramListToString d)
+  | .ParamListEllipsis d => (paramListToString d) ++ " , " ++ "..."
+
+partial def specQualListToString : SpecQualList → String
+  | .TypeSpecSpecQualList d i => (typeSpecToString d) ++ (specQualListToString i)
+  | .TypeSpec d => (typeSpecToString d)
+  | .TypeQualSpecQualList d i => (typeQualToString d) ++ (specQualListToString i)
+  | .TypeQual d => (typeQualToString d)
+
+partial def structDeclToString : StructDecl → String
+  | .Dec d => (declaratorToString d)
+  | .ConstExpr d => ": " ++ (constExprToString d)
+  | .DeclConstExpr d i => (declaratorToString d) ++ " : " ++ (constExprToString i)
+
+partial def structDeclListToString : StructDeclList → String
+  | .StructDecl d => (structDeclToString d)
+  | .StructDecListStructDec d i => (structDeclListToString d) ++ " , " ++ (structDeclToString i)
+
+partial def typeNameToString : TypeName → String
+  | .SpecQualList a => (specQualListToString a)
+  | .SpecQualListAbsDec a b => (specQualListToString a) ++ (abstrDeclToString b)
 
 end
 
@@ -270,3 +372,23 @@ instance : ToString Declarator where toString := declaratorToString
 instance : ToString InitList where toString := initListToString
 instance : ToString Initializer where toString := initializerToString
 instance : ToString InitDecl where toString := initDeclToString
+
+instance : ToString Declaration where toString := declarationToString
+instance : ToString DeclList where toString := declListToString
+instance : ToString DeclSpec where toString := declSpecToString
+instance : ToString Enumerator where toString := enumeratorToString
+instance : ToString EnumList where toString := enumListToString
+instance : ToString EnumSpec where toString := enumSpecToString
+instance : ToString InitDeclList where toString := initDeclListToString
+instance : ToString ParamList where toString := paramListToString
+instance : ToString ParamTypeList where toString := paramTypeListToString
+instance : ToString SpecQualList where toString := specQualListToString
+instance : ToString StorClassSpec where toString := storClassSpecToString
+instance : ToString StructDecl where toString := structDeclToString
+instance : ToString StructDeclaration where toString := structDeclarationToString
+instance : ToString StructDeclarationList where toString := structDeclarationListToString
+instance : ToString StructDeclList where toString := structDeclListToString
+instance : ToString StructOrUnion where toString := structOrUnionToString
+instance : ToString StructOrUnionSpec where toString := structOrUnionSpecToString
+instance : ToString TypeName where toString := typeNameToString
+instance : ToString TypeSpec where toString := typeSpecToString
