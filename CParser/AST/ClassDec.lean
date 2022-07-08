@@ -360,6 +360,7 @@ instance : ToString AssmtOp where toString := assmtOpToString
 instance : ToString AssmtExpr where toString := assmtExprToString
 instance : ToString ArgExprList where toString := aelToString
 instance : ToString Expression where toString := exprToString
+
 instance : ToString ConstantExpr where toString := constExprToString
 instance : ToString DirAbstrDecl where toString := dirAbstrDeclToString
 instance : ToString AbstrDecl where toString := abstrDeclToString
