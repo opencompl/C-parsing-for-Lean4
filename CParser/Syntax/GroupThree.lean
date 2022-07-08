@@ -104,8 +104,9 @@ syntax parameter_list : parameter_type_list
 syntax parameter_list "," "..." : parameter_type_list
 
 -- parameter_list
-syntax parameter_declaration : parameter_list
-syntax parameter_list "," parameter_declaration : parameter_list
+-- syntax parameter_declaration : parameter_list
+-- syntax parameter_list "," parameter_declaration : parameter_list
+syntax sepBy(parameter_declaration, ",") : parameter_list
 
 -- parameter_declaration
 syntax declaration_specifiers declarator : parameter_declaration

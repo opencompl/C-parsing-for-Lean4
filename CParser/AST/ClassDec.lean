@@ -46,7 +46,8 @@ instance : Inhabited EnumList where default := EnumList.Enum (default : Enumerat
 instance : Inhabited EnumSpec where default := EnumSpec.EnumList (default : EnumList)
 instance : Inhabited InitDeclList where default := InitDeclList.InitDecl (default : InitDecl)
 instance : Inhabited ParamDecl where default := ParamDecl.DeclSpec (default : DeclSpec)
-instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
+-- instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
+instance : Inhabited ParamList where default := ParamList.ParamList []
 instance : Inhabited ParamTypeList where default := ParamTypeList.ParamList (default : ParamList)
 instance : Inhabited TypeSpec where default := TypeSpec.Void
 instance : Inhabited SpecQualList where default := SpecQualList.TypeSpec (default : TypeSpec)
@@ -312,8 +313,9 @@ partial def paramDeclToString : ParamDecl → String
   | .DeclSpec d => (declSpecToString d)
 
 partial def paramListToString : ParamList → String
-  | .ParamDecl d => (paramDeclToString d)
-  | .ParamListParamDecl d i => (paramListToString d) ++ " , " ++ (paramDeclToString i)
+  | .ParamList params => " , ".intercalate (params.map paramDeclToString)
+--   | .ParamDecl d => (paramDeclToString d)
+--   | .ParamListParamDecl d i => (paramListToString d) ++ " , " ++ (paramDeclToString i)
 
 partial def paramTypeListToString : ParamTypeList → String
   | .ParamList d => (paramListToString d)

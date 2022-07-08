@@ -43,8 +43,9 @@ inductive ParamDecl where
   | DeclSpec : DeclSpec → ParamDecl
 
 inductive ParamList where
-  | ParamDecl : ParamDecl → ParamList
-  | ParamListParamDecl : ParamList → ParamDecl → ParamList
+  | ParamList : List ParamDecl → ParamList
+--  | ParamDecl : ParamDecl → ParamList
+--  | ParamListParamDecl : ParamList → ParamDecl → ParamList
 
 inductive ParamTypeList where
   | ParamList : ParamList → ParamTypeList

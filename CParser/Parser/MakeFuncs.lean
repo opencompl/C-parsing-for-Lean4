@@ -42,12 +42,12 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
 --  | `(unary_expression| -- $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
   | `(unary_expression| $o:unary_operator $c:cast_expression) => UnaryExpr.UnaryOpCast <$> (mkUnaryOperator o) <*> (mkCastExpression c)
   | `(unary_expression| sizeof $u:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression u)
---  | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
+  | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
   | _ => throw "unexpected syntax"
 
 partial def mkCastExpression : Lean.Syntax → Except String CastExpr
   | `(cast_expression| $u:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression u)
---  | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
+  | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
   | _ => throw "unexpected syntax"
 
 partial def mkMultExpression : Lean.Syntax → Except String MultExpr
@@ -153,9 +153,9 @@ partial def mkDirAbstrDecl : Lean.Syntax → Except String DirAbstrDecl
   | `(direct_abstract_declarator| $d:direct_abstract_declarator [ ]) => DirAbstrDecl.DirAbDecDirSqr <$> (mkDirAbstrDecl d)
   | `(direct_abstract_declarator| $d:direct_abstract_declarator [ $c:constant_expression ]) => DirAbstrDecl.DirAbDecDirConst <$> (mkDirAbstrDecl d) <*> (mkConstExpr c)
   | `(direct_abstract_declarator| ( )) => return (DirAbstrDecl.DirAbDecRnd)
---  | `(direct_abstract_declarator| ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecParamList <$> (mkParamList p)
+  | `(direct_abstract_declarator| ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecParamList <$> (mkParamList p)
   | `(direct_abstract_declarator| $d:direct_abstract_declarator ( )) => DirAbstrDecl.DirAbDecDirRnd <$> (mkDirAbstrDecl d)
---  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecDirParamList <$> (mkDirAbstrDecl d) <*> (mkParamList p)
+  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecDirParamList <$> (mkDirAbstrDecl d) <*> (mkParamList p)
   | _ => throw "unexpected syntax"
 
 partial def mkAbstrDecl : Lean.Syntax → Except String AbstrDecl
@@ -278,8 +278,11 @@ partial def mkParamDecl : Lean.Syntax → Except String ParamDecl
   | _ => throw "unexpected syntax"
 
 partial def mkParamList : Lean.Syntax → Except String ParamList
-  | `(parameter_list| $p:parameter_declaration) => ParamList.ParamDecl <$> (mkParamDecl p)
-  | `(parameter_list| $pl:parameter_list , $p:parameter_declaration) => ParamList.ParamListParamDecl <$> (mkParamList pl) <*> (mkParamDecl p)
+  | `(parameter_list| $xs) => do
+      let listOfSyntaxNodes := xs[0].getArgs
+      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let params <- sarr.mapM mkParamDecl
+      return ParamList.ParamList params.toList
   | _ => throw "unexpected syntax"
 
 partial def mkStructOrUnion : Lean.Syntax → Except String StructOrUnion
