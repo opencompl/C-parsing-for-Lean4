@@ -43,6 +43,27 @@ def directory_checker_map : List (FilePath × Checker) :=
  ,(FilePath.mk "./Tests/GroupTwo/Pointer", fun str env => (parsePointer str env).fst)
  ,(FilePath.mk "./Tests/GroupTwo/TypeQual", fun str env => (parseTypeQual str env).fst)
  ,(FilePath.mk "./Tests/GroupTwo/TypeQualList", fun str env => (parseTypeQualList str env).fst)
+ ] ++
+ [(FilePath.mk "./Tests/GroupThree/Declaration", fun str env => (parseDeclaration str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/DeclList", fun str env => (parseDeclList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/DeclSpec", fun str env => (parseDeclSpec str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/Enumerator", fun str env => (parseEnumerator str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/EnumList", fun str env => (parseEnumList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/EnumSpec", fun str env => (parseEnumSpec str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/InitDeclList", fun str env => (parseInitDeclList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/ParamDecl", fun str env => (parseParamDecl str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/ParamList", fun str env => (parseParamList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/ParamTypeList", fun str env => (parseParamTypeList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/SpecQualList", fun str env => (parseSpecQualList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StorClassSpec", fun str env => (parseStorClassSpec str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructDecl", fun str env => (parseStructDecl str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructDeclaration", fun str env => (parseStructDeclaration str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructDeclarationList", fun str env => (parseStructDeclarationList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructDeclList", fun str env => (parseStructDeclList str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructOrUnion", fun str env => (parseStructOrUnion str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/StructOrUnionSpec", fun str env => (parseStructOrUnionSpec str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/TypeName", fun str env => (parseTypeName str env).fst)
+ ,(FilePath.mk "./Tests/GroupThree/TypeSpec", fun str env => (parseTypeSpec str env).fst)
  ]
 
 inductive TestResult
