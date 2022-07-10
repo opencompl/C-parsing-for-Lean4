@@ -1,7 +1,6 @@
 import Lean
 import CParser
-import CParser.AST.GroupOne
-import CParser.AST.GroupTwo
+import CParser.AST
 
 open IO
 open IO.FS

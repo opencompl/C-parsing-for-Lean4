@@ -1,5 +1,4 @@
 import CParser.AST
-import CParser.AST.ClassDec
 import CParser.Syntax
 import CParser.Util
 import Lean
@@ -153,9 +152,9 @@ partial def mkDirAbstrDecl : Lean.Syntax → Except String DirAbstrDecl
   | `(direct_abstract_declarator| $d:direct_abstract_declarator [ ]) => DirAbstrDecl.DirAbDecDirSqr <$> (mkDirAbstrDecl d)
   | `(direct_abstract_declarator| $d:direct_abstract_declarator [ $c:constant_expression ]) => DirAbstrDecl.DirAbDecDirConst <$> (mkDirAbstrDecl d) <*> (mkConstExpr c)
   | `(direct_abstract_declarator| ( )) => return (DirAbstrDecl.DirAbDecRnd)
-  | `(direct_abstract_declarator| ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecParamList <$> (mkParamList p)
+  | `(direct_abstract_declarator| ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecParamList <$> (mkParamTypeList p)
   | `(direct_abstract_declarator| $d:direct_abstract_declarator ( )) => DirAbstrDecl.DirAbDecDirRnd <$> (mkDirAbstrDecl d)
-  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecDirParamList <$> (mkDirAbstrDecl d) <*> (mkParamList p)
+  | `(direct_abstract_declarator| $d:direct_abstract_declarator ( $p:parameter_type_list )) => DirAbstrDecl.DirAbDecDirParamList <$> (mkDirAbstrDecl d) <*> (mkParamTypeList p)
   | _ => throw "unexpected syntax"
 
 partial def mkAbstrDecl : Lean.Syntax → Except String AbstrDecl
@@ -256,7 +255,7 @@ partial def mkDeclSpec : Lean.Syntax → Except String DeclSpec
   | `(declaration_specifiers| $t:type_qualifier $d:declaration_specifiers) => DeclSpec.TypeQualDeclSpec <$> (mkTypeQual t) <*> (mkDeclSpec d)
   | _ => throw "unexpected syntax"
 
-partial def mkDeclaration : Lean.Syntax → Except String _root_.Declaration
+partial def mkDeclaration : Lean.Syntax → Except String AST.Declaration
   | `(declaration| $ds:declaration_specifiers ;) => Declaration.DeclSpec <$> (mkDeclSpec ds)
   | `(declaration| $ds:declaration_specifiers $idl:init_declarator_list ;) => Declaration.DeclSpecInitDecList <$> (mkDeclSpec ds) <*> (mkInitDeclList idl)
   | _ => throw "unexpected syntax"
