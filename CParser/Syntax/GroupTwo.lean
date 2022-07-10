@@ -1,6 +1,5 @@
 import CParser.SyntaxDecl
 import CParser.AST
-import CParser.AST.GroupOne
 import CParser.Syntax.GroupOne
 import Lean
 
