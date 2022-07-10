@@ -1,1 +1,1 @@
-foo { x = i, bar, bat = i + j}
+enum foo { x = i, bar, bat = i + j}

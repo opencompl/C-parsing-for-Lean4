@@ -1,1 +1,1 @@
-char volatile unsigned []()(*[])
+char volatile unsigned (*[])[]()
