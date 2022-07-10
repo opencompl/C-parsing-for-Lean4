@@ -97,46 +97,14 @@ syntax enumerator_list "," enumerator : enumerator_list
 syntax ident : enumerator
 syntax ident "=" constant_expression : enumerator
 
-/- Original:
---------
-syntax parameter_list : parameter_type_list
-syntax parameter_list "," "..." : parameter_type_list
-
-syntax sepBy(parameter_declaration, ",") : parameter_list
-
-Reformat:
---------
-The second case of parameter_type_list did not parse.
-Consider this example (taken from Tests/declaration_3.c):
-
-                       int x , char y , unsigned z , ...
-parameter_type_list -> parameter_list              , ...
-
-It tries to parse this as:
-                       int x      , char y     , unsigned z , ...
-parameter_type_list -> parameter_list
-parameter_list ->      param_decl , param_decl , param_decl , param_decl
-                                                              ^^^^^^^^^^
-Change to grammar:
---------
-We add allowTrailingSep to parameter_list, and change
-the second case of parameter_type_list to just a parameter_list
-followed by an ellipsis.
-
-This does, however, add illegal parses like
- int x , char y , unsigned z ...
-where there is no comma preceding the ellipsis.
-
-This needs to be fixed.
--/
 -- parameter_type_list
 syntax parameter_list : parameter_type_list
-syntax parameter_list "..." : parameter_type_list
+syntax parameter_list "," "..." : parameter_type_list
 
 -- parameter_list
 -- syntax parameter_declaration : parameter_list
 -- syntax parameter_list "," parameter_declaration : parameter_list
-syntax sepBy(parameter_declaration, "," , ",", allowTrailingSep) : parameter_list
+syntax sepBy(parameter_declaration, ",", ", " notFollowedBy("...")) : parameter_list
 
 -- parameter_declaration
 syntax declaration_specifiers declarator : parameter_declaration

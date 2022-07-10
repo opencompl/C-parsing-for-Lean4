@@ -267,8 +267,8 @@ partial def mkInitDeclList : Lean.Syntax → Except String InitDeclList
   | _ => throw "unexpected syntax for init declarator list"
 
 partial def mkParamTypeList : Lean.Syntax → Except String ParamTypeList
-  | `(parameter_type_list| $pl:parameter_list) => ParamTypeList.ParamList <$> (mkParamList pl)
-  | `(parameter_type_list| $pl:parameter_list ... ) => ParamTypeList.ParamListEllipsis <$> (mkParamList pl)
+  | `(parameter_type_list| $pl:parameter_list ) => ParamTypeList.ParamList <$> (mkParamList pl)
+  | `(parameter_type_list| $pl:parameter_list , ... ) => ParamTypeList.ParamListEllipsis <$> (mkParamList pl)
   | _ => throw "unexpected syntax for parameter type list"
 
 partial def mkParamDecl : Lean.Syntax → Except String ParamDecl
