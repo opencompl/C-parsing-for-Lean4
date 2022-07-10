@@ -1,6 +1,4 @@
-import CParser.AST.GroupOne
-import CParser.AST.GroupTwo
-import CParser.AST.GroupThree
+import CParser.AST.AST
 
 open AST
 instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
@@ -46,7 +44,7 @@ instance : Inhabited EnumList where default := EnumList.Enum (default : Enumerat
 instance : Inhabited EnumSpec where default := EnumSpec.EnumList (default : EnumList)
 instance : Inhabited InitDeclList where default := InitDeclList.InitDecl (default : InitDecl)
 instance : Inhabited ParamDecl where default := ParamDecl.DeclSpec (default : DeclSpec)
--- instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
+instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
 instance : Inhabited ParamList where default := ParamList.ParamList []
 instance : Inhabited ParamTypeList where default := ParamTypeList.ParamList (default : ParamList)
 instance : Inhabited TypeSpec where default := TypeSpec.Void
@@ -90,13 +88,11 @@ partial def unaryExprToString : UnaryExpr → String
   | .DecUnary p => "--" ++ (unaryExprToString p)
   | .UnaryOpCast o c => (unaryOpToString o) ++ (castExprToString c)
   | .SizeOf u => "sizeof " ++ (unaryExprToString u)
---  | .SizeOfType t => "sizeof(" ++ (typeNametoString t) ++ ")"
-  | _ => "not implemented"
+  | .SizeOfType t => "sizeof(" ++ (typeNameToString t) ++ ")"
 
 partial def castExprToString : CastExpr → String
   | .Unary u => (unaryExprToString u)
---  | .TypeNameCast t c => "(" ++ (typeNametoString t) ++ ")" ++ (castExprToString c)
-  | _ => "not implemented"
+  | .TypeNameCast t c => "(" ++ (typeNameToString t) ++ ")" ++ (castExprToString c)
 
 partial def multExprToString : MultExpr → String
   | .Cast c => (castExprToString c)
@@ -185,9 +181,9 @@ partial def dirAbstrDeclToString : DirAbstrDecl → String
   | .DirAbDecDirSqr d => (dirAbstrDeclToString d) ++ "[]"
   | .DirAbDecDirConst d c => (dirAbstrDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
   | .DirAbDecRnd => "()"
---  | .DirAbDecDirParamList ptl => "(" ++ (paramTypeListToString ptl) ++ ")"
+  | .DirAbDecParamList ptl => "(" ++ (paramTypeListToString ptl) ++ ")"
   | .DirAbDecDirRnd d => (dirAbstrDeclToString d) ++ "()"
---  | .DirAbDecDirParamList d ptl => (dirAbstrDeclToString d) ++ "(" ++ (paramTypeListToString ptl) ++ ")"
+  | .DirAbDecDirParamList d ptl => (dirAbstrDeclToString d) ++ "(" ++ (paramTypeListToString ptl) ++ ")"
 
 partial def abstrDeclToString : AbstrDecl → String
   | .AbstrPtr p => (pointerToString p)
@@ -203,7 +199,7 @@ partial def dirDeclToString : DirDecl → String
   | .DeclRnd d => "(" ++ (declaratorToString d) ++ ")"
   | .DirDecConst d c => (dirDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
   | .DirDecSqr d => (dirDeclToString d) ++ "[]"
---  | .DirDecParamList d ptl => (dirDeclToString d) ++ "(" ++ (ptlToString ptl) ++ ")"
+  | .DirDecParamList d ptl => (dirDeclToString d) ++ "(" ++ (paramTypeListToString ptl) ++ ")"
   | .DirDecIdentList d il => (dirDeclToString d) ++ "(" ++ (identListToString il) ++ ")"
   | .DirDecRnd d => (dirDeclToString d) ++ "()"
 
@@ -314,8 +310,8 @@ partial def paramDeclToString : ParamDecl → String
 
 partial def paramListToString : ParamList → String
   | .ParamList params => " , ".intercalate (params.map paramDeclToString)
---   | .ParamDecl d => (paramDeclToString d)
---   | .ParamListParamDecl d i => (paramListToString d) ++ " , " ++ (paramDeclToString i)
+  | .ParamDecl d => (paramDeclToString d)
+  | .ParamListParamDecl d i => (paramListToString d) ++ " , " ++ (paramDeclToString i)
 
 partial def paramTypeListToString : ParamTypeList → String
   | .ParamList d => (paramListToString d)

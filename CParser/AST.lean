@@ -1,3 +1,2 @@
-import CParser.AST.GroupOne
-import CParser.AST.GroupTwo
-import CParser.AST.GroupThree
+import CParser.AST.AST
+import CParser.AST.ClassDec
