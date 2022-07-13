@@ -6,7 +6,7 @@ A parser for ANSI C, in Lean4.
 Run `lake build` at the toplevel folder.
 
 # TODOS
-The order in which the nonterminals of the C grammar ([reference](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html#shift-expression)) is as follows:
+The order in which the nonterminals of the C grammar ([reference](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html)) is as follows:
 ```
 + assignment_expression
     + assignment_operator
@@ -55,16 +55,15 @@ The order in which the nonterminals of the C grammar ([reference](https://www.ly
     + struct_declarator
 
 + compound_statement [leads to declaration_list]
-    - statement_list
-    - statement
-    - labeled_statement
-    - jump_statement
-    - iteration_statement
-    - selection_statement
-    - expression_list
-    - expression
+    + statement_list
+    + statement
+    + labeled_statement
+    + jump_statement
+    + iteration_statement
+    + selection_statement
+    + expression_statement
 
 + translation_unit
-    - external_declaration
-    - function_definition
+    + external_declaration
+    + function_definition
 ```
