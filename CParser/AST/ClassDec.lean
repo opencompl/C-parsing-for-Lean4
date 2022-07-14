@@ -171,15 +171,15 @@ partial def exprToString : Expression → String
   | .ExprAssmtExpr a => (assmtExprToString a)
   | .ExprAssign e a => (exprToString e) ++ " , " ++ (assmtExprToString a)
 
-partial def constExprToString : ConstantExpr → String
+partial def constantExprToString : ConstantExpr → String
   | .ConExpr c => (condExprToString c)
 
 partial def dirAbstrDeclToString : DirAbstrDecl → String
   | .DirAbDecAbsRnd a => "(" ++ (abstrDeclToString a) ++ ")"
   | .DirAbDecSqr => "[]"
-  | .DirAbDecConSqr c => "[" ++ (constExprToString c) ++ "]"
+  | .DirAbDecConSqr c => "[" ++ (constantExprToString c) ++ "]"
   | .DirAbDecDirSqr d => (dirAbstrDeclToString d) ++ "[]"
-  | .DirAbDecDirConst d c => (dirAbstrDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
+  | .DirAbDecDirConst d c => (dirAbstrDeclToString d) ++ "[" ++ (constantExprToString c) ++ "]"
   | .DirAbDecRnd => "()"
   | .DirAbDecParamList ptl => "(" ++ (paramTypeListToString ptl) ++ ")"
   | .DirAbDecDirRnd d => (dirAbstrDeclToString d) ++ "()"
@@ -197,7 +197,7 @@ partial def identListToString : IdentList → String
 partial def dirDeclToString : DirDecl → String
   | .Identifier s => s
   | .DeclRnd d => "(" ++ (declaratorToString d) ++ ")"
-  | .DirDecConst d c => (dirDeclToString d) ++ "[" ++ (constExprToString c) ++ "]"
+  | .DirDecConst d c => (dirDeclToString d) ++ "[" ++ (constantExprToString c) ++ "]"
   | .DirDecSqr d => (dirDeclToString d) ++ "[]"
   | .DirDecParamList d ptl => (dirDeclToString d) ++ "(" ++ (paramTypeListToString ptl) ++ ")"
   | .DirDecIdentList d il => (dirDeclToString d) ++ "(" ++ (identListToString il) ++ ")"
@@ -292,7 +292,7 @@ partial def structDeclarationListToString : StructDeclarationList → String
 
 partial def enumeratorToString : Enumerator → String
   | .Ident s => s
-  | .IdentAssignConst s d => s ++ " = " ++ (constExprToString d)
+  | .IdentAssignConst s d => s ++ " = " ++ (constantExprToString d)
 
 partial def enumListToString : EnumList → String
   | .Enum d => (enumeratorToString d)
@@ -325,8 +325,8 @@ partial def specQualListToString : SpecQualList → String
 
 partial def structDeclToString : StructDecl → String
   | .Dec d => (declaratorToString d)
-  | .ConstExpr d => ": " ++ (constExprToString d)
-  | .DeclConstExpr d i => (declaratorToString d) ++ " : " ++ (constExprToString i)
+  | .ConstExpr d => ": " ++ (constantExprToString d)
+  | .DeclConstExpr d i => (declaratorToString d) ++ " : " ++ (constantExprToString i)
 
 partial def structDeclListToString : StructDeclList → String
   | .StructDecl d => (structDeclToString d)
@@ -334,7 +334,66 @@ partial def structDeclListToString : StructDeclList → String
 
 partial def typeNameToString : TypeName → String
   | .SpecQualList a => (specQualListToString a)
-  | .SpecQualListAbsDec a b => (specQualListToString a) ++ (abstrDeclToString b)
+  | .SpecQualListAbsDec a b => (specQualListToString a) ++ (abstrDeclToString b) 
+
+partial def exprStmtToString : ExprStmt → String
+  | .Semicolon => ";"
+  | .Expression e => (expressionToString e) ++ ";"
+
+partial def selStmtToString : SelStmt → String
+  | .If e s => "if" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s)
+  | .IfElse e s t => "if" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s) ++ "else" ++ (statementToString t)
+  | .Switch e s => "switch" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s)
+
+partial def iterStmtToString : IterStmt → String
+  | .While e s => "while" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s)
+  | .DoWhile s e => "do" ++ (statementToString s) ++ "while" ++ "(" ++ (expressionToString e) ++ ")" ++ ";"
+  | .For e es s => "for" ++ "(" ++ (exprStmtToString e) ++ (exprStmtToString es) ++ ")" ++ (statementToString s)
+  | .ForExpr ess es e s => "for" ++ "(" ++ (exprStmtToString ess) ++ (exprStmtToString es) ++ (expressionToString e) ++ ")" ++ (statementToString s)
+
+partial def jumpStmtToString : JumpStmt → String
+  | .Goto s => "goto" ++ s ++ ";"
+  | .Continue => "continue" ++ ";"
+  | .Break => "break" ++ ";"
+  | .Return => "return" ++ ";"
+  | .ReturnExpr e => "return" ++ (expressionToString e) ";"
+
+partial def labelStmtToString : LabelStmt → String
+  | .Identifier i s => i ++ ":" ++ (statementToString s)
+  | .Case ce s => "case" ++ (constantExprToString ce) ++ ":" ++ (statementToString s)
+  | .Default s => "default" ++ ":" ++ (statementToString s)
+
+partial def compStmtToString : CompStmt → String
+  | .Brackets => "{" ++ "}"
+  | .StmtList sl => "{" ++ (stmtListToString sl) ++ "}"
+  | .DeclList dl => "{" ++ (declListToString dl) ++ "}"
+  | .DeclListStmtLits dl sl => "{" ++ (declListToString dl) ++ (stmtListToString sl) ++ "}"
+
+partial def statementToString : Statement → String
+  | .LabelStmt s => (labelStmtToString s)
+  | .CompStmt s => (compStmtToString s)
+  | .ExprStmt s => (exprStmtToString s)
+  | .SelStmt s => (selStmtToString s)
+  | .IterStmt s => (iterStmtToString s)
+  | .JumpStmt s => (jumpStmtToString s)
+
+partial def stmtListToString : StmtList → String
+  | .Statement s => (statementToString s)
+  | .StmtListStmt sl s => (stmtListToString sl) ++ (statementToString s)
+
+partial def funcDefToString : FuncDef → String
+  | .DecSpecDeclDecListCompStmt ds d dl cs => (declSpecToString ds) ++ (declaratorToString d) ++ (declListToString ds) ++ (compStmtToString cs)
+  | .DecSpecDeclCompStmt ds d cs => (declSpecToString ds) ++ (declaratorToString d) ++ (compStmtToString cs)
+  | .DeclDecListCompStmt d dl cs => (declaratorToString ds) ++ (declListToString dl) ++ (compStmtToString cs)
+  | .DeclCompStmt d cs => (declaratorToString ds) ++ (compStmtToString cs)
+
+partial def externDeclToString : ExternDecl → String
+  | .FuncDef fd => (funcDefToString fd)
+  | .Declaration d => (declarationToString d)
+
+partial def translUnitToString : TranslUnit → String
+  | .ExternDecl ed => (externDeclToString ed)
+  | .TranslUnitExternDecl tu ed => (translUnitToString tu) ++ (externDeclToString ed)
 
 end
 
@@ -359,7 +418,7 @@ instance : ToString AssmtExpr where toString := assmtExprToString
 instance : ToString ArgExprList where toString := aelToString
 instance : ToString Expression where toString := exprToString
 
-instance : ToString ConstantExpr where toString := constExprToString
+instance : ToString ConstantExpr where toString := constantExprToString
 instance : ToString DirAbstrDecl where toString := dirAbstrDeclToString
 instance : ToString AbstrDecl where toString := abstrDeclToString
 instance : ToString IdentList where toString := identListToString
@@ -391,3 +450,16 @@ instance : ToString StructOrUnion where toString := structOrUnionToString
 instance : ToString StructOrUnionSpec where toString := structOrUnionSpecToString
 instance : ToString TypeName where toString := typeNameToString
 instance : ToString TypeSpec where toString := typeSpecToString
+
+instance : ToString ExprStmt where toString := exprStmtToString
+instance : ToString SelStmt where toString := selStmtToString
+instance : ToString IterStmt where toString := iterStmtToString
+instance : ToString JumpStmt where toString := jumpStmtToString
+instance : ToString LabelStmt where toString := labelStmtToString
+instance : ToString CompStmt where toString := compStmtToString
+instance : ToString Statement where toString := statementToString
+instance : ToString StmtList where toString := stmtListToString
+instance : ToString FuncDef where toString := funcDefToString
+
+instance : ToString ExternDecl where toString := externDeclToString
+instance : ToString TranslUnit where toString := translUnitToString
