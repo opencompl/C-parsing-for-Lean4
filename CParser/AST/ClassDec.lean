@@ -356,7 +356,7 @@ partial def jumpStmtToString : JumpStmt → String
   | .Continue => "continue" ++ ";"
   | .Break => "break" ++ ";"
   | .Return => "return" ++ ";"
-  | .ReturnExpr e => "return" ++ (expressionToString e) ";"
+  | .ReturnExpr e => "return" ++ (expressionToString e) ++ ";"
 
 partial def labelStmtToString : LabelStmt → String
   | .Identifier i s => i ++ ":" ++ (statementToString s)
