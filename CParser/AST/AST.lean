@@ -294,7 +294,7 @@ inductive IterStmt where
   | While : Expression → Statement → IterStmt
   | DoWhile : Statement → Expression → IterStmt
   | For : ExprStmt → ExprStmt → Statement → IterStmt
-  | ForExpr : ExprStmt → ExprStmt → Expression → Statement → IterStmt
+  | ForExpr : ExprStmt → ExprStmt → ExprStmt → Statement → IterStmt
 
 inductive JumpStmt where
   | Goto : String → JumpStmt
@@ -312,7 +312,7 @@ inductive CompStmt where
   | Brackets : CompStmt
   | StmtList : StmtList → CompStmt
   | DeclList : DeclList → CompStmt
-  | DeclListStmtLits : DeclList → StmtList → CompStmt
+  | DeclListStmtList : DeclList → StmtList → CompStmt
 
 inductive Statement where
   | LabelStmt : LabelStmt → Statement
