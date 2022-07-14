@@ -349,7 +349,7 @@ partial def iterStmtToString : IterStmt → String
   | .While e s => "while" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s)
   | .DoWhile s e => "do" ++ (statementToString s) ++ "while" ++ "(" ++ (expressionToString e) ++ ")" ++ ";"
   | .For e es s => "for" ++ "(" ++ (exprStmtToString e) ++ (exprStmtToString es) ++ ")" ++ (statementToString s)
-  | .ForExpr ess es e s => "for" ++ "(" ++ (exprStmtToString ess) ++ (exprStmtToString es) ++ (expressionToString e) ++ ")" ++ (statementToString s)
+  | .ForExpr ess es e s => "for" ++ "(" ++ (exprStmtToString ess) ++ (exprStmtToString es) ++ (exprStmtToString e) ++ ")" ++ (statementToString s)
 
 partial def jumpStmtToString : JumpStmt → String
   | .Goto s => "goto" ++ s ++ ";"
@@ -367,7 +367,7 @@ partial def compStmtToString : CompStmt → String
   | .Brackets => "{" ++ "}"
   | .StmtList sl => "{" ++ (stmtListToString sl) ++ "}"
   | .DeclList dl => "{" ++ (declListToString dl) ++ "}"
-  | .DeclListStmtLits dl sl => "{" ++ (declListToString dl) ++ (stmtListToString sl) ++ "}"
+  | .DeclListStmtList dl sl => "{" ++ (declListToString dl) ++ (stmtListToString sl) ++ "}"
 
 partial def statementToString : Statement → String
   | .LabelStmt s => (labelStmtToString s)
