@@ -326,6 +326,20 @@ inductive StmtList where
   | Statement : Statement → StmtList
   | StmtListStmt : StmtList → Statement → StmtList
 
+inductive FuncDef where
+  | DecSpecDeclDecListCompStmt : DeclSpec → Declarator → DeclList → CompStmt → FuncDef
+  | DecSpecDeclCompStmt : DeclSpec → Declarator → CompStmt → FuncDef
+  | DeclDecListCompStmt : Declarator → DeclList → CompStmt → FuncDef
+  | DeclCompStmt : Declarator → CompStmt → FuncDef
+
+inductive ExternDecl where
+  | FuncDef : FuncDef → ExternDecl
+  | Declaration : Declaration → ExternDecl
+
+inductive TranslUnit where
+  | ExternDecl : ExternDecl → TranslUnit
+  | TranslUnitExternDecl : TranslUnit → ExternDecl → TranslUnit
+
 end
 
 end AST
