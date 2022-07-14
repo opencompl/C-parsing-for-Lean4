@@ -352,4 +352,56 @@ partial def mkTypeName : Lean.Syntax → Except String TypeName
   | `(type_name| $sql:specifier_qualifier_list $ad:abstract_declarator) => TypeName.SpecQualListAbsDec <$> (mkSpecQualList sql) <*> (mkAbstrDecl ad)
   | _ => throw "unexpected syntax for type name"
 
+partial def mkExprStmt : Lean.Syntax → Except String ExprStmt
+  | `(expression_statement| ;) => return ExprStmt.Semicolon
+  | `(expression_statement| $e:expression ;) => ExprStmt.Expression <$> (mkExpression e)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkSelStmt : Lean.Syntax → Except String SelStmt
+  | `(selection_statement| if ( $e:expression ) $s:statement) => SelStmt.If <$> (mkExpression e) <*> (mkStatement s)
+  | `(selection_statement| if ( $e:expression ) $s1:statement else $s2:statement) => SelStmt.IfElse <$> (mkExpression e) <*> (mkStatement s1) <*> (mkStatement s2)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkIterStmt : Lean.Syntax → Except String IterStmt
+  | `(iteration_statement| while ( $e:expression ) $s:statement) => IterStmt.While <$> (mkExpression e) <*> (mkStatement s)
+  | `(iteration_statement| do $s:statement while ( $e:expression ) ;) => IterStmt.DoWhile <$> (mkStatement s) <*> (mkExpression e)
+  | `(iteration_statement| for ( $es1:expression_statement $es2:expression_statement ) $s:statement) => IterStmt.For <$> (mkExprStmt es1) <*> (mkExprStmt es2) <*> (mkStatement s)
+  | `(iteration_statement| for ( $es1:expression_statement $es2:expression_statement $es3:expression_statement ) $s:statement) => IterStmt.ForExpr <$> (mkExprStmt es1) <*> (mkExprStmt es2) <*> (mkExprStmt es3) <*> (mkStatement s)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkJumpStmt : Lean.Syntax → Except String JumpStmt
+  | `(jump_statement| goto $i:ident) => JumpStmt.Goto <$> (return i.getId.toString)
+  | `(jump_statement| continue ;) => return JumpStmt.Continue
+  | `(jump_statement| break ;) => return JumpStmt.Break
+  | `(jump_statement| return ;) => return JumpStmt.Return
+  | `(jump_statement| return $e:expression ;) => JumpStmt.ReturnExpr <$> (mkExpression e)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkLabelStmt : Lean.Syntax → Except String LabelStmt
+  | `(labeled_statement| $i:ident : $s:statement) => LabelStmt.Identifier <$> (return i.getId.toString) <*> (mkStatement s)
+  | `(labeled_statement| case $c:constant_expression : $s:statement) => LabelStmt.Case <$> (mkConstExpr c) <*> (mkStatement s)
+  | `(labeled_statement| default : $s:statement) => LabelStmt.Default <$> (mkStatement s)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkCompStmt : Lean.Syntax → Except String CompStmt
+  | `(compound_statement| { }) => return CompStmt.Brackets
+  | `(compound_statement| { $sl:statement_list }) => CompStmt.StmtList <$> (mkStmtList sl)
+  | `(compound_statement| { $dl:declaration_list }) => CompStmt.DeclList <$> (mkDeclList dl)
+  | `(compound_statement| { $dl:declaration_list $sl:statement_list }) => CompStmt.DeclListStmtList <$> (mkDeclList dl) <*> (mkStmtList sl)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkStatement : Lean.Syntax → Except String Statement
+  | `(statement| $l:labeled_statement) => Statement.LabelStmt <$> (mkLabelStmt l)
+  | `(statement| $c:compound_statement) => Statement.CompStmt <$> (mkCompStmt c)
+  | `(statement| $e:expression_statement) => Statement.ExprStmt <$> (mkExprStmt e)
+  | `(statement| $s:selection_statement) => Statement.SelStmt <$> (mkSelStmt s)
+  | `(statement| $i:iteration_statement) => Statement.IterStmt <$> (mkIterStmt i)
+  | `(statement| $j:jump_statement) => Statement.JumpStmt <$> (mkJumpStmt j)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkStmtList : Lean.Syntax → Except String StmtList
+  | `(statement_list| $s:statement) => StmtList.Statement <$> (mkStatement s)
+  | `(statement_list| $sl:statement_list $s:statement) => StmtList.StmtListStmt <$> (mkStmtList sl) <*> (mkStatement s)
+  | _ => throw "unexpected syntax for type name"
+
 end
