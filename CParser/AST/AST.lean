@@ -281,6 +281,51 @@ inductive TypeSpec where
   | EnumSpec : EnumSpec → TypeSpec
   | TypeName : TypeSpec
 
+inductive ExprStmt where
+  | Semicolon : ExprStmt
+  | Expression : Expression → ExprStmt
+
+inductive SelStmt where
+  | If : Expression → Statement → SelStmt
+  | IfElse : Expression → Statement → Statement → SelStmt
+  | Switch : Expression → Statement → SelStmt
+
+inductive IterStmt where
+  | While : Expression → Statement → IterStmt
+  | DoWhile : Statement → Expression → IterStmt
+  | For : ExprStmt → ExprStmt → Statement → IterStmt
+  | ForExpr : ExprStmt → ExprStmt → Expression → Statement → IterStmt
+
+inductive JumpStmt where
+  | Goto : String → JumpStmt
+  | Continue : JumpStmt
+  | Break : JumpStmt
+  | Return : JumpStmt
+  | ReturnExpr : Expression → JumpStmt
+
+inductive LabelStmt where
+  | Identifier : String → Statement → LabelStmt
+  | Case : ConstantExpr → Statement → LabelStmt
+  | Default : Statement → LabelStmt
+
+inductive CompStmt where
+  | Brackets : CompStmt
+  | StmtList : StmtList → CompStmt
+  | DeclList : DeclList → CompStmt
+  | DeclListStmtLits : DeclList → StmtList → CompStmt
+
+inductive Statement where
+  | LabelStmt : LabelStmt → Statement
+  | CompStmt : CompStmt → Statement
+  | ExprStmt : ExprStmt → Statement
+  | SelStmt : SelStmt → Statement
+  | IterStmt : IterStmt → Statement
+  | JumpStmt : JumpStmt → Statement
+
+inductive StmtList where
+  | Statement : Statement → StmtList
+  | StmtListStmt : StmtList → Statement → StmtList
+
 end
 
 end AST
