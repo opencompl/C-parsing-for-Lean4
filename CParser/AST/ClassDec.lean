@@ -62,11 +62,11 @@ partial def primaryExprToString : PrimaryExpr → String
   | .Identifier s => s
   | .Constant c => toString c
   | .StringLit s => "\"" ++ s ++ "\""
-  | .BracketExpr e => "(" ++ (exprToString e) ++ ")"
+  | .BracketExpr e => "(" ++ (expressionToString e) ++ ")"
 
 partial def postfixExprToString : PostfixExpr → String
   | .Primary p => primaryExprToString p
-  | .SquareBrack p e => (postfixExprToString p) ++ "[" ++ (exprToString e) ++ "]"
+  | .SquareBrack p e => (postfixExprToString p) ++ "[" ++ (expressionToString e) ++ "]"
   | .CurlyBrack p => (postfixExprToString p) ++ "()"
   | .AEL p ael => (postfixExprToString p) ++ "(" ++ (aelToString ael) ++ ")"
   | .Identifier p s => (postfixExprToString p) ++ "." ++ s
@@ -144,7 +144,7 @@ partial def lorExprToString : LOrExpr → String
 
 partial def condExprToString : CondExpr → String
   | .LOr l => (lorExprToString l)
-  | .CondTernary l e c => (lorExprToString l) ++ " ? " ++ (exprToString e) ++ " : " ++ (condExprToString c)
+  | .CondTernary l e c => (lorExprToString l) ++ " ? " ++ (expressionToString e) ++ " : " ++ (condExprToString c)
 
 partial def assmtOpToString : AssmtOp → String
   | .Assign => "="
@@ -167,9 +167,9 @@ partial def aelToString : ArgExprList → String
   | .AssmtExpr a => (assmtExprToString a)
   | .ArgExprListAssign ael ae => (aelToString ael) ++ " , " ++ (assmtExprToString ae)
 
-partial def exprToString : Expression → String
+partial def expressionToString : Expression → String
   | .ExprAssmtExpr a => (assmtExprToString a)
-  | .ExprAssign e a => (exprToString e) ++ " , " ++ (assmtExprToString a)
+  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
 
 partial def constantExprToString : ConstantExpr → String
   | .ConExpr c => (condExprToString c)
@@ -382,10 +382,10 @@ partial def stmtListToString : StmtList → String
   | .StmtListStmt sl s => (stmtListToString sl) ++ (statementToString s)
 
 partial def funcDefToString : FuncDef → String
-  | .DecSpecDeclDecListCompStmt ds d dl cs => (declSpecToString ds) ++ (declaratorToString d) ++ (declListToString ds) ++ (compStmtToString cs)
+  | .DecSpecDeclDecListCompStmt ds d dl cs => (declSpecToString ds) ++ (declaratorToString d) ++ (declListToString dl) ++ (compStmtToString cs)
   | .DecSpecDeclCompStmt ds d cs => (declSpecToString ds) ++ (declaratorToString d) ++ (compStmtToString cs)
-  | .DeclDecListCompStmt d dl cs => (declaratorToString ds) ++ (declListToString dl) ++ (compStmtToString cs)
-  | .DeclCompStmt d cs => (declaratorToString ds) ++ (compStmtToString cs)
+  | .DeclDecListCompStmt d dl cs => (declaratorToString d) ++ (declListToString dl) ++ (compStmtToString cs)
+  | .DeclCompStmt d cs => (declaratorToString d) ++ (compStmtToString cs)
 
 partial def externDeclToString : ExternDecl → String
   | .FuncDef fd => (funcDefToString fd)
@@ -416,7 +416,7 @@ instance : ToString CondExpr where toString := condExprToString
 instance : ToString AssmtOp where toString := assmtOpToString
 instance : ToString AssmtExpr where toString := assmtExprToString
 instance : ToString ArgExprList where toString := aelToString
-instance : ToString Expression where toString := exprToString
+instance : ToString Expression where toString := expressionToString
 
 instance : ToString ConstantExpr where toString := constantExprToString
 instance : ToString DirAbstrDecl where toString := dirAbstrDeclToString
