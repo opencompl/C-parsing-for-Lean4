@@ -370,7 +370,7 @@ partial def mkIterStmt : Lean.Syntax → Except String IterStmt
   | _ => throw "unexpected syntax for type name"
 
 partial def mkJumpStmt : Lean.Syntax → Except String JumpStmt
-  | `(jump_statement| goto $i:ident) => JumpStmt.Goto <$> (return i.getId.toString)
+  | `(jump_statement| goto $i:ident ;) => JumpStmt.Goto <$> (return i.getId.toString)
   | `(jump_statement| continue ;) => return JumpStmt.Continue
   | `(jump_statement| break ;) => return JumpStmt.Break
   | `(jump_statement| return ;) => return JumpStmt.Return
@@ -403,5 +403,25 @@ partial def mkStmtList : Lean.Syntax → Except String StmtList
   | `(statement_list| $s:statement) => StmtList.Statement <$> (mkStatement s)
   | `(statement_list| $sl:statement_list $s:statement) => StmtList.StmtListStmt <$> (mkStmtList sl) <*> (mkStatement s)
   | _ => throw "unexpected syntax for type name"
+
+partial def mkFuncDef : Lean.Syntax → Except String FuncDef
+  | `(function_definition| $ds:declaration_specifiers $d:declarator $dl:declaration_list $c:compound_statement)
+      => FuncDef.DecSpecDeclDecListCompStmt <$> (mkDeclSpec ds) <*> (mkDeclarator d) <*> (mkDeclList dl) <*> (mkCompStmt c)
+  | `(function_definition| $ds:declaration_specifiers $d:declarator $c:compound_statement)
+      => FuncDef.DecSpecDeclCompStmt <$> (mkDeclSpec ds) <*> (mkDeclarator d) <*> (mkCompStmt c)
+  | `(function_definition| $d:declarator $dl:declaration_list $c:compound_statement)
+      => FuncDef.DeclDecListCompStmt <$> (mkDeclarator d) <*> (mkDeclList d) <*> (mkCompStmt c)
+  | `(function_definition| $d:declarator $c:compound_statement)
+      => FuncDef.DeclCompStmt <$> (mkDeclarator d) <*> (mkCompStmt c)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkExternDecl : Lean.Syntax → Except String ExternDecl
+  | `(external_declaration| $f:function_definition) => ExternDecl.FuncDef <$> (mkFuncDef f)
+  | `(external_declaration| $d:declaration) => ExternDecl.Declaration <$> (mkDeclaration d)
+  | _ => throw "unexpected syntax for type name"
+
+partial def mkTranslUnit : Lean.Syntax → Except String TranslUnit
+  | `(translation_unit| $e:external_declaration) => TranslUnit.ExternDecl <$> (mkExternDecl e)
+  | `(translation_unit| $t:translation_unit $e:external_declaration) => TranslUnit.TranslUnitExternDecl <$> (mkTranslUnit t) <*> (mkExternDecl e)
 
 end
