@@ -57,6 +57,18 @@ instance : Inhabited StructOrUnion where default := StructOrUnion.Struct
 instance : Inhabited StructOrUnionSpec where default := StructOrUnionSpec.SoUStructDeclarationList (default : StructOrUnion) (default : StructDeclarationList)
 instance : Inhabited TypeName where default := TypeName.SpecQualList (default : SpecQualList)
 
+instance : Inhabited CompStmt where default := CompStmt.Brackets
+instance : Inhabited Statement where default := Statement.CompStmt (default : CompStmt)
+instance : Inhabited ExprStmt where default := ExprStmt.Semicolon
+instance : Inhabited SelStmt where default := SelStmt.If (default : Expression) (default : Statement)
+instance : Inhabited IterStmt where default := IterStmt.While (default : Expression) (default : Statement)
+instance : Inhabited JumpStmt where default := JumpStmt.Continue
+instance : Inhabited LabelStmt where default := LabelStmt.Default (default : Statement)
+instance : Inhabited StmtList where default := StmtList.Statement (default : Statement)
+instance : Inhabited FuncDef where default := FuncDef.DeclCompStmt (default : Declarator) (default : CompStmt)
+instance : Inhabited ExternDecl where default := ExternDecl.FuncDef (default : FuncDef)
+instance : Inhabited TranslUnit where default := TranslUnit.ExternDecl (default : ExternDecl)
+
 mutual
 partial def primaryExprToString : PrimaryExpr → String
   | .Identifier s => s
