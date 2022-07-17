@@ -103,64 +103,64 @@ def parseInitializer : String → Lean.Environment → Option String × Initiali
 def parseInitDecl : String → Lean.Environment → Option String × InitDecl := 
   mkNonTerminalParser `init_declarator mkInitDecl
 
-def Declaration : String → Lean.Environment → Option String × Declaration := 
+def parseDeclaration : String → Lean.Environment → Option String × Declaration := 
   mkNonTerminalParser `declaration mkDeclaration
 
-def DeclList : String → Lean.Environment → Option String × DeclList := 
+def parseDeclList : String → Lean.Environment → Option String × DeclList := 
   mkNonTerminalParser `declaration_list mkDeclList
 
-def DeclSpec : String → Lean.Environment → Option String × DeclSpec := 
+def parseDeclSpec : String → Lean.Environment → Option String × DeclSpec := 
   mkNonTerminalParser `declaration_specifiers mkDeclSpec
 
-def Enumerator : String → Lean.Environment → Option String × Enumerator := 
+def parseEnumerator : String → Lean.Environment → Option String × Enumerator := 
   mkNonTerminalParser `enumerator mkEnumerator
 
-def EnumList : String → Lean.Environment → Option String × EnumList := 
+def parseEnumList : String → Lean.Environment → Option String × EnumList := 
   mkNonTerminalParser `enumerator_list mkEnumList
 
-def EnumSpec : String → Lean.Environment → Option String × EnumSpec := 
+def parseEnumSpec : String → Lean.Environment → Option String × EnumSpec := 
   mkNonTerminalParser `enum_specifier mkEnumSpec
 
-def InitDeclList : String → Lean.Environment → Option String × InitDeclList := 
+def parseInitDeclList : String → Lean.Environment → Option String × InitDeclList := 
   mkNonTerminalParser `init_declarator_list mkInitDeclList
 
-def ParamDecl : String → Lean.Environment → Option String × ParamDecl := 
+def parseParamDecl : String → Lean.Environment → Option String × ParamDecl := 
   mkNonTerminalParser `parameter_declaration mkParamDecl
 
-def ParamList : String → Lean.Environment → Option String × ParamList := 
+def parseParamList : String → Lean.Environment → Option String × ParamList := 
   mkNonTerminalParser `parameter_list mkParamList
 
-def ParamTypeList : String → Lean.Environment → Option String × ParamTypeList := 
+def parseParamTypeList : String → Lean.Environment → Option String × ParamTypeList := 
   mkNonTerminalParser `parameter_type_list mkParamTypeList
 
-def SpecQualList : String → Lean.Environment → Option String × SpecQualList := 
+def parseSpecQualList : String → Lean.Environment → Option String × SpecQualList := 
   mkNonTerminalParser `specifier_qualifier_list mkSpecQualList
 
-def StorClassSpec : String → Lean.Environment → Option String × StorClassSpec := 
+def parseStorClassSpec : String → Lean.Environment → Option String × StorClassSpec := 
   mkNonTerminalParser `storage_class_specifier mkStorClassSpec
 
-def StructDecl : String → Lean.Environment → Option String × StructDecl := 
+def parseStructDecl : String → Lean.Environment → Option String × StructDecl := 
   mkNonTerminalParser `struct_declarator mkStructDecl
 
-def StructDeclaration : String → Lean.Environment → Option String × StructDeclaration := 
+def parseStructDeclaration : String → Lean.Environment → Option String × StructDeclaration := 
   mkNonTerminalParser `struct_declaration mkStructDeclaration
 
-def StructDeclarationList : String → Lean.Environment → Option String × StructDeclarationList := 
+def parseStructDeclarationList : String → Lean.Environment → Option String × StructDeclarationList := 
   mkNonTerminalParser `struct_declaration_list mkStructDeclarationList
 
-def StructDeclList : String → Lean.Environment → Option String × StructDeclList := 
+def parseStructDeclList : String → Lean.Environment → Option String × StructDeclList := 
   mkNonTerminalParser `struct_declarator_list mkStructDeclList
 
-def StructOrUnion : String → Lean.Environment → Option String × StructOrUnion := 
+def parseStructOrUnion : String → Lean.Environment → Option String × StructOrUnion := 
   mkNonTerminalParser `struct_or_union mkStructOrUnion
 
-def StructOrUnionSpec : String → Lean.Environment → Option String × StructOrUnionSpec := 
+def parseStructOrUnionSpec : String → Lean.Environment → Option String × StructOrUnionSpec := 
   mkNonTerminalParser `struct_or_union_specifier mkStructOrUnionSpec
 
-def TypeName : String → Lean.Environment → Option String × TypeName := 
+def parseTypeName : String → Lean.Environment → Option String × TypeName := 
   mkNonTerminalParser `type_name mkTypeName
 
-def TypeSpec : String → Lean.Environment → Option String × TypeSpec := 
+def parseTypeSpec : String → Lean.Environment → Option String × TypeSpec := 
   mkNonTerminalParser `type_specifier mkTypeSpec
 
 -- Parse the top-level nonterminal of our grammar.
