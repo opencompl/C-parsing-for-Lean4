@@ -1,6 +1,7 @@
 import Lean
 import CParser
 import CParser.AST
+import CParser.Parser
 
 open IO
 open IO.FS
