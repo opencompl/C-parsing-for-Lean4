@@ -163,8 +163,41 @@ def parseTypeName : String → Lean.Environment → Option String × TypeName :=
 def parseTypeSpec : String → Lean.Environment → Option String × TypeSpec := 
   mkNonTerminalParser `type_specifier mkTypeSpec
 
+def parseExprStmt : String → Lean.Environment → Option String × ExprStmt := 
+  mkNonTerminalParser `type_specifier mkExprStmt
+
+def parseSelStmt : String → Lean.Environment → Option String × SelStmt := 
+  mkNonTerminalParser `selection_statement mkSelStmt
+
+def parseIterStmt : String → Lean.Environment → Option String × IterStmt := 
+  mkNonTerminalParser `iteration_statement mkIterStmt
+
+def parseJumpStmt : String → Lean.Environment → Option String × JumpStmt := 
+  mkNonTerminalParser `jump_statement mkJumpStmt
+
+def parseLabelStmt : String → Lean.Environment → Option String × LabelStmt := 
+  mkNonTerminalParser `labeled_statement mkLabelStmt
+
+def parseCompStmt : String → Lean.Environment → Option String × CompStmt := 
+  mkNonTerminalParser `compound_statement mkCompStmt
+
+def parseStatement : String → Lean.Environment → Option String × Statement := 
+  mkNonTerminalParser `statement mkStatement
+
+def parseStmtList : String → Lean.Environment → Option String × StmtList := 
+  mkNonTerminalParser `statement_list mkStmtList
+
+def parseFuncDef : String → Lean.Environment → Option String × FuncDef := 
+  mkNonTerminalParser `function_definition mkFuncDef
+
+def parseExternDecl : String → Lean.Environment → Option String × ExternDecl := 
+  mkNonTerminalParser `external_declaration mkExternDecl
+
+def parseTranslUnit : String → Lean.Environment → Option String × TranslUnit := 
+  mkNonTerminalParser `translation_unit mkTranslUnit
+
 -- Parse the top-level nonterminal of our grammar.
-def parseToplevelNonterminal := parseInitDecl
+def parseToplevelNonterminal := parseTranslUnit
 
 -- C parser, which invokes the top level nonterminal parser.
 def parse := parseToplevelNonterminal
