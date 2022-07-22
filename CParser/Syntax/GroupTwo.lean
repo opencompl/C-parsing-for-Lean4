@@ -31,8 +31,9 @@ syntax pointer direct_abstract_declarator : abstract_declarator
 
 syntax "`[abstract_declarator| " abstract_declarator "]" : term
 
-syntax ident : identifier_list
-syntax identifier_list "," ident : identifier_list
+-- syntax ident : identifier_list
+-- syntax identifier_list "," ident : identifier_list
+syntax sepBy(ident, ",", ", ") : identifier_list
 
 syntax "`[identifier_list| " identifier_list "]" : term
 
@@ -46,8 +47,9 @@ syntax direct_declarator "(" ") " : direct_declarator
 
 syntax "`[direct_declarator| " direct_declarator "]" : term
 
-syntax type_qualifier : type_qualifier_list
-syntax type_qualifier_list type_qualifier : type_qualifier_list
+-- syntax type_qualifier : type_qualifier_list
+-- syntax type_qualifier_list type_qualifier : type_qualifier_list
+syntax sepBy(type_qualifier, ",", ", ") : type_qualifier_list
 
 syntax "`[type_qualifier_list| " type_qualifier_list "]" : term
 
@@ -63,8 +65,8 @@ syntax "*" type_qualifier_list pointer : pointer
 
 syntax "`[pointer| " pointer "]" : term
 
-syntax pointer direct_declarator : declarator
-syntax direct_declarator : declarator
+syntax (pointer)? direct_declarator : declarator
+-- syntax direct_declarator : declarator
 
 syntax "`[declarator| " declarator "]" : term
 
@@ -100,8 +102,10 @@ We use Lean4's higher level `sepBy` to create a parser.
 -/
 
 syntax sepBy(initializer, "," , ",", allowTrailingSep) : initializer_list
+
 syntax assignment_expression : initializer
 syntax "{" initializer_list "}" : initializer
+
 syntax "`[initializer| " initializer "]" : term
 
 /-

@@ -19,16 +19,16 @@ instance : Inhabited LOrExpr where default := LOrExpr.LAnd (default : LAndExpr)
 instance : Inhabited CondExpr where default := CondExpr.LOr (default : LOrExpr)
 instance : Inhabited AssmtOp where default := AssmtOp.Assign
 instance : Inhabited AssmtExpr where default := AssmtExpr.Cond (default : CondExpr)
-instance : Inhabited ArgExprList where default := ArgExprList.AssmtExpr (default : AssmtExpr)
-instance : Inhabited Expression where default := Expression.ExprAssmtExpr (default : AssmtExpr)
+instance : Inhabited ArgExprList where default := ArgExprList.AssmtExprList []
+instance : Inhabited Expression where default := Expression.AssmtExprList []
 
 instance : Inhabited ConstantExpr where default := ConstantExpr.ConExpr (default : CondExpr)
 instance : Inhabited DirAbstrDecl where default := DirAbstrDecl.DirAbDecConSqr (default : ConstantExpr)
 instance : Inhabited AbstrDecl where default := AbstrDecl.AbstrDirAbDec (default : DirAbstrDecl)
-instance : Inhabited IdentList where default := IdentList.Identifier "foo"
+instance : Inhabited IdentList where default := IdentList.IdentList []
 instance : Inhabited DirDecl where default := DirDecl.Identifier "foo"
 instance : Inhabited TypeQual where default := TypeQual.Const
-instance : Inhabited TypeQualList where default := TypeQualList.TypeQual (default : TypeQual)
+instance : Inhabited TypeQualList where default := TypeQualList.TypeQualList []
 instance : Inhabited Pointer where default := Pointer.StarTypeQualList (default : TypeQualList)
 instance : Inhabited Declarator where default := Declarator.DirDecl (default : DirDecl)
 instance : Inhabited Initializer where default := Initializer.AssmtExpr (default : AssmtExpr)
@@ -38,11 +38,11 @@ instance : Inhabited InitDecl where default := InitDecl.Declarator (default : De
 instance : Inhabited StorClassSpec where default := StorClassSpec.TypeDef
 instance : Inhabited DeclSpec where default := DeclSpec.StorClassSpec (default : StorClassSpec)
 instance : Inhabited Declaration where default := Declaration.DeclSpec (default : DeclSpec)
-instance : Inhabited DeclList where default := DeclList.Decl (default : Declaration)
+instance : Inhabited DeclList where default := DeclList.DeclList []
 instance : Inhabited Enumerator where default := Enumerator.Ident "foo"     -- Default for Identifier?
-instance : Inhabited EnumList where default := EnumList.Enum (default : Enumerator)
+instance : Inhabited EnumList where default := EnumList.EnumList []
 instance : Inhabited EnumSpec where default := EnumSpec.EnumList (default : EnumList)
-instance : Inhabited InitDeclList where default := InitDeclList.InitDecl (default : InitDecl)
+instance : Inhabited InitDeclList where default := InitDeclList.InitDeclList []
 instance : Inhabited ParamDecl where default := ParamDecl.DeclSpec (default : DeclSpec)
 instance : Inhabited ParamList where default := ParamList.ParamDecl (default : ParamDecl)
 instance : Inhabited ParamList where default := ParamList.ParamList []
@@ -50,9 +50,9 @@ instance : Inhabited ParamTypeList where default := ParamTypeList.ParamList (def
 instance : Inhabited TypeSpec where default := TypeSpec.Void
 instance : Inhabited SpecQualList where default := SpecQualList.TypeSpec (default : TypeSpec)
 instance : Inhabited StructDecl where default := StructDecl.Dec (default : Declarator)
-instance : Inhabited StructDeclList where default := StructDeclList.StructDecl (default : StructDecl)
+instance : Inhabited StructDeclList where default := StructDeclList.StructDeclList []
 instance : Inhabited StructDeclaration where default := StructDeclaration.SpecQualListStructDecList (default : SpecQualList) (default : StructDeclList)
-instance : Inhabited StructDeclarationList where default := StructDeclarationList.StructDeclaration (default : StructDeclaration)
+instance : Inhabited StructDeclarationList where default := StructDeclarationList.StructDeclarationList []
 instance : Inhabited StructOrUnion where default := StructOrUnion.Struct
 instance : Inhabited StructOrUnionSpec where default := StructOrUnionSpec.SoUStructDeclarationList (default : StructOrUnion) (default : StructDeclarationList)
 instance : Inhabited TypeName where default := TypeName.SpecQualList (default : SpecQualList)
@@ -64,10 +64,10 @@ instance : Inhabited SelStmt where default := SelStmt.If (default : Expression) 
 instance : Inhabited IterStmt where default := IterStmt.While (default : Expression) (default : Statement)
 instance : Inhabited JumpStmt where default := JumpStmt.Continue
 instance : Inhabited LabelStmt where default := LabelStmt.Default (default : Statement)
-instance : Inhabited StmtList where default := StmtList.Statement (default : Statement)
+instance : Inhabited StmtList where default := StmtList.StmtList []
 instance : Inhabited FuncDef where default := FuncDef.DeclCompStmt (default : Declarator) (default : CompStmt)
 instance : Inhabited ExternDecl where default := ExternDecl.FuncDef (default : FuncDef)
-instance : Inhabited TranslUnit where default := TranslUnit.ExternDecl (default : ExternDecl)
+instance : Inhabited TranslUnit where default := TranslUnit.ExternDeclList []
 
 mutual
 partial def primaryExprToString : PrimaryExpr → String
@@ -176,12 +176,14 @@ partial def assmtExprToString : AssmtExpr → String
   | .AssignAssmtOp u ao ae => (unaryExprToString u) ++ " " ++ (assmtOpToString ao) ++ " " ++ (assmtExprToString ae)
 
 partial def aelToString : ArgExprList → String
-  | .AssmtExpr a => (assmtExprToString a)
-  | .ArgExprListAssign ael ae => (aelToString ael) ++ " , " ++ (assmtExprToString ae)
+  | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
+--  | .AssmtExpr a => (assmtExprToString a)
+--  | .ArgExprListAssign ael ae => (aelToString ael) ++ " , " ++ (assmtExprToString ae)
 
 partial def expressionToString : Expression → String
-  | .ExprAssmtExpr a => (assmtExprToString a)
-  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
+  | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
+--  | .ExprAssmtExpr a => (assmtExprToString a)
+--  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
 
 partial def constantExprToString : ConstantExpr → String
   | .ConExpr c => (condExprToString c)
@@ -203,8 +205,9 @@ partial def abstrDeclToString : AbstrDecl → String
   | .AbstrPtrDirAbDec p d => (pointerToString p) ++ " " ++ (dirAbstrDeclToString d)
 
 partial def identListToString : IdentList → String
-  | .Identifier s => s
-  | .IdentListIdent i s => (identListToString i) ++ " , " ++ s
+  | .IdentList idents => " , ".intercalate (idents)
+--  | .Identifier s => s
+--  | .IdentListIdent i s => (identListToString i) ++ " , " ++ s
 
 partial def dirDeclToString : DirDecl → String
   | .Identifier s => s
@@ -216,8 +219,9 @@ partial def dirDeclToString : DirDecl → String
   | .DirDecRnd d => (dirDeclToString d) ++ "()"
 
 partial def tqlToString : TypeQualList → String
-  | .TypeQual tq => (typeQualToString tq)
-  | .TypeQuaListTypeQuq tql tq => (tqlToString tql) ++ " " ++ (typeQualToString tq)
+  | .TypeQualList tqs => " ".intercalate (tqs.map typeQualToString)
+--  | .TypeQual tq => (typeQualToString tq)
+--  | .TypeQuaListTypeQuq tql tq => (tqlToString tql) ++ " " ++ (typeQualToString tq)
 
 partial def typeQualToString : TypeQual → String
   | .Const => "const"
@@ -246,12 +250,14 @@ partial def declarationToString : Declaration → String
   | .DeclSpecInitDecList d i => (declSpecToString d) ++ (initDeclListToString i) ++ ";"
 
 partial def declListToString : DeclList → String
-  | .Decl d => (declarationToString d)
-  | .DeclListDecl d i => (declListToString d) ++ (declarationToString i)
+  | .DeclList ds => " ".intercalate (ds.map declarationToString)
+--  | .Decl d => (declarationToString d)
+--  | .DeclListDecl d i => (declListToString d) ++ (declarationToString i)
 
 partial def initDeclListToString : InitDeclList → String
-  | .InitDecl d => (initDeclToString d)
-  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
+  | .InitDeclList ids => " , ".intercalate (ids.map initDeclToString)
+--  | .InitDecl d => (initDeclToString d)
+--  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
 
 partial def declSpecToString : DeclSpec → String
   | .StorClassSpec d => (storClassSpecToString d)
@@ -299,16 +305,18 @@ partial def structDeclarationToString : StructDeclaration → String
   | .SpecQualListStructDecList d i => (specQualListToString d) ++ (structDeclListToString i) ++ ";" 
 
 partial def structDeclarationListToString : StructDeclarationList → String
-  | .StructDeclaration d => (structDeclarationToString d)
-  | .StructDeclListStructDecl d i => (structDeclarationListToString d) ++ (structDeclarationToString i)
+  | .StructDeclarationList sdls => " ".intercalate (sdls.map structDeclarationToString)
+--  | .StructDeclaration d => (structDeclarationToString d)
+--  | .StructDeclListStructDecl d i => (structDeclarationListToString d) ++ (structDeclarationToString i)
 
 partial def enumeratorToString : Enumerator → String
   | .Ident s => s
   | .IdentAssignConst s d => s ++ " = " ++ (constantExprToString d)
 
 partial def enumListToString : EnumList → String
-  | .Enum d => (enumeratorToString d)
-  | .EnumListEnum d i => (enumListToString d) ++ " , " ++ (enumeratorToString i)
+  | .EnumList es => " , ".intercalate (es.map enumeratorToString)
+--  | .Enum d => (enumeratorToString d)
+--  | .EnumListEnum d i => (enumListToString d) ++ " , " ++ (enumeratorToString i)
 
 partial def enumSpecToString : EnumSpec → String
   | .EnumList d => "enum " ++ "{" ++ (enumListToString d) ++ "}"
@@ -341,8 +349,9 @@ partial def structDeclToString : StructDecl → String
   | .DeclConstExpr d i => (declaratorToString d) ++ " : " ++ (constantExprToString i)
 
 partial def structDeclListToString : StructDeclList → String
-  | .StructDecl d => (structDeclToString d)
-  | .StructDecListStructDec d i => (structDeclListToString d) ++ " , " ++ (structDeclToString i)
+  | .StructDeclList sds => " , ".intercalate (sds.map structDeclToString)
+--  | .StructDecl d => (structDeclToString d)
+--  | .StructDecListStructDec d i => (structDeclListToString d) ++ " , " ++ (structDeclToString i)
 
 partial def typeNameToString : TypeName → String
   | .SpecQualList a => (specQualListToString a)
@@ -390,8 +399,9 @@ partial def statementToString : Statement → String
   | .JumpStmt s => (jumpStmtToString s)
 
 partial def stmtListToString : StmtList → String
-  | .Statement s => (statementToString s)
-  | .StmtListStmt sl s => (stmtListToString sl) ++ (statementToString s)
+  | .StmtList ss => "\n".intercalate (ss.map statementToString)
+--  | .Statement s => (statementToString s)
+--  | .StmtListStmt sl s => (stmtListToString sl) ++ (statementToString s)
 
 partial def funcDefToString : FuncDef → String
   | .DecSpecDeclDecListCompStmt ds d dl cs => (declSpecToString ds) ++ (declaratorToString d) ++ (declListToString dl) ++ (compStmtToString cs)
@@ -404,8 +414,9 @@ partial def externDeclToString : ExternDecl → String
   | .Declaration d => (declarationToString d)
 
 partial def translUnitToString : TranslUnit → String
-  | .ExternDecl ed => (externDeclToString ed)
-  | .TranslUnitExternDecl tu ed => (translUnitToString tu) ++ (externDeclToString ed)
+  | .ExternDeclList eds => " ".intercalate (eds.map externDeclToString)
+--  | .ExternDecl ed => (externDeclToString ed)
+--  | .TranslUnitExternDecl tu ed => (translUnitToString tu) ++ (externDeclToString ed)
 
 end
 

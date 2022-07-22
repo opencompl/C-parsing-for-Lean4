@@ -3,21 +3,21 @@ import CParser.AST
 open AST
 
 -- expression statement
-syntax ";" : expression_statement
-syntax expression ";" : expression_statement
+-- syntax ";" : expression_statement
+syntax (expression)? ";" : expression_statement
 syntax "`[expression_statement| " expression_statement "]" : term
 
 -- selection statement
-syntax "if" "(" expression ")" statement : selection_statement
-syntax "if" "(" expression ")" statement "else" statement : selection_statement
+-- syntax "if" "(" expression ")" statement : selection_statement
+syntax "if" "(" expression ")" statement ("else" statement)? : selection_statement
 syntax "switch" "(" expression ")" statement : selection_statement
 syntax "`[selection_statement| " selection_statement "]" : term
 
 -- iteration statement
 syntax "while" "(" expression ")" statement : iteration_statement
 syntax "do" statement "while" "(" expression ")" ";" : iteration_statement
-syntax "for" "(" expression_statement expression_statement ")" statement : iteration_statement
-syntax "for" "(" expression_statement expression_statement expression_statement ")" statement : iteration_statement
+-- syntax "for" "(" expression_statement expression_statement ")" statement : iteration_statement
+syntax "for" "(" expression_statement expression_statement (expression_statement)? ")" statement : iteration_statement
 syntax "`[iteration_statement| " iteration_statement "]" : term
 
 -- jump statement
@@ -35,10 +35,10 @@ syntax "default" ":" statement : labeled_statement
 syntax "`[labeled_statement| " labeled_statement "]" : term
 
 -- compound statement
-syntax "{" "}" : compound_statement
-syntax "{" statement_list "}" : compound_statement
-syntax "{" declaration_list "}" : compound_statement
-syntax "{" declaration_list statement_list "}" : compound_statement
+-- syntax "{" "}" : compound_statement
+-- syntax "{" statement_list "}" : compound_statement
+-- syntax "{" declaration_list "}" : compound_statement
+syntax "{" (declaration_list)? (statement_list)? "}" : compound_statement
 syntax "`[compound_statement| " compound_statement "]" : term
 
 -- statement
@@ -51,6 +51,8 @@ syntax jump_statement : statement
 syntax "`[statement| " statement "]" : term
 
 -- statement list
-syntax statement : statement_list
-syntax statement_list statement : statement
+-- syntax statement : statement_list
+-- syntax statement_list statement : statement
+syntax statement+ : statement_list
+
 syntax "`[statement_list| " statement_list "]" : term

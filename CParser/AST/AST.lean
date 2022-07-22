@@ -109,12 +109,14 @@ inductive AssmtExpr where
   | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
 
 inductive ArgExprList where
-  | AssmtExpr : AssmtExpr → ArgExprList
-  | ArgExprListAssign : ArgExprList → AssmtExpr → ArgExprList
+  | AssmtExprList : List AssmtExpr → ArgExprList
+--  | AssmtExpr : AssmtExpr → ArgExprList
+--  | ArgExprListAssign : ArgExprList → AssmtExpr → ArgExprList
 
 inductive Expression : Type where
-  | ExprAssmtExpr : AssmtExpr → Expression
-  | ExprAssign : Expression → AssmtExpr → Expression
+  | AssmtExprList : List AssmtExpr → Expression
+--  | ExprAssmtExpr : AssmtExpr → Expression
+--  | ExprAssign : Expression → AssmtExpr → Expression
 
 inductive ConstantExpr where
   | ConExpr : CondExpr → ConstantExpr
@@ -136,8 +138,9 @@ inductive AbstrDecl where
   | AbstrPtrDirAbDec : Pointer → DirAbstrDecl → AbstrDecl
 
 inductive IdentList where 
-  | Identifier : String → IdentList
-  | IdentListIdent : IdentList → String → IdentList
+  | IdentList : List String → IdentList
+--  | Identifier : String → IdentList
+--  | IdentListIdent : IdentList → String → IdentList
 
 inductive DirDecl where
   | Identifier : String → DirDecl
@@ -149,8 +152,9 @@ inductive DirDecl where
   | DirDecRnd : DirDecl → DirDecl
 
 inductive TypeQualList where 
-  | TypeQual : TypeQual → TypeQualList
-  | TypeQuaListTypeQuq : TypeQualList → TypeQual → TypeQualList
+  | TypeQualList : List TypeQual → TypeQualList
+--  | TypeQual : TypeQual → TypeQualList
+--  | TypeQuaListTypeQuq : TypeQualList → TypeQual → TypeQualList
 
 inductive TypeQual where
   | Const : TypeQual
@@ -183,8 +187,9 @@ inductive Declaration where
   | DeclSpecInitDecList : DeclSpec → InitDeclList → Declaration
 
 inductive DeclList where
-  | Decl : Declaration → DeclList
-  | DeclListDecl : DeclList → Declaration → DeclList
+  | DeclList : List Declaration → DeclList
+--  | Decl : Declaration → DeclList
+--  | DeclListDecl : DeclList → Declaration → DeclList
 
 inductive DeclSpec where
   | StorClassSpec : StorClassSpec → DeclSpec
@@ -199,8 +204,9 @@ inductive Enumerator where
   | IdentAssignConst : String → ConstantExpr →  Enumerator
 
 inductive EnumList where
-  | Enum : Enumerator → EnumList
-  | EnumListEnum : EnumList → Enumerator → EnumList
+  | EnumList : List Enumerator → EnumList
+--  | Enum : Enumerator → EnumList
+--  | EnumListEnum : EnumList → Enumerator → EnumList
 
 inductive EnumSpec where
   | EnumList : EnumList → EnumSpec
@@ -208,8 +214,9 @@ inductive EnumSpec where
   | EnumIdent : String → EnumSpec
 
 inductive InitDeclList where
-  | InitDecl : InitDecl → InitDeclList
-  | InitDeclListInitDecl : InitDeclList → InitDecl → InitDeclList
+  | InitDeclList : List InitDecl → InitDeclList
+--  | InitDecl : InitDecl → InitDeclList
+--  | InitDeclListInitDecl : InitDeclList → InitDecl → InitDeclList
 
 inductive ParamDecl where
   | DeclSpecDecl : DeclSpec → Declarator → ParamDecl
@@ -247,12 +254,14 @@ inductive StructDeclaration where
   | SpecQualListStructDecList : SpecQualList → StructDeclList → StructDeclaration
 
 inductive StructDeclarationList where
-  | StructDeclaration : StructDeclaration → StructDeclarationList
-  | StructDeclListStructDecl : StructDeclarationList → StructDeclaration → StructDeclarationList
+  | StructDeclarationList : List StructDeclaration → StructDeclarationList
+--  | StructDeclaration : StructDeclaration → StructDeclarationList
+--  | StructDeclListStructDecl : StructDeclarationList → StructDeclaration → StructDeclarationList
 
 inductive StructDeclList where
-  | StructDecl : StructDecl → StructDeclList
-  | StructDecListStructDec : StructDeclList → StructDecl → StructDeclList
+  | StructDeclList : List StructDecl → StructDeclList
+--  | StructDecl : StructDecl → StructDeclList
+--  | StructDecListStructDec : StructDeclList → StructDecl → StructDeclList
 
 inductive StructOrUnion where
   | Struct : StructOrUnion
@@ -323,8 +332,9 @@ inductive Statement where
   | JumpStmt : JumpStmt → Statement
 
 inductive StmtList where
-  | Statement : Statement → StmtList
-  | StmtListStmt : StmtList → Statement → StmtList
+  | StmtList : List Statement → StmtList
+--  | Statement : Statement → StmtList
+--  | StmtListStmt : StmtList → Statement → StmtList
 
 inductive FuncDef where
   | DecSpecDeclDecListCompStmt : DeclSpec → Declarator → DeclList → CompStmt → FuncDef
@@ -337,8 +347,9 @@ inductive ExternDecl where
   | Declaration : Declaration → ExternDecl
 
 inductive TranslUnit where
-  | ExternDecl : ExternDecl → TranslUnit
-  | TranslUnitExternDecl : TranslUnit → ExternDecl → TranslUnit
+  | ExternDeclList : List ExternDecl → TranslUnit
+--  | ExternDecl : ExternDecl → TranslUnit
+--  | TranslUnitExternDecl : TranslUnit → ExternDecl → TranslUnit
 
 end
 

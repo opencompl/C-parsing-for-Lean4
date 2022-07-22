@@ -2,6 +2,8 @@ import CParser.SyntaxDecl
 import CParser.AST
 open AST
 
+open Lean -- for (sepBy ...)
+open Lean.Parser -- for (sepBy ...)
 
 syntax str : primary_expression
 syntax ident : primary_expression
@@ -126,12 +128,14 @@ syntax unary_expression assignment_operator assignment_expression : assignment_e
 
 syntax "`[assignment_expression| " assignment_expression "]" : term
 
-syntax assignment_expression : argument_expression_list
-syntax argument_expression_list "," assignment_expression : argument_expression_list
+-- syntax assignment_expression : argument_expression_list
+-- syntax argument_expression_list "," assignment_expression : argument_expression_list
+syntax sepBy(assignment_expression, ",", ", ") : argument_expression_list
 
 syntax "`[argument_expression_list| " argument_expression_list "]" : term
 
-syntax assignment_expression : expression
-syntax expression "," assignment_expression : expression
+-- syntax assignment_expression : expression
+-- syntax expression "," assignment_expression : expression
+syntax sepBy(assignment_expression, ",", ", ") : expression
 
 syntax "`[expression| " expression "]" : term
