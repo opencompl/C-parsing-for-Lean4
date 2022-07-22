@@ -65,6 +65,19 @@ def directory_checker_map : List (FilePath × Checker) :=
  ,(FilePath.mk "./Tests/GroupThree/StructOrUnionSpec", fun str env => (parseStructOrUnionSpec str env).fst)
  ,(FilePath.mk "./Tests/GroupThree/TypeName", fun str env => (parseTypeName str env).fst)
  ,(FilePath.mk "./Tests/GroupThree/TypeSpec", fun str env => (parseTypeSpec str env).fst)
+ ] ++
+ [(FilePath.mk "./Tests/GroupFour/CompStmt", fun str env => (parseCompStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/ExprStmt", fun str env => (parseExprStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/IterStmt", fun str env => (parseIterStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/JumpStmt", fun str env => (parseJumpStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/LabelStmt", fun str env => (parseLabelStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/SelStmt", fun str env => (parseSelStmt str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/Statement", fun str env => (parseStatement str env).fst)
+ ,(FilePath.mk "./Tests/GroupFour/StmtList", fun str env => (parseStmtList str env).fst)
+ ] ++
+ [(FilePath.mk "./Tests/GroupFive/ExternDecl", fun str env => (parseExternDecl str env).fst)
+ ,(FilePath.mk "./Tests/GroupFive/FuncDef", fun str env => (parseFuncDef str env).fst)
+ ,(FilePath.mk "./Tests/GroupFive/TranslUnit", fun str env => (parseTranslUnit str env).fst)
  ]
 
 inductive TestResult
