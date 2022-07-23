@@ -1,6 +1,6 @@
 (* foo)[]() void extern; {
     { }
-    if (;)
+    if (baz)
         return bar;
     else
         return baz;

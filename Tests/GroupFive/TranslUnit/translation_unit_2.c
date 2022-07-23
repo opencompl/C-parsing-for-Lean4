@@ -4,7 +4,7 @@ char int (*foo)[42] {
     goto y;
     label: x += z;
 }
-for (i = 0; i <= 10; i++)
+for (i = 0; i <= 10; i++;)
 {
     foo++;
 }

@@ -7,5 +7,5 @@ while (z + y == x)
     else
         return;
 }
-goto (z + y - x);
+goto bar;
 label: foo++;
