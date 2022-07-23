@@ -1,5 +1,5 @@
 {
-    extern static const *()[j+i++] = z;
+    extern static const *(foo)[j+i++] = z;
     if ((foo+bar).baz->name)
         return;
     else

@@ -405,6 +405,7 @@ partial def mkExprStmt : Lean.Syntax → Except String ExprStmt
 partial def mkSelStmt : Lean.Syntax → Except String SelStmt
   | `(selection_statement| if ( $e:expression ) $s:statement) => SelStmt.If <$> (mkExpression e) <*> (mkStatement s)
   | `(selection_statement| if ( $e:expression ) $s1:statement else $s2:statement) => SelStmt.IfElse <$> (mkExpression e) <*> (mkStatement s1) <*> (mkStatement s2)
+  | `(selection_statement| switch ( $e:expression ) $s:statement) => SelStmt.Switch <$> (mkExpression e) <*> (mkStatement s)
   | _ => throw "unexpected syntax for type name"
 
 partial def mkIterStmt : Lean.Syntax → Except String IterStmt
