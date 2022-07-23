@@ -49,7 +49,7 @@ syntax "`[direct_declarator| " direct_declarator "]" : term
 
 -- syntax type_qualifier : type_qualifier_list
 -- syntax type_qualifier_list type_qualifier : type_qualifier_list
-syntax sepBy(type_qualifier, ",", ", ") : type_qualifier_list
+syntax type_qualifier+ : type_qualifier_list
 
 syntax "`[type_qualifier_list| " type_qualifier_list "]" : term
 
@@ -58,10 +58,10 @@ syntax "volatile" : type_qualifier
 
 syntax "`[type_qualifier| " type_qualifier "]" : term
 
-syntax "*" : pointer
-syntax "*" type_qualifier_list : pointer
-syntax "*" pointer : pointer
-syntax "*" type_qualifier_list pointer : pointer
+-- syntax "*" : pointer
+-- syntax "*" type_qualifier_list : pointer
+-- syntax "*" pointer : pointer
+syntax "*" (type_qualifier_list)? (pointer)? : pointer
 
 syntax "`[pointer| " pointer "]" : term
 

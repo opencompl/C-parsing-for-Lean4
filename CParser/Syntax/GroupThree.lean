@@ -17,7 +17,7 @@ syntax "`[declaration| " declaration "]" : term
 -- declaration_list
 -- syntax declaration : declaration_list
 -- syntax declaration_list declaration : declaration_list
-syntax sepBy(declaration, ",", ", ") : declaration_list
+syntax declaration+ : declaration_list
 
 syntax "`[declaration_list| " declaration_list "]" : term
 
@@ -144,4 +144,4 @@ syntax "`[parameter_declaration| " parameter_declaration "]" : term
 -- type_name
 -- syntax specifier_qualifier_list : type_name
 syntax specifier_qualifier_list (abstract_declarator)? : type_name
-syntax "`[specifier_qualifier_list| " specifier_qualifier_list "]" : term
+syntax "`[type_name| " type_name "]" : term
