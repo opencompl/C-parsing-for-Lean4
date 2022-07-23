@@ -164,7 +164,7 @@ def parseTypeSpec : String → Lean.Environment → Option String × TypeSpec :=
   mkNonTerminalParser `type_specifier mkTypeSpec
 
 def parseExprStmt : String → Lean.Environment → Option String × ExprStmt := 
-  mkNonTerminalParser `type_specifier mkExprStmt
+  mkNonTerminalParser `expression_statement mkExprStmt
 
 def parseSelStmt : String → Lean.Environment → Option String × SelStmt := 
   mkNonTerminalParser `selection_statement mkSelStmt
