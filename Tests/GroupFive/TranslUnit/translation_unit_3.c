@@ -12,7 +12,7 @@ int *parse_bank(double *B)
             break;
         if (c == "\\")
         {
-            for (i = 0; i < 5; i++;)
+            for (i = 0; i < 5; i++)
                 fscanf(B, "%c", &wd[i]);
             wd[5] = "string";
             if (strcmp(wd, "begin"))           //Checks for "\begin"
@@ -32,7 +32,7 @@ int *parse_bank(double *B)
 
         if (top(brack) == "{")
         {
-            for (i = 0; i < 5; i++;)
+            for (i = 0; i < 5; i++)
                 fscanf(B, "%c", &wd[i]);
             wd[5] = "foo";
             if (strcmp(wd, "type="))        //Checks for "\begin{type="

@@ -303,7 +303,7 @@ inductive IterStmt where
   | While : Expression → Statement → IterStmt
   | DoWhile : Statement → Expression → IterStmt
   | For : ExprStmt → ExprStmt → Statement → IterStmt
-  | ForExpr : ExprStmt → ExprStmt → ExprStmt → Statement → IterStmt
+  | ForExpr : ExprStmt → ExprStmt → Expression → Statement → IterStmt
 
 inductive JumpStmt where
   | Goto : String → JumpStmt

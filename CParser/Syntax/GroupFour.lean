@@ -17,7 +17,7 @@ syntax "`[selection_statement| " selection_statement "]" : term
 syntax "while" "(" expression ")" statement : iteration_statement
 syntax "do" statement "while" "(" expression ")" ";" : iteration_statement
 -- syntax "for" "(" expression_statement expression_statement ")" statement : iteration_statement
-syntax "for" "(" expression_statement expression_statement (expression_statement)? ")" statement : iteration_statement
+syntax "for" "(" expression_statement expression_statement (expression)? ")" statement : iteration_statement
 syntax "`[iteration_statement| " iteration_statement "]" : term
 
 -- jump statement

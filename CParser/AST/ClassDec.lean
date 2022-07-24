@@ -370,7 +370,7 @@ partial def iterStmtToString : IterStmt → String
   | .While e s => "while" ++ "(" ++ (expressionToString e) ++ ")" ++ (statementToString s)
   | .DoWhile s e => "do" ++ (statementToString s) ++ "while" ++ "(" ++ (expressionToString e) ++ ")" ++ ";"
   | .For e es s => "for" ++ "(" ++ (exprStmtToString e) ++ (exprStmtToString es) ++ ")" ++ (statementToString s)
-  | .ForExpr ess es e s => "for" ++ "(" ++ (exprStmtToString ess) ++ (exprStmtToString es) ++ (exprStmtToString e) ++ ")" ++ (statementToString s)
+  | .ForExpr ess es e s => "for" ++ "(" ++ (exprStmtToString ess) ++ (exprStmtToString es) ++ (expressionToString e) ++ ")" ++ (statementToString s)
 
 partial def jumpStmtToString : JumpStmt → String
   | .Goto s => "goto" ++ s ++ ";"

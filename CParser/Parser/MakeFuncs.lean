@@ -412,7 +412,7 @@ partial def mkIterStmt : Lean.Syntax → Except String IterStmt
   | `(iteration_statement| while ( $e:expression ) $s:statement) => IterStmt.While <$> (mkExpression e) <*> (mkStatement s)
   | `(iteration_statement| do $s:statement while ( $e:expression ) ;) => IterStmt.DoWhile <$> (mkStatement s) <*> (mkExpression e)
   | `(iteration_statement| for ( $es1:expression_statement $es2:expression_statement ) $s:statement) => IterStmt.For <$> (mkExprStmt es1) <*> (mkExprStmt es2) <*> (mkStatement s)
-  | `(iteration_statement| for ( $es1:expression_statement $es2:expression_statement $es3:expression_statement ) $s:statement) => IterStmt.ForExpr <$> (mkExprStmt es1) <*> (mkExprStmt es2) <*> (mkExprStmt es3) <*> (mkStatement s)
+  | `(iteration_statement| for ( $es1:expression_statement $es2:expression_statement $es3:expression ) $s:statement) => IterStmt.ForExpr <$> (mkExprStmt es1) <*> (mkExprStmt es2) <*> (mkExpression es3) <*> (mkStatement s)
   | _ => throw "unexpected syntax for iteration statement"
 
 partial def mkJumpStmt : Lean.Syntax → Except String JumpStmt
