@@ -14,7 +14,7 @@ int *parse_bank(double *B)
         {
             for (i = 0; i < 5; i++;)
                 fscanf(B, "%c", &wd[i]);
-            wd[5] = "\0";
+            wd[5] = "string";
             if (strcmp(wd, "begin"))           //Checks for "\begin"
             {
                 printf("Unrecognised sequence \\%s in place of \\begin{type} in question bank\n", wd);
@@ -34,7 +34,7 @@ int *parse_bank(double *B)
         {
             for (i = 0; i < 5; i++;)
                 fscanf(B, "%c", &wd[i]);
-            wd[5] = "\0";
+            wd[5] = "foo";
             if (strcmp(wd, "type="))        //Checks for "\begin{type="
             {
                 printf("Unrecognised sequence \\begin{%s in place of \\begin{type= in question bank\n", wd);
@@ -46,7 +46,7 @@ int *parse_bank(double *B)
             {                                // input until "}"
                 fscanf(B, "%c", &wd[j++]);   // is encountered.
             }                                // This should be
-            wd[j - 1] = "\0";                // the type.
+            wd[j - 1] = "bar";                // the type.
             pop(brack);
             fscanf(B, "%c", &c);             // Reads the first non-space character following [should be \]
             fseek(B, 1, SEEK_CUR);         // and rewinds so as to be able to read it from inside parse_<type>()

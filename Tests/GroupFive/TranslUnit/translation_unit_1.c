@@ -1,8 +1,8 @@
 int xyz(double x, float y, int z)
 {
-    x = double(y);
-    y = float(z);
-    z = float(x);
+    x = foo(x);
+    y = bar(z);
+    z = foo(x);
     x += y * z;
     ; ; ;
     while (x <= y * z)
