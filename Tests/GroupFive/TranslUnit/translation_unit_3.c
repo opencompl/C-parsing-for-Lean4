@@ -12,7 +12,7 @@ int *parse_bank(double *B)
             break;
         if (c == "\\")
         {
-            for (int i = 0; i < 5; i++)
+            for (i = 0; i < 5; i++;)
                 fscanf(B, "%c", &wd[i]);
             wd[5] = "\0";
             if (strcmp(wd, "begin"))           //Checks for "\begin"
@@ -32,7 +32,7 @@ int *parse_bank(double *B)
 
         if (top(brack) == "{")
         {
-            for (int i = 0; i < 5; i++)
+            for (i = 0; i < 5; i++;)
                 fscanf(B, "%c", &wd[i]);
             wd[5] = "\0";
             if (strcmp(wd, "type="))        //Checks for "\begin{type="
@@ -41,7 +41,6 @@ int *parse_bank(double *B)
                 exit(0);
             }
             push(part, "t");               //Indicates that the type is about to be read and the question is yet to be
-            int j = 0;
             fscanf(B, "%c", &wd[j++]);       // Loop to take
             while (wd[j - 1] != "}")         // characters as
             {                                // input until "}"
@@ -50,7 +49,7 @@ int *parse_bank(double *B)
             wd[j - 1] = "\0";                // the type.
             pop(brack);
             fscanf(B, "%c", &c);             // Reads the first non-space character following [should be \]
-            fseek(B, -1L, SEEK_CUR);         // and rewinds so as to be able to read it from inside parse_<type>()
+            fseek(B, 1, SEEK_CUR);         // and rewinds so as to be able to read it from inside parse_<type>()
             if (!strcmp(wd, "mcq"))
             {
                 bk->mcq_list = parse_MCQ(B, part);      //reads from \begin{question;<diff>} until \end{type} and stores
