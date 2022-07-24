@@ -9,12 +9,16 @@ open Lean
 --   Is this correct? This only removes LEADING comments. It does not seem to remove something like:
 --   abb // cc
 --   ?
-def removeCommentsLineCharList : List Char → List Char
-| c1::c2::cs => if c1 == '/' && c2 == '/' then [] else c1::(removeCommentsLineCharList (c2::cs))
-| l => l
+
+-- First argument is 1 iff a double quote is unterminated
+def removeCommentsLineCharList : Int → List Char → List Char
+| 0, c1::c2::cs => if c1 == '/' && c2 == '/' then [] else c1::(removeCommentsLineCharList 0 (c2::cs))
+| 0, c::cs => if c == '"' then removeCommentsLineCharList 1 cs else removeCommentsLineCharList 0 cs
+| 1, c::cs => if c == '"' then removeCommentsLineCharList 0 cs else removeCommentsLineCharList 1 cs
+| _, l => l
 
 def removeCommentsLine : String → String :=
-λ s => { data := removeCommentsLineCharList s.data }
+λ s => { data := removeCommentsLineCharList 0 s.data }
 
 -- extra layer of abstraction for when we add
 -- more preprocessing funcitons (like multiline comments)
