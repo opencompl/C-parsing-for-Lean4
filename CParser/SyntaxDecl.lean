@@ -111,15 +111,19 @@ def constFnEntry (r : Regex) (ctx: ParserContext) (s: ParserState): ParserState 
    (input := ctx.input)
    ctx s
 
+open Lean Parser in 
 @[inline]
 def const : Parser :=
-   /-withAntiquot (mkAntiquot "const" `const)-/ {
+   withAntiquot (mkAntiquot "const" `const) {
        fn := constFnEntry c,
        info := mkAtomicInfo "const"
     }
 
 @[combinatorFormatter const]
 def const.formatter : Formatter := pure ()
+
+@[combinatorParenthesizer const]
+def const.parenthesizer : Parenthesizer := pure ()
 
 #print const
 
