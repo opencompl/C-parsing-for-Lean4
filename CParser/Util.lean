@@ -77,5 +77,5 @@ partial def regexConsume : Regex → String → List String
 def regexMatch (r : Regex) (s : String) : Bool := (regexConsume r s).elem ""
 
 -- example of hex numbers
-def c := Concat [Base '0', Union [Base 'x', Base 'X', empty], Concat [h, Star h], Union [empty, is]]
+def c := Concat [Base '0', Union [Base 'x', Base 'X'], plus h, qmark is]
 #eval regexConsume c "0Xdead291l"
