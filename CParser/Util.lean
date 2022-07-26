@@ -12,10 +12,13 @@ open Lean
 
 -- First argument is 1 iff a double quote is unterminated
 def removeCommentsLineCharList : Int → List Char → List Char
-| 0, c1::c2::cs => if c1 == '/' && c2 == '/' then [] else c1::(removeCommentsLineCharList 0 (c2::cs))
-| 0, c::cs => if c == '"' then removeCommentsLineCharList 1 cs else removeCommentsLineCharList 0 cs
-| 1, c::cs => if c == '"' then removeCommentsLineCharList 0 cs else removeCommentsLineCharList 1 cs
-| _, l => l
+  | 0, c1::c2::cs => if c1 == '/' && c2 == '/' then []
+                     else if c1 == '"' then c1::(removeCommentsLineCharList 1 cs)
+                     else c1::(removeCommentsLineCharList 0 (c2::cs))
+  | 1, c::cs => if c == '"' then c::(removeCommentsLineCharList 0 cs) else c::(removeCommentsLineCharList 1 cs)
+  | _, l => l
+
+-- #eval (removeCommentsLineCharList 0 ['"', '/', '/', 'b', 'o', 'i', '"'])
 
 def removeCommentsLine : String → String :=
 λ s => { data := removeCommentsLineCharList 0 s.data }
@@ -78,4 +81,4 @@ def regexMatch (r : Regex) (s : String) : Bool := (regexConsume r s).elem ""
 
 -- example of hex numbers
 def c := Concat [Base '0', Union [Base 'x', Base 'X'], plus h, qmark is]
-#eval regexConsume c "0Xdead291l"
+-- #eval regexConsume c "0Xdead291l"
