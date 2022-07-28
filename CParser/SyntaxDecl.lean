@@ -115,7 +115,7 @@ open Lean Parser in
 @[inline]
 def const : Parser :=
    withAntiquot (mkAntiquot "const" `const) {
-       fn := constFnEntry c,
+       fn := constFnEntry constRegex,
        info := mkAtomicInfo "const"
     }
 
@@ -125,9 +125,9 @@ def const.formatter : Formatter := pure ()
 @[combinatorParenthesizer const]
 def const.parenthesizer : Parenthesizer := pure ()
 
-#print const
+-- #print const
 
-macro "[const|" c:const "]" : term => do
-  match c[0] with
-    | .atom _ val => return Lean.quote val
-    | _  => Macro.throwError "expected const to have atom"
+-- macro "[const|" c:const "]" : term => do
+--   match c[0] with
+--     | .atom _ val => return Lean.quote val
+--     | _  => Macro.throwError "expected const to have atom"
