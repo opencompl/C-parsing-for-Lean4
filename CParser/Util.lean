@@ -11,17 +11,28 @@ open Lean
 --   ?
 
 -- First argument is 1 iff a double quote is unterminated
-def removeCommentsLineCharList : Int → List Char → List Char
-  | 0, c1::c2::cs => if c1 == '/' && c2 == '/' then []
-                     else if c1 == '"' then c1::(removeCommentsLineCharList 1 cs)
-                     else c1::(removeCommentsLineCharList 0 (c2::cs))
-  | 1, c::cs => if c == '"' then c::(removeCommentsLineCharList 0 cs) else c::(removeCommentsLineCharList 1 cs)
-  | _, l => l
+def removeCommentsLineCharList (inString: Bool) (xs: List Char): List Char := 
+  match xs with
+  | /-
+      if we see //, and we are not in a string, then remove everything.
+     -/ '/'::'/'::xs => if inString then '/'::'/'::removeCommentsLineCharList inString xs else []
+  | /-
+     if we see \", then we have not entered a string (it is an escaped string quote). So continue as normal
+    -/'\\'::'"'::xs => '\\'::'"'::removeCommentsLineCharList inString xs -- escaped string literal
+  | /-
+     if we see a ", and we have NOT seen a \ " (ie, this double quote is not escaped), then we are now in a string.
+    -/ '"'::xs => '"'::removeCommentsLineCharList (!inString) xs
+  | /-
+     ignore everything else and continue.
+    -/x::xs => x::removeCommentsLineCharList inString xs
+  | [] => []
 
--- #eval (removeCommentsLineCharList 0 ['"', '/', '/', 'b', 'o', 'i', '"'])
+#eval (removeCommentsLineCharList (inString := False) ['"', '/', '/', 'b', 'o', 'i', '"'])
+#eval (removeCommentsLineCharList (inString := False) ['f', '/', '/', 'b', 'o', 'i', '"'])
+#eval (removeCommentsLineCharList (inString := False) ['f', '"', '/', '/', '"', 'b', '/', '/', 'o', 'i', '"'])
 
 def removeCommentsLine : String → String :=
-λ s => { data := removeCommentsLineCharList 0 s.data }
+λ s => { data := removeCommentsLineCharList (inString := False) s.data }
 
 -- extra layer of abstraction for when we add
 -- more preprocessing funcitons (like multiline comments)
