@@ -58,9 +58,10 @@ inductive Regex where
   | Union : List Regex → Regex
   | Star : Regex → Regex
   | Base : Char → Regex
+  | Empty : Regex
 
 open Regex
-def empty : Regex := Concat []
+def empty : Regex := Empty
 def qmark (r : Regex) : Regex := Union [empty, r]
 def plus  (r : Regex) : Regex := Concat [r, Star r]
 
@@ -80,7 +81,7 @@ def is : Regex := Star ∘ Union $ List.map Base ['u','U','l','L']
 
 -- return suffix of string after matching prefix with regex
 partial def regexConsume : Regex → String → List String
-  |      _          , "" => []
+  |     (.Empty    ), s  => if (s == "") then [""] else []
   |     (.Base   c ), s  => if (c == s.front) then [String.mk s.toList.tail!] else []
   |     (.Union  rs), s  => List.bind rs (λ r => regexConsume r s)
   | rgx@(.Star   r ), s  => let rest := regexConsume r s
