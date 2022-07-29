@@ -8,7 +8,9 @@ open Lean -- for SepArray
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.toNat)
+  | `(primary_expression| $c:const) => match c[0] with
+                                        | .atom _ val => return (PrimaryExpr.Constant val)
+                                        | _ => unreachable!
   | `(primary_expression| $s:str) => match s.isStrLit? with
                                       | some st => return (PrimaryExpr.StringLit st)
                                       | none => unreachable!

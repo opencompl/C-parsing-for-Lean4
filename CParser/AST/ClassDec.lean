@@ -1,7 +1,7 @@
 import CParser.AST.AST
 
 open AST
-instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
+instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant ""
 instance : Inhabited PostfixExpr where default := PostfixExpr.Primary (default : PrimaryExpr)
 instance : Inhabited UnaryOp where default := UnaryOp.Address
 instance : Inhabited UnaryExpr where default := UnaryExpr.PostFix (default : PostfixExpr)

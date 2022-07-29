@@ -7,7 +7,7 @@ open Lean.Parser -- for (sepBy ...)
 
 syntax str : primary_expression
 syntax ident : primary_expression
-syntax num : primary_expression
+syntax const : primary_expression
 syntax "(" expression ")" : primary_expression
 
 syntax "`[primary_expression| " primary_expression "]" : term

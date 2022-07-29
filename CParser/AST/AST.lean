@@ -5,7 +5,7 @@ namespace AST
 mutual
 inductive PrimaryExpr where
   | Identifier : String → PrimaryExpr
-  | Constant : Int → PrimaryExpr
+  | Constant : String → PrimaryExpr
   | StringLit : String → PrimaryExpr
   | BracketExpr : Expression → PrimaryExpr
 
