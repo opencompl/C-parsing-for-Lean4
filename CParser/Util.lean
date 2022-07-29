@@ -81,7 +81,7 @@ def is : Regex := Star ∘ Union $ List.map Base ['u','U','l','L']
 
 -- return suffix of string after matching prefix with regex
 partial def regexConsume : Regex → String → List String
-  |     (.Empty    ), s  => if (s == "") then [""] else []
+  |     (.Empty    ), s  => [s]
   |     (.Base   c ), s  => if (c == s.front) then [String.mk s.toList.tail!] else []
   |     (.Union  rs), s  => List.bind rs (λ r => regexConsume r s)
   | rgx@(.Star   r ), s  => let rest := regexConsume r s
