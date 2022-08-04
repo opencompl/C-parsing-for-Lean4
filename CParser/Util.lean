@@ -39,18 +39,20 @@ def removeCommentsLine : String → String :=
 def preprocess (lines : Array String ) : Array String :=
 lines.map (λ l => removeCommentsLine l)
 
-private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except String α) :
+abbrev ParseError := String
+private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → Except String α := λ s env => do
   ntparser (← Parser.runParserCategory env syntaxcat s)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
-def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except String α)
-(s : String) (env : Environment) : Option String × α :=
+def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
+(s : String) (env : Environment) : Except String α :=
   let parseFun := mkParseFun syntaxcat ntparser
-  match parseFun s env with
-   | .error msg => (some msg, default)
-   | .ok    p   => (none, p)
+  parseFun s env
+  -- match parseFun s env with
+  --  | .error msg => (some msg, default)
+  --  | .ok    p   => (none, p)
 
 -- For regex matching
 inductive Regex where
