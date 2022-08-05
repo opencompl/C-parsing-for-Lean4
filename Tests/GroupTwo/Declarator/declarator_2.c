@@ -1,1 +1,1 @@
-* const volatile (* volatile foo)[i++ ^ j*2]
+* const volatile const volatile const volatile (* volatile foo)[i++ ^ j*2]
