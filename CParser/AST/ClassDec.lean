@@ -279,7 +279,7 @@ partial def storClassSpecToString : StorClassSpec → String
   | .Register => "register"
 
 partial def typeSpecToString : TypeSpec → String
-  | .Void
+  | .Void => "void"
   | .Char => "char"
   | .Short => "short"
   | .Int => "int"
