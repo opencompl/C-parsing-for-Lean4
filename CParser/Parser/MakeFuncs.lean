@@ -196,8 +196,8 @@ partial def mkDirDecl : Lean.Syntax → Except String DirDecl
 partial def mkTypeQualList : Lean.Syntax → Except String TypeQualList
   | `(type_qualifier_list| $xs) => do
       let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let tqs <- sarr.mapM mkTypeQual
+      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let tqs <- listOfSyntaxNodes.mapM mkTypeQual
       return TypeQualList.TypeQualList tqs.toList
 --  | `(type_qualifier_list| $t:type_qualifier) => TypeQualList.TypeQual <$> (mkTypeQual t)
 --  | `(type_qualifier_list| $tql:type_qualifier_list $t:type_qualifier) => TypeQualList.TypeQuaListTypeQuq <$> (mkTypeQualList tql) <*> (mkTypeQual t)
@@ -250,8 +250,8 @@ partial def mkInitDecl : Lean.Syntax → Except String InitDecl
 partial def mkDeclList : Lean.Syntax → Except String DeclList
   | `(declaration_list| $xs) => do
       let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let decls <- sarr.mapM mkDeclaration
+      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let decls <- listOfSyntaxNodes.mapM mkDeclaration
       return DeclList.DeclList decls.toList
 --  | `(declaration_list| $d:declaration) => DeclList.Decl <$> (mkDeclaration d)
 --  | `(declaration_list| $dl:declaration_list $d:declaration) => DeclList.DeclListDecl <$> (mkDeclList dl) <*> (mkDeclaration d)
@@ -350,8 +350,8 @@ partial def mkStructDeclaration : Lean.Syntax → Except String StructDeclaratio
 partial def mkStructDeclarationList : Lean.Syntax → Except String StructDeclarationList
   | `(struct_declaration_list| $xs) => do
       let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let sdls <- sarr.mapM mkStructDeclaration
+      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let sdls <- listOfSyntaxNodes.mapM mkStructDeclaration
       return StructDeclarationList.StructDeclarationList sdls.toList
 --  | `(struct_declaration_list| $sd:struct_declaration) => StructDeclarationList.StructDeclaration <$> (mkStructDeclaration sd)
 --  | `(struct_declaration_list| $sdl:struct_declaration_list $sd:struct_declaration) => StructDeclarationList.StructDeclListStructDecl <$> (mkStructDeclarationList sdl) <*> (mkStructDeclaration sd)
@@ -448,8 +448,8 @@ partial def mkStatement : Lean.Syntax → Except String Statement
 partial def mkStmtList : Lean.Syntax → Except String StmtList
   | `(statement_list| $xs) => do
       let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let ss <- sarr.mapM mkStatement
+      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let ss <- listOfSyntaxNodes.mapM mkStatement
       return StmtList.StmtList ss.toList
 --  | `(statement_list| $s:statement) => StmtList.Statement <$> (mkStatement s)
 --  | `(statement_list| $sl:statement_list $s:statement) => StmtList.StmtListStmt <$> (mkStmtList sl) <*> (mkStatement s)
@@ -474,8 +474,8 @@ partial def mkExternDecl : Lean.Syntax → Except String ExternDecl
 partial def mkTranslUnit : Lean.Syntax → Except String TranslUnit
   | `(translation_unit| $xs) => do
       let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let es <- sarr.mapM mkExternDecl
+      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
+      let es <- listOfSyntaxNodes.mapM mkExternDecl
       return TranslUnit.ExternDeclList es.toList
 --  | `(translation_unit| $e:external_declaration) => TranslUnit.ExternDecl <$> (mkExternDecl e)
 --  | `(translation_unit| $t:translation_unit $e:external_declaration) => TranslUnit.TranslUnitExternDecl <$> (mkTranslUnit t) <*> (mkExternDecl e)
