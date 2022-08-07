@@ -30,7 +30,7 @@ syntax "`[jump_statement| " jump_statement "]" : term
 
 -- labelled statement
 syntax ident ":" statement : labeled_statement
-syntax "case" constant_expression ":" statement_list : labeled_statement
+syntax "case" constant_expression ":" statement : labeled_statement
 syntax "default" ":" statement : labeled_statement
 syntax "`[labeled_statement| " labeled_statement "]" : term
 
