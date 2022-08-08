@@ -288,7 +288,7 @@ inductive TypeSpec where
   | Unsigned : TypeSpec
   | SoUSpec : StructOrUnionSpec → TypeSpec
   | EnumSpec : EnumSpec → TypeSpec
-  | TypeName : TypeSpec
+  | TypeName : String → TypeSpec
 
 inductive ExprStmt where
   | Semicolon : ExprStmt

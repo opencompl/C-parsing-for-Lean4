@@ -290,7 +290,7 @@ partial def typeSpecToString : TypeSpec → String
   | .Unsigned => "unsigned"
   | .SoUSpec d => (structOrUnionSpecToString d)
   | .EnumSpec d => (enumSpecToString d)
-  | .TypeName => "typename"
+  | .TypeName s => s
 
 partial def structOrUnionSpecToString : StructOrUnionSpec → String
   | .SoUIdentStructDeclarationList a b c => (structOrUnionToString a) ++ b ++ "{" ++ (structDeclarationListToString c) ++ "}"

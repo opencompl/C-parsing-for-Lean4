@@ -337,7 +337,7 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   | `(type_specifier| unsigned) => return TypeSpec.Unsigned
   | `(type_specifier| $s:struct_or_union_specifier) => TypeSpec.SoUSpec <$> (mkStructOrUnionSpec s)
   | `(type_specifier| $e:enum_specifier) => TypeSpec.EnumSpec <$> (mkEnumSpec e)
-  | `(type_specifier| typename) => return TypeSpec.TypeName
+  | `(type_specifier| $i:ident) => return TypeSpec.TypeName (i.getId.toString)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for type specifier " ++ x)
           | .none => throw "unexpected syntax for type specifier" 
