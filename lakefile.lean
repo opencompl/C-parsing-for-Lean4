@@ -1,10 +1,16 @@
 import Lake
 open Lake DSL
 
-package «CParser» {
-  -- add configuration options here
-  supportInterpreter := true
-  libName := "CParser"
-  binRoot := `Main
-  libRoots := #[`CParser] 
+package cParser {
+  -- add package configuration options here
+}
+
+lean_lib CParser {
+  -- add library configuration options here
+}
+
+@[defaultTarget]
+lean_exe cParser {
+  supportInterpreter := true,
+  root := `Main
 }
