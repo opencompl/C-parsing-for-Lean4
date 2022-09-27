@@ -8,10 +8,8 @@ open Lean -- for SepArray
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.toNat)
-  | `(primary_expression| $s:str) => match s.isStrLit? with
-                                      | some st => return (PrimaryExpr.StringLit st)
-                                      | none => unreachable!
+  | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.getNat)
+  | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for primary expression " ++ x)
@@ -168,10 +166,8 @@ partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
           | .none => throw "unexpected syntax for assignment expression" 
 
 partial def mkArgExprList : Lean.Syntax → Except String ArgExprList
-  | `(argument_expression_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let aes <- sarr.mapM mkAssmtExpression
+  | `(argument_expression_list| $[$xs],*) => do
+      let aes <- xs.mapM mkAssmtExpression
       return ArgExprList.AssmtExprList aes.toList
 --  | `(argument_expression_list| $a:assignment_expression) => ArgExprList.AssmtExpr <$> (mkAssmtExpression a)
 --  | `(argument_expression_list| $ael:argument_expression_list , $ae:assignment_expression) => ArgExprList.ArgExprListAssign <$> (mkArgExprList ael) <*> (mkAssmtExpression ae)
@@ -180,10 +176,8 @@ partial def mkArgExprList : Lean.Syntax → Except String ArgExprList
           | .none => throw "unexpected syntax for argument expression list" 
 
 partial def mkExpression : Lean.Syntax → Except String Expression
-  | `(expression| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let aes <- sarr.mapM mkAssmtExpression
+  | `(expression| $[$xs],*) => do
+      let aes <- xs.mapM mkAssmtExpression
       return Expression.AssmtExprList aes.toList
 --  | `(expression| $a:assignment_expression) => Expression.ExprAssmtExpr <$> (mkAssmtExpression a)
 --  | `(expression| $e:expression , $ae:assignment_expression) => Expression.ExprAssign <$> (mkExpression e) <*> (mkAssmtExpression ae)
@@ -220,10 +214,8 @@ partial def mkAbstrDecl : Lean.Syntax → Except String AbstrDecl
           | .none => throw "unexpected syntax for abstract declarator" 
 
 partial def mkIdentList : Lean.Syntax → Except String IdentList
-  | `(identifier_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let is : Array String := sarr.map (fun i => i.getId.toString)
+  | `(identifier_list| $[$xs],*) => do
+      let is : Array String := xs.map (fun i => i.getId.toString)
       return IdentList.IdentList is.toList
 --  | `(identifier_list| $i:ident) => return (IdentList.Identifier i.getId.toString)
 --  | `(identifier_list| $il:identifier_list , $i:ident) => IdentList.IdentListIdent <$> (mkIdentList il) <*> (return i.getId.toString)
@@ -244,10 +236,9 @@ partial def mkDirDecl : Lean.Syntax → Except String DirDecl
           | .none => throw "unexpected syntax for direct declarator" 
 
 partial def mkTypeQualList : Lean.Syntax → Except String TypeQualList
-  | `(type_qualifier_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
+  | `(type_qualifier_list| $[$xs]*) => do
       -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let tqs <- listOfSyntaxNodes.mapM mkTypeQual
+      let tqs <- xs.mapM mkTypeQual
       return TypeQualList.TypeQualList tqs.toList
 --  | `(type_qualifier_list| $t:type_qualifier) => TypeQualList.TypeQual <$> (mkTypeQual t)
 --  | `(type_qualifier_list| $tql:type_qualifier_list $t:type_qualifier) => TypeQualList.TypeQuaListTypeQuq <$> (mkTypeQualList tql) <*> (mkTypeQual t)
@@ -288,10 +279,8 @@ partial def mkInitList : Lean.Syntax → Except String InitList
 -/
 
 partial def mkInitList : Lean.Syntax → Except String InitList
-  | `(initializer_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let inits <- sarr.mapM mkInitializer
+  | `(initializer_list| $[$xs],*) => do
+      let inits <- xs.mapM mkInitializer
       return InitList.InitList inits.toList
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for initializer list " ++ x)
@@ -314,10 +303,8 @@ partial def mkInitDecl : Lean.Syntax → Except String InitDecl
           | .none => throw "unexpected syntax for init declarator" 
 
 partial def mkDeclList : Lean.Syntax → Except String DeclList
-  | `(declaration_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let decls <- listOfSyntaxNodes.mapM mkDeclaration
+  | `(declaration_list| $[$xs]*) => do
+      let decls <- xs.mapM mkDeclaration
       return DeclList.DeclList decls.toList
 --  | `(declaration_list| $d:declaration) => DeclList.Decl <$> (mkDeclaration d)
 --  | `(declaration_list| $dl:declaration_list $d:declaration) => DeclList.DeclListDecl <$> (mkDeclList dl) <*> (mkDeclaration d)
@@ -361,10 +348,8 @@ partial def mkDeclaration : Lean.Syntax → Except String AST.Declaration
           | .none => throw "unexpected syntax for declaration" 
 
 partial def mkInitDeclList : Lean.Syntax → Except String InitDeclList
-  | `(init_declarator_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let ids <- sarr.mapM mkInitDecl
+  | `(init_declarator_list| $[$xs],*) => do
+      let ids <- xs.mapM mkInitDecl
       return InitDeclList.InitDeclList ids.toList
 --  | `(init_declarator_list| $i:init_declarator) => InitDeclList.InitDecl <$> (mkInitDecl i)
 --  | `(init_declarator_list| $idl:init_declarator_list , $id:init_declarator) => InitDeclList.InitDeclListInitDecl <$> (mkInitDeclList idl) <*> (mkInitDecl id)
@@ -388,10 +373,8 @@ partial def mkParamDecl : Lean.Syntax → Except String ParamDecl
           | .none => throw "unexpected syntax for parameter declaration" 
 
 partial def mkParamList : Lean.Syntax → Except String ParamList
-  | `(parameter_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let params <- sarr.mapM mkParamDecl
+  | `(parameter_list| $[$xs],*) => do
+      let params <- xs.mapM mkParamDecl
       return ParamList.ParamList params.toList
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for parameter list " ++ x)
@@ -413,10 +396,8 @@ partial def mkStructDecl : Lean.Syntax → Except String StructDecl
           | .none => throw "unexpected syntax for struct declarator" 
 
 partial def mkStructDeclList : Lean.Syntax → Except String StructDeclList
-  | `(struct_declaration_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let sdls <- sarr.mapM mkStructDecl
+  | `(struct_declaration_list| $[$xs]*) => do
+      let sdls <- xs.mapM mkStructDecl
       return StructDeclList.StructDeclList sdls.toList
 --  | `(struct_declarator_list| $sd:struct_declarator) => StructDeclList.StructDecl <$> (mkStructDecl sd)
 --  | `(struct_declarator_list| $sdl:struct_declarator_list , $sd:struct_declarator) => StructDeclList.StructDecListStructDec <$> (mkStructDeclList sdl) <*> (mkStructDecl sd)
@@ -440,10 +421,8 @@ partial def mkStructDeclaration : Lean.Syntax → Except String StructDeclaratio
           | .none => throw "unexpected syntax for struct declaration" 
 
 partial def mkStructDeclarationList : Lean.Syntax → Except String StructDeclarationList
-  | `(struct_declaration_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let sdls <- listOfSyntaxNodes.mapM mkStructDeclaration
+  | `(struct_declaration_list| $[$xs]*) => do
+      let sdls <- xs.mapM mkStructDeclaration
       return StructDeclarationList.StructDeclarationList sdls.toList
 --  | `(struct_declaration_list| $sd:struct_declaration) => StructDeclarationList.StructDeclaration <$> (mkStructDeclaration sd)
 --  | `(struct_declaration_list| $sdl:struct_declaration_list $sd:struct_declaration) => StructDeclarationList.StructDeclListStructDecl <$> (mkStructDeclarationList sdl) <*> (mkStructDeclaration sd)
@@ -477,10 +456,8 @@ partial def mkEnumerator : Lean.Syntax → Except String Enumerator
           | .none => throw "unexpected syntax for enumerator" 
 
 partial def mkEnumList : Lean.Syntax → Except String EnumList
-  | `(enumerator_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let es <- sarr.mapM mkEnumerator
+  | `(enumerator_list| $[$xs],*) => do
+      let es <- xs.mapM mkEnumerator
       return EnumList.EnumList es.toList
 --  | `(enumerator_list| $e:enumerator) => EnumList.Enum <$> (mkEnumerator e)
 --  | `(enumerator_list| $el:enumerator_list , $e:enumerator) => EnumList.EnumListEnum <$> (mkEnumList el) <*> (mkEnumerator e)
@@ -566,10 +543,8 @@ partial def mkStatement : Lean.Syntax → Except String Statement
           | .none => throw "unexpected syntax for statement" 
 
 partial def mkStmtList : Lean.Syntax → Except String StmtList
-  | `(statement_list| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let ss <- listOfSyntaxNodes.mapM mkStatement
+  | `(statement_list| $[$xs]*) => do
+      let ss <- xs.mapM mkStatement
       return StmtList.StmtList ss.toList
 --  | `(statement_list| $s:statement) => StmtList.Statement <$> (mkStatement s)
 --  | `(statement_list| $sl:statement_list $s:statement) => StmtList.StmtListStmt <$> (mkStmtList sl) <*> (mkStatement s)
@@ -598,10 +573,8 @@ partial def mkExternDecl : Lean.Syntax → Except String ExternDecl
           | .none => throw "unexpected syntax for external declaration" 
 
 partial def mkTranslUnit : Lean.Syntax → Except String TranslUnit
-  | `(translation_unit| $xs) => do
-      let listOfSyntaxNodes := xs[0].getArgs
-      -- let sarr : Array Syntax := listOfSyntaxNodes.getSepElems
-      let es <- listOfSyntaxNodes.mapM mkExternDecl
+  | `(translation_unit| $[$xs]*) => do
+      let es <- xs.mapM mkExternDecl
       return TranslUnit.ExternDeclList es.toList
 --  | `(translation_unit| $e:external_declaration) => TranslUnit.ExternDecl <$> (mkExternDecl e)
 --  | `(translation_unit| $t:translation_unit $e:external_declaration) => TranslUnit.TranslUnitExternDecl <$> (mkTranslUnit t) <*> (mkExternDecl e)
