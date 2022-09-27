@@ -301,11 +301,11 @@ syntax "signed" : type_specifier
 syntax "unsigned": type_specifier
 syntax struct_or_union_specifier: type_specifier
 syntax enum_specifier: type_specifier
-syntax type_name: type_specifier
+syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
-syntax ident: type_name
-syntax "`[type_name| " type_name "]" : term
+syntax ident: type_name_token
+syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
 syntax struct_or_union ident "{" struct_declaration_list "}" : struct_or_union_specifier

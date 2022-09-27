@@ -67,6 +67,7 @@ declare_syntax_cat parameter_list
 declare_syntax_cat parameter_declaration
 declare_syntax_cat identifier_list
 declare_syntax_cat type_name
+declare_syntax_cat type_name_token
 declare_syntax_cat abstract_declarator
 declare_syntax_cat direct_abstract_declarator
 declare_syntax_cat initializer
