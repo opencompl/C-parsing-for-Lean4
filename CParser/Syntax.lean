@@ -304,7 +304,7 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
-syntax ident: type_name_token
+syntax ident notFollowedBy(",") notFollowedBy(")"): type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
@@ -339,7 +339,7 @@ syntax "`[specifier_qualifier_list| " specifier_qualifier_list "]" : term
 -- struct_declarator_list
 -- syntax struct_declarator : struct_declarator_list
 -- syntax struct_declarator_list "," struct_declarator : struct_declarator_list
-syntax sepBy(struct_declarator, ",", ", ") : struct_declarator_list
+syntax struct_declarator,* : struct_declarator_list
 
 syntax "`[struct_declarator_list| " struct_declarator_list "]" : term
 

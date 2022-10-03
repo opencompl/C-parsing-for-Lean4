@@ -324,7 +324,9 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   | `(type_specifier| unsigned) => return TypeSpec.Unsigned
   | `(type_specifier| $s:struct_or_union_specifier) => TypeSpec.SoUSpec <$> (mkStructOrUnionSpec s)
   | `(type_specifier| $e:enum_specifier) => TypeSpec.EnumSpec <$> (mkEnumSpec e)
-  | `(type_specifier| $i:ident) => return TypeSpec.TypeName (i.getId.toString)
+  | `(type_specifier| $t:type_name_token) => match t with
+                                              | `($i:ident) => return TypeSpec.TypeName (i.getId.toString)
+                                              | _ => throw "unexpected syntax for type name"
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for type specifier " ++ x)
           | .none => throw "unexpected syntax for type specifier" 
@@ -396,7 +398,7 @@ partial def mkStructDecl : Lean.Syntax → Except String StructDecl
           | .none => throw "unexpected syntax for struct declarator" 
 
 partial def mkStructDeclList : Lean.Syntax → Except String StructDeclList
-  | `(struct_declaration_list| $[$xs]*) => do
+  | `(struct_declarator_list| $[$xs],*) => do
       let sdls <- xs.mapM mkStructDecl
       return StructDeclList.StructDeclList sdls.toList
 --  | `(struct_declarator_list| $sd:struct_declarator) => StructDeclList.StructDecl <$> (mkStructDecl sd)
