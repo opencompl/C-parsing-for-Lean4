@@ -265,12 +265,13 @@ syntax declaration+ : declaration_list
 syntax "`[declaration_list| " declaration_list "]" : term
 
 -- declaration_specifiers
-syntax storage_class_specifier : declaration_specifiers
-syntax storage_class_specifier declaration_specifiers : declaration_specifiers
-syntax type_specifier : declaration_specifiers
-syntax type_specifier declaration_specifiers: declaration_specifiers
-syntax type_qualifier : declaration_specifiers
-syntax type_qualifier declaration_specifiers: declaration_specifiers
+-- syntax storage_class_specifier : declaration_specifiers
+-- syntax storage_class_specifier declaration_specifiers : declaration_specifiers
+-- syntax type_specifier : declaration_specifiers
+-- syntax type_specifier declaration_specifiers: declaration_specifiers
+-- syntax type_qualifier : declaration_specifiers
+-- syntax type_qualifier declaration_specifiers: declaration_specifiers
+syntax (storage_class_specifier <|> type_specifier <|> type_qualifier)+ : declaration_specifiers
 syntax "`[declaration_specifiers| " declaration_specifiers "]" : term
 
 
@@ -304,7 +305,7 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
-syntax ident notFollowedBy(",") notFollowedBy(")"): type_name_token
+syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";"): type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier

@@ -192,12 +192,13 @@ inductive DeclList where
 --  | DeclListDecl : DeclList → Declaration → DeclList
 
 inductive DeclSpec where
-  | StorClassSpec : StorClassSpec → DeclSpec
-  | StorClassSpecDeclSpec : StorClassSpec → DeclSpec → DeclSpec
-  | TypeSpec : TypeSpec → DeclSpec
-  | TypeSpecDeclSpec : TypeSpec → DeclSpec → DeclSpec
-  | TypeQual : TypeQual → DeclSpec
-  | TypeQualDeclSpec : TypeQual → DeclSpec → DeclSpec
+  | DeclSpec : List (StorClassSpec ⊕ TypeSpec ⊕ TypeQual) → DeclSpec
+--  | StorClassSpec : StorClassSpec → DeclSpec
+--  | StorClassSpecDeclSpec : StorClassSpec → DeclSpec → DeclSpec
+--  | TypeSpec : TypeSpec → DeclSpec
+--  | TypeSpecDeclSpec : TypeSpec → DeclSpec → DeclSpec
+--  | TypeQual : TypeQual → DeclSpec
+--  | TypeQualDeclSpec : TypeQual → DeclSpec → DeclSpec
 
 inductive Enumerator where
   | Ident : String →  Enumerator

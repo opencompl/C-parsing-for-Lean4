@@ -36,7 +36,7 @@ instance : Inhabited InitList where default := InitList.InitList []
 instance : Inhabited InitDecl where default := InitDecl.Declarator (default : Declarator)
 
 instance : Inhabited StorClassSpec where default := StorClassSpec.TypeDef
-instance : Inhabited DeclSpec where default := DeclSpec.StorClassSpec (default : StorClassSpec)
+instance : Inhabited DeclSpec where default := DeclSpec.DeclSpec []
 instance : Inhabited Declaration where default := Declaration.DeclSpec (default : DeclSpec)
 instance : Inhabited DeclList where default := DeclList.DeclList []
 instance : Inhabited Enumerator where default := Enumerator.Ident "foo"     -- Default for Identifier?
@@ -260,12 +260,16 @@ partial def initDeclListToString : InitDeclList → String
 --  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
 
 partial def declSpecToString : DeclSpec → String
-  | .StorClassSpec d => (storClassSpecToString d)
-  | .StorClassSpecDeclSpec d i => (storClassSpecToString d) ++ " " ++ (declSpecToString i)
-  | .TypeSpec d => (typeSpecToString d)
-  | .TypeSpecDeclSpec d i => (typeSpecToString d) ++ " " ++ (declSpecToString i)
-  | .TypeQual d => (typeQualToString d)
-  | .TypeQualDeclSpec d i => (typeQualToString d) ++ " " ++ (declSpecToString i)
+  | .DeclSpec ds => " ".intercalate (ds.map (λ x => match x with
+                                              | .inl scs => storClassSpecToString scs
+                                              | .inr (.inl ts) => typeSpecToString ts
+                                              | .inr (.inr tq) => typeQualToString tq))
+--  | .StorClassSpec d => (storClassSpecToString d)
+--  | .StorClassSpecDeclSpec d i => (storClassSpecToString d) ++ " " ++ (declSpecToString i)
+--  | .TypeSpec d => (typeSpecToString d)
+--  | .TypeSpecDeclSpec d i => (typeSpecToString d) ++ " " ++ (declSpecToString i)
+--  | .TypeQual d => (typeQualToString d)
+--  | .TypeQualDeclSpec d i => (typeQualToString d) ++ " " ++ (declSpecToString i)
 
 partial def initDeclToString : InitDecl → String
   | .Declarator d => (declaratorToString d)
