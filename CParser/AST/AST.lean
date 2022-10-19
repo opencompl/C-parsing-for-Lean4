@@ -192,13 +192,13 @@ inductive DeclList where
 --  | DeclListDecl : DeclList → Declaration → DeclList
 
 inductive DeclSpec where
-  | DeclSpec : List (StorClassSpec ⊕ TypeSpec ⊕ TypeQual) → DeclSpec
---  | StorClassSpec : StorClassSpec → DeclSpec
---  | StorClassSpecDeclSpec : StorClassSpec → DeclSpec → DeclSpec
---  | TypeSpec : TypeSpec → DeclSpec
---  | TypeSpecDeclSpec : TypeSpec → DeclSpec → DeclSpec
---  | TypeQual : TypeQual → DeclSpec
---  | TypeQualDeclSpec : TypeQual → DeclSpec → DeclSpec
+--  | DeclSpec : List (StorClassSpec ⊕ TypeSpec ⊕ TypeQual) → DeclSpec
+  | StorClassSpec : StorClassSpec → DeclSpec
+  | StorClassSpecDeclSpec : StorClassSpec → DeclSpec → DeclSpec
+  | TypeSpec : TypeSpec → DeclSpec
+  | TypeSpecDeclSpec : TypeSpec → DeclSpec → DeclSpec
+  | TypeQual : TypeQual → DeclSpec
+  | TypeQualDeclSpec : TypeQual → DeclSpec → DeclSpec
 
 inductive Enumerator where
   | Ident : String →  Enumerator
@@ -233,11 +233,16 @@ inductive ParamTypeList where
   | ParamList : ParamList → ParamTypeList
   | ParamListEllipsis : ParamList → ParamTypeList
 
+inductive SpecQual where
+  | TypeSpec : TypeSpec → SpecQual
+  | TypeQual : TypeQual → SpecQual
+
 inductive SpecQualList where
-  | TypeSpecSpecQualList : TypeSpec → SpecQualList → SpecQualList
-  | TypeSpec : TypeSpec → SpecQualList
-  | TypeQualSpecQualList : TypeQual → SpecQualList → SpecQualList
-  | TypeQual : TypeQual → SpecQualList
+  | SpecQualList : List SpecQual → SpecQualList
+--  | TypeSpecSpecQualList : TypeSpec → SpecQualList → SpecQualList
+--  | TypeSpec : TypeSpec → SpecQualList
+--  | TypeQualSpecQualList : TypeQual → SpecQualList → SpecQualList
+--  | TypeQual : TypeQual → SpecQualList
 
 inductive StorClassSpec where
   | TypeDef : StorClassSpec

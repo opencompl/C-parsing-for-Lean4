@@ -332,18 +332,18 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
           | .none => throw "unexpected syntax for type specifier" 
 
 partial def mkDeclSpec : Lean.Syntax → Except String DeclSpec
-  | `(declaration_specifiers| $[$xs]*) => do
-      let ds <- xs.mapM (fun x => match x with
-                          | `(storage_class_specifier| $s) => Except.ok $ Sum.inl $ mkStorClassSpec s
-                          | `(type_specifier| $t) => Except.ok $ Sum.inr $ Sum.inl $ mkTypeSpec t
-                          | `(type_qualifier| $t) => Except.ok $ Sum.inr $ Sum.inr $ mkTypeQual t)
-      return DeclSpec.DeclSpec ds.toList
---  | `(declaration_specifiers| $s:storage_class_specifier) => DeclSpec.StorClassSpec <$> (mkStorClassSpec s)
---  | `(declaration_specifiers| $s:storage_class_specifier $d:declaration_specifiers) => DeclSpec.StorClassSpecDeclSpec <$> (mkStorClassSpec s) <*> (mkDeclSpec d)
---  | `(declaration_specifiers| $t:type_specifier) => DeclSpec.TypeSpec <$> (mkTypeSpec t)
---  | `(declaration_specifiers| $t:type_specifier $d:declaration_specifiers) => DeclSpec.TypeSpecDeclSpec <$> (mkTypeSpec t) <*> (mkDeclSpec d)
---  | `(declaration_specifiers| $t:type_qualifier) => DeclSpec.TypeQual <$> (mkTypeQual t)
---  | `(declaration_specifiers| $t:type_qualifier $d:declaration_specifiers) => DeclSpec.TypeQualDeclSpec <$> (mkTypeQual t) <*> (mkDeclSpec d)
+--   | `(declaration_specifiers| $[$xs]*) => do
+--       let ds <- xs.mapM (fun x => match x with
+--                           | `(storage_class_specifier| $s) => Except.ok $ Sum.inl $ mkStorClassSpec s
+--                           | `(type_specifier| $t) => Except.ok $ Sum.inr $ Sum.inl $ mkTypeSpec t
+--                           | `(type_qualifier| $t) => Except.ok $ Sum.inr $ Sum.inr $ mkTypeQual t)
+--       return DeclSpec.DeclSpec ds.toList
+  | `(declaration_specifiers| $s:storage_class_specifier) => DeclSpec.StorClassSpec <$> (mkStorClassSpec s)
+  | `(declaration_specifiers| $s:storage_class_specifier $d:declaration_specifiers) => DeclSpec.StorClassSpecDeclSpec <$> (mkStorClassSpec s) <*> (mkDeclSpec d)
+  | `(declaration_specifiers| $t:type_specifier) => DeclSpec.TypeSpec <$> (mkTypeSpec t)
+  | `(declaration_specifiers| $t:type_specifier $d:declaration_specifiers) => DeclSpec.TypeSpecDeclSpec <$> (mkTypeSpec t) <*> (mkDeclSpec d)
+  | `(declaration_specifiers| $t:type_qualifier) => DeclSpec.TypeQual <$> (mkTypeQual t)
+  | `(declaration_specifiers| $t:type_qualifier $d:declaration_specifiers) => DeclSpec.TypeQualDeclSpec <$> (mkTypeQual t) <*> (mkDeclSpec d)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for declaration specifier " ++ x)
           | .none => throw "unexpected syntax for declaration specifier" 
@@ -413,11 +413,21 @@ partial def mkStructDeclList : Lean.Syntax → Except String StructDeclList
           | .some x => throw ("unexpected syntax for struct declarator list " ++ x)
           | .none => throw "unexpected syntax for struct declarator list" 
 
+partial def mkSpecQual : Lean.Syntax → Except String SpecQual
+  | `(specifier_qualifier| $t:type_specifier) => SpecQual.TypeSpec <$> (mkTypeSpec t)
+  | `(specifier_qualifier| $t:type_qualifier) => SpecQual.TypeQual <$> (mkTypeQual t)
+  | s => match s.reprint with
+          | .some x => throw ("unexpected syntax for specifier qualifier " ++ x)
+          | .none => throw "unexpected syntax for specifier qualifier"
+
 partial def mkSpecQualList : Lean.Syntax → Except String SpecQualList
-  | `(specifier_qualifier_list| $ts:type_specifier $sql:specifier_qualifier_list) => SpecQualList.TypeSpecSpecQualList <$> (mkTypeSpec ts) <*> (mkSpecQualList sql)
-  | `(specifier_qualifier_list| $ts:type_specifier) => SpecQualList.TypeSpec <$> (mkTypeSpec ts)
-  | `(specifier_qualifier_list| $tq:type_qualifier $sql:specifier_qualifier_list) => SpecQualList.TypeQualSpecQualList <$> (mkTypeQual tq) <*> (mkSpecQualList sql)
-  | `(specifier_qualifier_list| $tq:type_qualifier) => SpecQualList.TypeQual <$> (mkTypeQual tq)
+  | `(specifier_qualifier_list| $[$xs]*) => do
+      let sqs <- xs.mapM mkSpecQual
+      return SpecQualList.SpecQualList sqs.toList
+--  | `(specifier_qualifier_list| $ts:type_specifier $sql:specifier_qualifier_list) => SpecQualList.TypeSpecSpecQualList <$> (mkTypeSpec ts) <*> (mkSpecQualList sql)
+--  | `(specifier_qualifier_list| $ts:type_specifier) => SpecQualList.TypeSpec <$> (mkTypeSpec ts)
+--  | `(specifier_qualifier_list| $tq:type_qualifier $sql:specifier_qualifier_list) => SpecQualList.TypeQualSpecQualList <$> (mkTypeQual tq) <*> (mkSpecQualList sql)
+--  | `(specifier_qualifier_list| $tq:type_qualifier) => SpecQualList.TypeQual <$> (mkTypeQual tq)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for specifier qualifier list " ++ x)
           | .none => throw "unexpected syntax for specifier qualifier list" 

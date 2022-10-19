@@ -51,6 +51,7 @@ declare_syntax_cat struct_or_union_specifier
 declare_syntax_cat struct_or_union
 declare_syntax_cat struct_declaration_list
 declare_syntax_cat struct_declaration
+declare_syntax_cat specifier_qualifier
 declare_syntax_cat specifier_qualifier_list
 declare_syntax_cat struct_declarator_list
 declare_syntax_cat struct_declarator
