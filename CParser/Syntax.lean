@@ -305,7 +305,7 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
-syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") : type_name_token
+syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("("): type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
