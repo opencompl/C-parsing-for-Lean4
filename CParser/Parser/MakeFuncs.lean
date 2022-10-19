@@ -332,12 +332,17 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
           | .none => throw "unexpected syntax for type specifier" 
 
 partial def mkDeclSpec : Lean.Syntax → Except String DeclSpec
+  | `(declaration_specifier| $s:storage_class_specifier) => DeclSpec.StorClassSpec <$> (mkStorClassSpec s)
+  | `(declaration_specifier| $t:type_specifier) => DeclSpec.TypeSpec <$> (mkTypeSpec t)
+  | `(declaration_specifier| $t:type_qualifier) => DeclSpec.TypeQual <$> (mkTypeQual t)
+  | s => match s.reprint with
+          | .none => throw "unexpected syntax for declaration specifier"
+          | .some x => throw ("unexpected syntax for declaration specifier " ++ x)
+
+partial def mkDeclSpecs : Lean.Syntax → Except String DeclSpecs
   | `(declaration_specifiers| $[$xs]*) => do
-      let ds <- xs.mapM (fun x => match x with
-                          | `(storage_class_specifier| $s) => Except.ok $ Sum.inl $ mkStorClassSpec s
-                          | `(type_specifier| $t) => Except.ok $ Sum.inr $ Sum.inl $ mkTypeSpec t
-                          | `(type_qualifier| $t) => Except.ok $ Sum.inr $ Sum.inr $ mkTypeQual t)
-      return DeclSpec.DeclSpec ds.toList
+      let ds <- xs.mapM mkDeclSpec
+      return DeclSpecs.DeclSpecs ds.toList
 --  | `(declaration_specifiers| $s:storage_class_specifier) => DeclSpec.StorClassSpec <$> (mkStorClassSpec s)
 --  | `(declaration_specifiers| $s:storage_class_specifier $d:declaration_specifiers) => DeclSpec.StorClassSpecDeclSpec <$> (mkStorClassSpec s) <*> (mkDeclSpec d)
 --  | `(declaration_specifiers| $t:type_specifier) => DeclSpec.TypeSpec <$> (mkTypeSpec t)
@@ -345,8 +350,8 @@ partial def mkDeclSpec : Lean.Syntax → Except String DeclSpec
 --  | `(declaration_specifiers| $t:type_qualifier) => DeclSpec.TypeQual <$> (mkTypeQual t)
 --  | `(declaration_specifiers| $t:type_qualifier $d:declaration_specifiers) => DeclSpec.TypeQualDeclSpec <$> (mkTypeQual t) <*> (mkDeclSpec d)
   | s => match s.reprint with
-          | .some x => throw ("unexpected syntax for declaration specifier " ++ x)
-          | .none => throw "unexpected syntax for declaration specifier" 
+          | .none => throw "unexpected syntax for declaration specifiers" 
+          | .some x => throw ("unexpected syntax for declaration specifiers " ++ x)
 
 partial def mkDeclaration : Lean.Syntax → Except String AST.Declaration
   | `(declaration| $ds:declaration_specifiers ;) => Declaration.DeclSpec <$> (mkDeclSpec ds)

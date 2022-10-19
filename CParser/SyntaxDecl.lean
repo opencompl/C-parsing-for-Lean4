@@ -42,6 +42,7 @@ declare_syntax_cat assignment_operator
 declare_syntax_cat expression
 declare_syntax_cat constant_expression
 declare_syntax_cat declaration
+declare_syntax_cat declaration_specifier
 declare_syntax_cat declaration_specifiers
 declare_syntax_cat init_declarator_list
 declare_syntax_cat init_declarator

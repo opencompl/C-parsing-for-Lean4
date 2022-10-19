@@ -264,6 +264,12 @@ syntax declaration+ : declaration_list
 
 syntax "`[declaration_list| " declaration_list "]" : term
 
+-- declaration_specifier
+syntax storage_class_specifier : declaration_specifier
+syntax type_specifier : declaration_specifier
+syntax type_qualifier : declaration_specifier
+syntax "`[declaration_specifier| " declaration_specifier "]" : term
+
 -- declaration_specifiers
 -- syntax storage_class_specifier : declaration_specifiers
 -- syntax storage_class_specifier declaration_specifiers : declaration_specifiers
@@ -271,7 +277,7 @@ syntax "`[declaration_list| " declaration_list "]" : term
 -- syntax type_specifier declaration_specifiers: declaration_specifiers
 -- syntax type_qualifier : declaration_specifiers
 -- syntax type_qualifier declaration_specifiers: declaration_specifiers
-syntax (storage_class_specifier <|> type_specifier <|> type_qualifier)+ : declaration_specifiers
+syntax declaration_specifier+ : declaration_specifiers
 syntax "`[declaration_specifiers| " declaration_specifiers "]" : term
 
 

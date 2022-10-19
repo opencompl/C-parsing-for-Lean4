@@ -192,7 +192,12 @@ inductive DeclList where
 --  | DeclListDecl : DeclList → Declaration → DeclList
 
 inductive DeclSpec where
-  | DeclSpec : List (StorClassSpec ⊕ TypeSpec ⊕ TypeQual) → DeclSpec
+  | StorClassSpec : StorClassSpec → DeclSpec
+  | TypeSpec : TypeSpec → DeclSpec
+  | TypeQual : TypeQual → DeclSpec
+
+inductive DeclSpecs where
+  | DeclSpecs : List DeclSpec → DeclSpecs
 --  | StorClassSpec : StorClassSpec → DeclSpec
 --  | StorClassSpecDeclSpec : StorClassSpec → DeclSpec → DeclSpec
 --  | TypeSpec : TypeSpec → DeclSpec

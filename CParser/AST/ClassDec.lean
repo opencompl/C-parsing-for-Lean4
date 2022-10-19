@@ -36,7 +36,8 @@ instance : Inhabited InitList where default := InitList.InitList []
 instance : Inhabited InitDecl where default := InitDecl.Declarator (default : Declarator)
 
 instance : Inhabited StorClassSpec where default := StorClassSpec.TypeDef
-instance : Inhabited DeclSpec where default := DeclSpec.DeclSpec []
+instance : Inhabited DeclSpec where default := DeclSpec.StorClassSpec (default : StorClassSpec)
+instance : Inhabited DeclSpecs where default := DeclSpecs.DeclSpecs []
 instance : Inhabited Declaration where default := Declaration.DeclSpec (default : DeclSpec)
 instance : Inhabited DeclList where default := DeclList.DeclList []
 instance : Inhabited Enumerator where default := Enumerator.Ident "foo"     -- Default for Identifier?
@@ -260,10 +261,12 @@ partial def initDeclListToString : InitDeclList → String
 --  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
 
 partial def declSpecToString : DeclSpec → String
-  | .DeclSpec ds => " ".intercalate (ds.map (λ x => match x with
-                                              | .inl scs => storClassSpecToString scs
-                                              | .inr (.inl ts) => typeSpecToString ts
-                                              | .inr (.inr tq) => typeQualToString tq))
+  | .StorClassSpec s => (storClassSpecToString s)
+  | .TypeSpec t => (typeSpecToString t)
+  | .TypeQual t => (typeQualToString t)
+
+partial def declSpecsToString : DeclSpecs → String
+  | .DeclSpecs ds => " ".intercalate (ds.map declSpecToString)
 --  | .StorClassSpec d => (storClassSpecToString d)
 --  | .StorClassSpecDeclSpec d i => (storClassSpecToString d) ++ " " ++ (declSpecToString i)
 --  | .TypeSpec d => (typeSpecToString d)
@@ -468,6 +471,7 @@ instance : ToString InitDecl where toString := initDeclToString
 instance : ToString Declaration where toString := declarationToString
 instance : ToString DeclList where toString := declListToString
 instance : ToString DeclSpec where toString := declSpecToString
+instance : ToString DeclSpecs where toString := declSpecsToString
 instance : ToString Enumerator where toString := enumeratorToString
 instance : ToString EnumList where toString := enumListToString
 instance : ToString EnumSpec where toString := enumSpecToString
