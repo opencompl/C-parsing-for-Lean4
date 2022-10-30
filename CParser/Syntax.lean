@@ -305,13 +305,12 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
-syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("("): type_name_token
+syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("["): type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
-syntax struct_or_union ident "{" struct_declaration_list "}" : struct_or_union_specifier
+syntax struct_or_union ident ("{" struct_declaration_list "}")? : struct_or_union_specifier
 syntax struct_or_union "{" struct_declaration_list "}" : struct_or_union_specifier
-syntax struct_or_union ident : struct_or_union_specifier
 syntax "`[struct_or_union_specifier| " struct_or_union_specifier "]" : term
 
 -- struct_or_union
