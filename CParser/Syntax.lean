@@ -258,9 +258,9 @@ syntax declaration_specifiers (init_declarator_list)? ";" : declaration
 syntax "`[declaration| " declaration "]" : term
 
 -- declaration_list
--- syntax declaration : declaration_list
--- syntax declaration_list declaration : declaration_list
-syntax declaration+ : declaration_list
+syntax declaration : declaration_list
+syntax declaration declaration_list : declaration_list
+-- syntax declaration+ : declaration_list
 
 syntax "`[declaration_list| " declaration_list "]" : term
 
@@ -438,10 +438,10 @@ syntax "default" ":" statement : labeled_statement
 syntax "`[labeled_statement| " labeled_statement "]" : term
 
 -- compound statement
--- syntax "{" "}" : compound_statement
--- syntax "{" statement_list "}" : compound_statement
--- syntax "{" declaration_list "}" : compound_statement
-syntax "{" (declaration_list)? (statement_list)? "}" : compound_statement
+syntax "{" "}" : compound_statement
+syntax "{" statement_list "}" : compound_statement
+syntax "{" declaration_list "}" : compound_statement
+syntax "{" declaration_list statement_list "}" : compound_statement
 syntax "`[compound_statement| " compound_statement "]" : term
 
 -- statement
@@ -454,9 +454,9 @@ syntax jump_statement : statement
 syntax "`[statement| " statement "]" : term
 
 -- statement list
--- syntax statement : statement_list
--- syntax statement_list statement : statement
-syntax statement+ : statement_list
+syntax statement : statement_list
+syntax statement statement_list : statement_list
+-- syntax statement+ : statement_list
 
 syntax "`[statement_list| " statement_list "]" : term
 

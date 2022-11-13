@@ -303,11 +303,11 @@ partial def mkInitDecl : Lean.Syntax → Except String InitDecl
           | .none => throw "unexpected syntax for init declarator" 
 
 partial def mkDeclList : Lean.Syntax → Except String DeclList
-  | `(declaration_list| $[$xs]*) => do
-      let decls <- xs.mapM mkDeclaration
-      return DeclList.DeclList decls.toList
---  | `(declaration_list| $d:declaration) => DeclList.Decl <$> (mkDeclaration d)
---  | `(declaration_list| $dl:declaration_list $d:declaration) => DeclList.DeclListDecl <$> (mkDeclList dl) <*> (mkDeclaration d)
+--  | `(declaration_list| $[$xs]*) => do
+--      let decls <- xs.mapM mkDeclaration
+--      return DeclList.DeclList decls.toList
+  | `(declaration_list| $d:declaration) => (λ d => DeclList.DeclList [d]) <$> (mkDeclaration d)
+  | `(declaration_list| $d:declaration $dl:declaration_list) => (λ (DeclList.DeclList dl) d => DeclList.DeclList ([d] ++ dl)) <$> (mkDeclList dl) <*> (mkDeclaration d)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for declaration list " ++ x)
           | .none => throw "unexpected syntax for declaration list" 
@@ -561,11 +561,12 @@ partial def mkStatement : Lean.Syntax → Except String Statement
           | .none => throw "unexpected syntax for statement" 
 
 partial def mkStmtList : Lean.Syntax → Except String StmtList
-  | `(statement_list| $[$xs]*) => do
-      let ss <- xs.mapM mkStatement
-      return StmtList.StmtList ss.toList
---  | `(statement_list| $s:statement) => StmtList.Statement <$> (mkStatement s)
---  | `(statement_list| $sl:statement_list $s:statement) => StmtList.StmtListStmt <$> (mkStmtList sl) <*> (mkStatement s)
+--  | `(statement_list| $[$xs]*) => do
+--      let ss <- xs.mapM mkStatement
+--      return StmtList.StmtList ss.toList
+  | `(statement_list| $s:statement) => (λ l => StmtList.StmtList [l]) <$> mkStatement s
+  | `(statement_list| $s:statement $sl:statement_list) =>
+     (λ (StmtList.StmtList sl) l  => StmtList.StmtList ([l] ++ sl)) <$> (mkStmtList sl) <*> (mkStatement s)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for statement list " ++ x)
           | .none => throw "unexpected syntax for statement list" 
