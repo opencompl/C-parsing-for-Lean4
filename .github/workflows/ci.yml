@@ -35,4 +35,4 @@ jobs:
 
       - name: Test parser
         run: |
-          find ./Tests/ -name '*.c' | xargs ./build/bin/CParser
+          find ./Tests/ -name '*.c' | xargs ./build/bin/cParser
