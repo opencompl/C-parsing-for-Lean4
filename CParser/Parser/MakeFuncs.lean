@@ -421,13 +421,11 @@ partial def mkSpecQual : Lean.Syntax → Except String SpecQual
           | .none => throw "unexpected syntax for specifier qualifier"
 
 partial def mkSpecQualList : Lean.Syntax → Except String SpecQualList
-  | `(specifier_qualifier_list| $[$xs]*) => do
-      let sqs <- xs.mapM mkSpecQual
-      return SpecQualList.SpecQualList sqs.toList
---  | `(specifier_qualifier_list| $ts:type_specifier $sql:specifier_qualifier_list) => SpecQualList.TypeSpecSpecQualList <$> (mkTypeSpec ts) <*> (mkSpecQualList sql)
---  | `(specifier_qualifier_list| $ts:type_specifier) => SpecQualList.TypeSpec <$> (mkTypeSpec ts)
---  | `(specifier_qualifier_list| $tq:type_qualifier $sql:specifier_qualifier_list) => SpecQualList.TypeQualSpecQualList <$> (mkTypeQual tq) <*> (mkSpecQualList sql)
---  | `(specifier_qualifier_list| $tq:type_qualifier) => SpecQualList.TypeQual <$> (mkTypeQual tq)
+--  | `(specifier_qualifier_list| $[$xs]*) => do
+--      let sqs <- xs.mapM mkSpecQual
+--      return SpecQualList.SpecQualList sqs.toList
+  | `(specifier_qualifier_list| $sq:specifier_qualifier) => (λ sq => SpecQualList.SpecQualList [sq]) <$> (mkSpecQual sq)
+  | `(specifier_qualifier_list| $sq:specifier_qualifier $sql:specifier_qualifier_list) => (λ sq (SpecQualList.SpecQualList sql) => SpecQualList.SpecQualList $ [sq] ++ sql) <$> (mkSpecQual sq) <*> (mkSpecQualList sql)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for specifier qualifier list " ++ x)
           | .none => throw "unexpected syntax for specifier qualifier list" 

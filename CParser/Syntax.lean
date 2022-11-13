@@ -343,11 +343,9 @@ syntax type_qualifier : specifier_qualifier
 syntax "`[specifier_qualifier| " specifier_qualifier "]" : term
 
 -- specifier_qualifier_list
--- syntax type_specifier specifier_qualifier_list : specifier_qualifier_list
--- syntax type_specifier : specifier_qualifier_list
--- syntax type_qualifier specifier_qualifier_list : specifier_qualifier_list
--- syntax type_qualifier : specifier_qualifier_list
-syntax specifier_qualifier* : specifier_qualifier_list
+syntax specifier_qualifier : specifier_qualifier_list
+syntax specifier_qualifier specifier_qualifier_list : specifier_qualifier_list
+--syntax specifier_qualifier* : specifier_qualifier_list
 syntax "`[specifier_qualifier_list| " specifier_qualifier_list "]" : term
 
 -- struct_declarator_list
