@@ -7,4 +7,3 @@ elab "#parse " fileNameStx:str "as " cat:ident : command =>
      let fileStrIO <- IO.FS.readFile filename
      let res := Parser.runParserCategory (← getEnv) cat.getId fileStrIO "<input>"
      logInfo s!"{res}"
-
