@@ -45,45 +45,40 @@ open Lean
 partial def finishCommentBlockCustom (nesting : Nat) : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
   let input := c.input
   let i     := s.pos
-  if input.atEnd i then eoi s
+  if input.atEnd i then (eoi s)
   else
     let curr := input.get i
     let i    := input.next i
-    if curr == '*' then
-      if input.atEnd i then eoi s
-      else
-        let curr := input.get i
-        if curr == '/' then -- "-/" end of comment
-          if nesting == 1 then s.next input i
-          else finishCommentBlockCustom (nesting-1) c (s.next input i)
-        else
-          finishCommentBlockCustom nesting c (s.next input i)
-    else if curr == '/' then
-      if input.atEnd i then eoi s
-      else
-        let curr := input.get i
-        if curr == '*' then finishCommentBlockCustom (nesting+1) c (s.next input i)
-        else finishCommentBlockCustom nesting c (s.setPos i)
-    else finishCommentBlockCustom nesting c (s.setPos i)
-where
-  eoi s := s.mkUnexpectedError "unterminated comment"
+    match curr with
+      | '*' => if input.atEnd i then (eoi s)
+               else let curr := input.get i
+                    match curr with
+                      | '/' => if nesting == 1 then (s.next input i)
+                               else finishCommentBlockCustom (nesting-1) c (s.next input i)
+                      | _ => finishCommentBlockCustom nesting c (s.next input i)
+      | '/' => if input.atEnd i then (eoi s)
+               else let curr := input.get i
+                    match curr with
+                      | '*' => finishCommentBlockCustom (nesting+1) c (s.next input i)
+                      | _ => finishCommentBlockCustom nesting c (s.setPos i)
+      | _ => finishCommentBlockCustom nesting c (s.setPos i)
+        where eoi s := s.mkUnexpectedError "unterminated comment"
 
 -- Custom whitespace parser 
-
-partial def whitespaceCustom : ParserFn := fun c s =>
+partial def whitespaceCustom : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
   let input := c.input
   let i     := s.pos
   if input.atEnd i then s
   else
     let curr := input.get i
-    if curr.isWhitespace then whitespace c (s.next input i)
+    if curr.isWhitespace then whitespaceCustom c (s.next input i)
     else if curr == '/' then
       let i    := input.next i
       let curr := input.get i
-      if curr == '/' then andthenFn (takeUntilFn (fun c => c = '\n')) whitespace c (s.next input i)
+      if curr == '/' then Parser.andthenFn (Parser.takeUntilFn (fun c => c = '\n')) whitespaceCustom c (s.next input i)
       else if curr == '*' then
         let i    := input.next i
-        andthenFn (finishCommentBlockCustom 1) whitespace c (s.next input i)
+        Parser.andthenFn (finishCommentBlockCustom 1) whitespaceCustom c (s.next input i)
       else s
     else s
 
