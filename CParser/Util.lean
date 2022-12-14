@@ -1,5 +1,6 @@
 import Lean
 import Init.Data.String
+-- import Lean.Parser.Types
 
 open Lean
 
@@ -10,34 +11,93 @@ open Lean
 --   abb // cc
 --   ?
 
--- First argument is 1 iff a double quote is unterminated
-def removeCommentsLineCharList (inString: Bool) (xs: List Char): List Char := 
-  match xs with
-  | /-
-      if we see //, and we are not in a string, then remove everything.
-     -/ '/'::'/'::xs => if inString then '/'::'/'::removeCommentsLineCharList inString xs else []
-  | /-
-     if we see \", then we have not entered a string (it is an escaped string quote). So continue as normal
-    -/'\\'::'"'::xs => '\\'::'"'::removeCommentsLineCharList inString xs -- escaped string literal
-  | /-
-     if we see a ", and we have NOT seen a \ " (ie, this double quote is not escaped), then we are now in a string.
-    -/ '"'::xs => '"'::removeCommentsLineCharList (!inString) xs
-  | /-
-     ignore everything else and continue.
-    -/x::xs => x::removeCommentsLineCharList inString xs
-  | [] => []
+-- -- First argument is 1 iff a double quote is unterminated
+-- def removeCommentsLineCharList (inString: Bool) (xs: List Char): List Char := 
+--   match xs with
+--   | /-
+--       if we see //, and we are not in a string, then remove everything.
+--      -/ '/'::'/'::xs => if inString then '/'::'/'::removeCommentsLineCharList inString xs else []
+--   | /-
+--      if we see \", then we have not entered a string (it is an escaped string quote). So continue as normal
+--     -/'\\'::'"'::xs => '\\'::'"'::removeCommentsLineCharList inString xs -- escaped string literal
+--   | /-
+--      if we see a ", and we have NOT seen a \ " (ie, this double quote is not escaped), then we are now in a string.
+--     -/ '"'::xs => '"'::removeCommentsLineCharList (!inString) xs
+--   | /-
+--      ignore everything else and continue.
+--     -/x::xs => x::removeCommentsLineCharList inString xs
+--   | [] => []
 
-#eval (removeCommentsLineCharList (inString := False) ['"', '/', '/', 'b', 'o', 'i', '"'])
-#eval (removeCommentsLineCharList (inString := False) ['f', '/', '/', 'b', 'o', 'i', '"'])
-#eval (removeCommentsLineCharList (inString := False) ['f', '"', '/', '/', '"', 'b', '/', '/', 'o', 'i', '"'])
+-- #eval (removeCommentsLineCharList (inString := False) ['"', '/', '/', 'b', 'o', 'i', '"'])
+-- #eval (removeCommentsLineCharList (inString := False) ['f', '/', '/', 'b', 'o', 'i', '"'])
+-- #eval (removeCommentsLineCharList (inString := False) ['f', '"', '/', '/', '"', 'b', '/', '/', 'o', 'i', '"'])
 
-def removeCommentsLine : String → String :=
-λ s => { data := removeCommentsLineCharList (inString := False) s.data }
+-- def removeCommentsLine : String → String :=
+-- λ s => { data := removeCommentsLineCharList (inString := False) s.data }
 
--- extra layer of abstraction for when we add
--- more preprocessing funcitons (like multiline comments)
-def preprocess (lines : Array String ) : Array String :=
-lines.map (λ l => removeCommentsLine l)
+-- -- extra layer of abstraction for when we add
+-- -- more preprocessing funcitons (like multiline comments)
+-- def preprocess (lines : Array String ) : Array String :=
+-- lines.map (λ l => removeCommentsLine l)
+
+-- 
+
+partial def finishCommentBlockCustom (nesting : Nat) : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
+  let input := c.input
+  let i     := s.pos
+  if input.atEnd i then eoi s
+  else
+    let curr := input.get i
+    let i    := input.next i
+    if curr == '*' then
+      if input.atEnd i then eoi s
+      else
+        let curr := input.get i
+        if curr == '/' then -- "-/" end of comment
+          if nesting == 1 then s.next input i
+          else finishCommentBlockCustom (nesting-1) c (s.next input i)
+        else
+          finishCommentBlockCustom nesting c (s.next input i)
+    else if curr == '/' then
+      if input.atEnd i then eoi s
+      else
+        let curr := input.get i
+        if curr == '*' then finishCommentBlockCustom (nesting+1) c (s.next input i)
+        else finishCommentBlockCustom nesting c (s.setPos i)
+    else finishCommentBlockCustom nesting c (s.setPos i)
+where
+  eoi s := s.mkUnexpectedError "unterminated comment"
+
+-- Custom whitespace parser 
+
+partial def whitespaceCustom : ParserFn := fun c s =>
+  let input := c.input
+  let i     := s.pos
+  if input.atEnd i then s
+  else
+    let curr := input.get i
+    if curr.isWhitespace then whitespace c (s.next input i)
+    else if curr == '/' then
+      let i    := input.next i
+      let curr := input.get i
+      if curr == '/' then andthenFn (takeUntilFn (fun c => c = '\n')) whitespace c (s.next input i)
+      else if curr == '*' then
+        let i    := input.next i
+        andthenFn (finishCommentBlockCustom 1) whitespace c (s.next input i)
+      else s
+    else s
+
+def runParserCategory (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
+  let c := Parser.mkParserContext (Parser.mkInputContext input fileName) { env := env, options := {} }
+  let s := Parser.mkParserState input
+  let s := whitespaceCustom c s
+  let s := Parser.categoryParserFnImpl catName c s
+  if s.hasError then
+    Except.error (s.toErrorMsg c)
+  else if input.atEnd s.pos then
+    Except.ok s.stxStack.back
+  else
+    Except.error ((s.mkError "end of input").toErrorMsg c)
 
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
