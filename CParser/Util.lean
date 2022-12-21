@@ -96,7 +96,7 @@ def runParserCategory (env : Environment) (catName : Name) (input : String) (fil
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → Except String α := λ s env => do
-  ntparser (← Parser.runParserCategory env syntaxcat s)
+  ntparser (← _root_.runParserCategory env syntaxcat s)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
