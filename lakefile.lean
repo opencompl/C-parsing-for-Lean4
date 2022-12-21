@@ -9,7 +9,7 @@ lean_lib CParser {
   -- add library configuration options here
 }
 
-@[defaultTarget]
+@[default_target]
 lean_exe cParser {
   supportInterpreter := true,
   root := `Main

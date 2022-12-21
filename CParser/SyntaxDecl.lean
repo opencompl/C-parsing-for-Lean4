@@ -121,10 +121,10 @@ def const : Parser :=
        info := mkAtomicInfo "const"
     }
 
-@[combinatorFormatter const]
+@[combinator_formatter const]
 def const.formatter : Formatter := pure ()
 
-@[combinatorParenthesizer const]
+@[combinator_parenthesizer const]
 def const.parenthesizer : Parenthesizer := pure ()
 
 -- #print const
