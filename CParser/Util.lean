@@ -2,7 +2,7 @@ import Lean
 import Init.Data.String
 -- import Lean.Parser.Types
 
-open Lean
+open Lean Parser
 
 -- for now: just single-line comments
 -- TODO: this also isn't good enough, it will break if there's a string literal with // inside it, and it shouldn't
@@ -83,16 +83,15 @@ partial def whitespaceCustom : ParserFn := fun (c : Parser.ParserContext) (s : P
     else s
 
 def runParserCategory (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
-  let c := Parser.mkParserContext (Parser.mkInputContext input fileName) { env := env, options := {} }
-  let s := Parser.mkParserState input
-  let s := whitespaceCustom c s
-  let s := Parser.categoryParserFnImpl catName c s
+  let p := andthenFn whitespaceCustom (categoryParserFnImpl catName)
+  let ictx := mkInputContext input fileName
+  let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
   if s.hasError then
-    Except.error (s.toErrorMsg c)
+    Except.error (s.toErrorMsg ictx)
   else if input.atEnd s.pos then
     Except.ok s.stxStack.back
   else
-    Except.error ((s.mkError "end of input").toErrorMsg c)
+    Except.error ((s.mkError "end of input").toErrorMsg ictx)
 
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :

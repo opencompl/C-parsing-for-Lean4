@@ -4,6 +4,9 @@ import Lean.Parser.Types
    with the following definitions in
    lean4/src/Lean/Parser/Basic.lean -/
 
+import Lean
+open Lean.Parser
+
 partial def finishCommentBlock (nesting : Nat) : ParserFn := fun c s =>
   let input := c.input
   let i     := s.pos
