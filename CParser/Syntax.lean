@@ -22,7 +22,7 @@ syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
 syntax postfix_expression "." ident : postfix_expression
 syntax postfix_expression "->" ident : postfix_expression
 syntax postfix_expression "++" : postfix_expression
-syntax postfix_expression "--" : postfix_expression
+syntax postfix_expression "–" : postfix_expression
 
 syntax "`[postfix_expression| " postfix_expression "]" : term
 
@@ -37,7 +37,7 @@ syntax "`[unary_operator| " unary_operator "]" : term
 
 syntax postfix_expression : unary_expression
 syntax "++" unary_expression : unary_expression
-syntax "--" unary_expression : unary_expression
+syntax "–" unary_expression : unary_expression
 syntax unary_operator cast_expression : unary_expression
 syntax "sizeof" unary_expression : unary_expression
 syntax "sizeof" "(" type_name ")" : unary_expression   -- type_name not in group one

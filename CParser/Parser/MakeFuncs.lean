@@ -23,7 +23,7 @@ partial def mkPostfixExpression : Lean.Syntax → Except String PostfixExpr
   | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) <*> (mkArgExprList args)
   | `(postfix_expression| $p:postfix_expression -> $i:ident) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (return i.getId.toString)
   | `(postfix_expression| $p:postfix_expression ++) => PostfixExpr.IncOp <$> (mkPostfixExpression p)
---  | `(postfix_expression| $p:postfix_expression --) => PostfixExpr.DecOp <$> (mkPostfixExpression p)
+  | `(postfix_expression| $p:postfix_expression –) => PostfixExpr.DecOp <$> (mkPostfixExpression p)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for postfix expression " ++ x)
           | .none => throw "unexpected syntax for postfix expression" 
@@ -42,7 +42,7 @@ partial def mkUnaryOperator : Lean.Syntax → Except String UnaryOp
 partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| $p:postfix_expression) => UnaryExpr.PostFix <$> (mkPostfixExpression p)
   | `(unary_expression| ++ $u:unary_expression) => UnaryExpr.IncUnary <$> (mkUnaryExpression u)
---  | `(unary_expression| -- $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
+  | `(unary_expression| – $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
   | `(unary_expression| $o:unary_operator $c:cast_expression) => UnaryExpr.UnaryOpCast <$> (mkUnaryOperator o) <*> (mkCastExpression c)
   | `(unary_expression| sizeof $u:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression u)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
