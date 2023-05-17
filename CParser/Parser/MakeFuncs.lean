@@ -324,9 +324,13 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   | `(type_specifier| unsigned) => return TypeSpec.Unsigned
   | `(type_specifier| $s:struct_or_union_specifier) => TypeSpec.SoUSpec <$> (mkStructOrUnionSpec s)
   | `(type_specifier| $e:enum_specifier) => TypeSpec.EnumSpec <$> (mkEnumSpec e)
-  | `(type_specifier| $t:type_name_token) => match t with
-                                              | `($i:ident) => return TypeSpec.TypeName (i.getId.toString)
-                                              | _ => throw s!"unexpected syntax for type name (token) {t.raw}"
+--  | `(type_specifier| $t:type_name_token) => match t with
+--                                               | `($i:ident) => return TypeSpec.TypeName (i.getId.toString)
+--                                               | _ => throw s!"unexpected syntax for type name (token) {t.raw}"
+  | `(type_specifier| Node) => return TypeSpec.TypeName "Node"
+  | `(type_specifier| HashTable) => return TypeSpec.TypeName "HashTable"
+  | `(type_specifier| ProbingHashTable) => return TypeSpec.TypeName "ProbingHashTable"
+  | `(type_specifier| ll) => return TypeSpec.TypeName "ll"
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for type specifier " ++ x)
           | .none => throw "unexpected syntax for type specifier" 

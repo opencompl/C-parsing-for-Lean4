@@ -305,15 +305,24 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
--- Excluding the code between the /-*-/ makes 6 "unexpected element" and 6 "expected ';'" errors
--- Including them makes 11 "unexpected element" errors
---   These are all removed by modifying the testcases to
---     have the first statement in a compound_statement
---     either be ";" or be wrapped in "(" ")"
---   Effectively, it has to be made clear that the statement
---     is not a declaration but a statement, so that the first
---     token is not seen as a type_name
-syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/: type_name_token
+-- Ignore following
+  -- Excluding the code between the /-*-/ makes 6 "unexpected element" and 6 "expected ';'" errors
+  -- Including them makes 11 "unexpected element" errors
+  --   These are all removed by modifying the testcases to
+  --     have the first statement in a compound_statement
+  --     either be ";" or be wrapped in "(" ")"
+  --   Effectively, it has to be made clear that the statement
+  --     is not a declaration but a statement, so that the first
+  --     token is not seen as a type_name
+-- syntax notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/ : type_name_token
+-----
+
+-- Hardcoding struct names works for all statements *after* the struct defn
+-- Only comments and `--` left now.
+syntax "Node" : type_name_token
+syntax "HashTable" : type_name_token
+syntax "ProbingHashTable" : type_name_token
+syntax "ll" : type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
