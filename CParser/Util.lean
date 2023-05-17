@@ -40,70 +40,56 @@ open Lean Parser
 -- def preprocess (lines : Array String ) : Array String :=
 -- lines.map (λ l => removeCommentsLine l)
 
--- 
+-- Helper function
+def removeSingleLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => []
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '\n' :: cs        =>        removeSingleLineCommentsH false inString cs
+    | true,  _,     _    :: cs        =>        removeSingleLineCommentsH true inString cs
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => '"' :: removeSingleLineCommentsH false (!inString) cs
+    | false, true,  c    :: cs        => c   :: removeSingleLineCommentsH false true cs
+-- if in code, // starts a comment
+    | false, false, '/'  :: '/' :: cs =>        removeSingleLineCommentsH true false cs
+    | false, false, c    :: cs        => c   :: removeSingleLineCommentsH false false cs
 
-partial def finishCommentBlockCustom (nesting : Nat) : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
-  let input := c.input
-  let i     := s.pos
-  if input.atEnd i then (eoi s)
-  else
-    let curr := input.get i
-    let i    := input.next i
-    match curr with
-      | '*' => if input.atEnd i then (eoi s)
-               else let curr := input.get i
-                    match curr with
-                      | '/' => if nesting == 1 then (s.next input i)
-                               else finishCommentBlockCustom (nesting-1) c (s.next input i)
-                      | _ => finishCommentBlockCustom nesting c (s.next input i)
-      | '/' => if input.atEnd i then (eoi s)
-               else let curr := input.get i
-                    match curr with
-                      | '*' => finishCommentBlockCustom (nesting+1) c (s.next input i)
-                      | _ => finishCommentBlockCustom nesting c (s.setPos i)
-      | _ => finishCommentBlockCustom nesting c (s.setPos i)
-        where eoi s := s.mkUnexpectedError "unterminated comment"
+-- Helper function
+def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => []
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '*'  :: '/' :: cs =>        removeMultiLineCommentsH false inString cs
+    | true,  _,     _    :: cs        =>        removeMultiLineCommentsH true inString cs
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => '"' :: removeMultiLineCommentsH false (!inString) cs
+    | false, true,  c    :: cs        => c   :: removeMultiLineCommentsH false true cs
+-- if in code, // starts a comment
+    | false, false, '/'  :: '*' :: cs =>        removeMultiLineCommentsH true false cs
+    | false, false, c    :: cs        => c   :: removeMultiLineCommentsH false false cs
 
--- Custom whitespace parser 
-partial def whitespaceCustom : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
-  let input := c.input
-  let i     := s.pos
-  if input.atEnd i then s
-  else
-    let curr := input.get i
-    if curr.isWhitespace then whitespaceCustom c (s.next input i)
-    else if curr == '/' then
-      let i    := input.next i
-      let curr := input.get i
-      if curr == '/' then Parser.andthenFn (Parser.takeUntilFn (fun c => c == '\n')) whitespaceCustom c (s.next input i)
-      else if curr == '*' then
-        let i    := input.next i
-        Parser.andthenFn (finishCommentBlockCustom 1) whitespaceCustom c (s.next input i)
-      else s
-    else s
+def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
+  λ i => let charList := helper false false i.toList
+         charList.foldl (λ a b => a ++ b.toString) ""
 
-def runParserCategoryCustom (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
-  let p := andthenFn whitespaceCustom (categoryParserFnImpl catName)
-  -- Except.error "called custom"
-  let ictx := mkInputContext input fileName
-  let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
-  if s.hasError then
-    Except.error (s.toErrorMsg ictx)
-  else if input.atEnd s.pos then
-    Except.ok s.stxStack.back
-  else
-    Except.error ((s.mkError "end of input").toErrorMsg ictx)
+def removeSingleLineComments := wrapHelper removeSingleLineCommentsH
+def removeMultiLineComments  := wrapHelper removeMultiLineCommentsH
+
+def removeComments := removeMultiLineComments ∘ removeSingleLineComments
+
+def substituteMinus (input : String) : String := input.replace "--" "–"
 
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → Except String α := λ s env => do
-  ntparser (← _root_.runParserCategoryCustom env syntaxcat s)
+  ntparser (← runParserCategory env syntaxcat s)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
 def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
 (s : String) (env : Environment) : Except String α :=
   let parseFun := mkParseFun syntaxcat ntparser
+  let s := substituteMinus (removeComments s)
   parseFun s env
   -- match parseFun s env with
   --  | .error msg => (some msg, default)
