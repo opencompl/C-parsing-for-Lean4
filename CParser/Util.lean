@@ -68,16 +68,23 @@ def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List 
     | false, false, '/'  :: '*' :: cs =>        removeMultiLineCommentsH true false cs
     | false, false, c    :: cs        => c   :: removeMultiLineCommentsH false false cs
 
+def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteMinusH dummy (!inString) cs
+    | true,  c   :: cs        => c   :: substituteMinusH dummy true cs
+    | false, '-' :: '-' :: cs => '–' :: substituteMinusH dummy false cs
+    | false, c   :: cs        => c   :: substituteMinusH dummy false cs
+
 def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList
          charList.foldl (λ a b => a ++ b.toString) ""
 
 def removeSingleLineComments := wrapHelper removeSingleLineCommentsH
 def removeMultiLineComments  := wrapHelper removeMultiLineCommentsH
+def substituteMinus          := wrapHelper substituteMinusH
 
 def removeComments := removeMultiLineComments ∘ removeSingleLineComments
-
-def substituteMinus (input : String) : String := input.replace "--" "–"
 
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
