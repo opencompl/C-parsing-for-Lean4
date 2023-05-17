@@ -75,15 +75,16 @@ partial def whitespaceCustom : ParserFn := fun (c : Parser.ParserContext) (s : P
     else if curr == '/' then
       let i    := input.next i
       let curr := input.get i
-      if curr == '/' then Parser.andthenFn (Parser.takeUntilFn (fun c => c = '\n')) whitespaceCustom c (s.next input i)
+      if curr == '/' then Parser.andthenFn (Parser.takeUntilFn (fun c => c == '\n')) whitespaceCustom c (s.next input i)
       else if curr == '*' then
         let i    := input.next i
         Parser.andthenFn (finishCommentBlockCustom 1) whitespaceCustom c (s.next input i)
       else s
     else s
 
-def runParserCategory (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
+def runParserCategoryCustom (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
   let p := andthenFn whitespaceCustom (categoryParserFnImpl catName)
+  -- Except.error "called custom"
   let ictx := mkInputContext input fileName
   let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
   if s.hasError then
@@ -96,7 +97,7 @@ def runParserCategory (env : Environment) (catName : Name) (input : String) (fil
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → Except String α := λ s env => do
-  ntparser (← _root_.runParserCategory env syntaxcat s)
+  ntparser (← _root_.runParserCategoryCustom env syntaxcat s)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
