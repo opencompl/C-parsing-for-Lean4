@@ -407,7 +407,6 @@ partial def statementToString : Statement → String
   | .SelStmt s => (selStmtToString s)
   | .IterStmt s => (iterStmtToString s)
   | .JumpStmt s => (jumpStmtToString s)
-  | .TypeDef ts i => "typedef " ++ (typeSpecToString ts) ++ " " ++ i ++ ";"
 
 partial def stmtListToString : StmtList → String
   | .StmtList ss => "\n".intercalate (ss.map statementToString)

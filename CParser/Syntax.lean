@@ -455,7 +455,6 @@ syntax expression_statement : statement
 syntax selection_statement : statement
 syntax iteration_statement : statement
 syntax jump_statement : statement
-syntax "typedef" type_specifier ident ";" : statement
 syntax "`[statement| " statement "]" : term
 
 -- statement list
