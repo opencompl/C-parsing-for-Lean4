@@ -319,9 +319,6 @@ syntax "`[type_specifier| " type_specifier "]" : term
 
 -- Hardcoding struct names works for all statements *after* the struct defn
 -- Only comments and `--` left now.
-syntax "Node" : type_name_token
-syntax "HashTable" : type_name_token
-syntax "ProbingHashTable" : type_name_token
 syntax "ll" : type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
@@ -458,6 +455,7 @@ syntax expression_statement : statement
 syntax selection_statement : statement
 syntax iteration_statement : statement
 syntax jump_statement : statement
+syntax "typedef" type_specifier ident ";" : statement
 syntax "`[statement| " statement "]" : term
 
 -- statement list
@@ -485,3 +483,18 @@ syntax "`[external_declaration| " external_declaration "]" : term
 syntax external_declaration+ : translation_unit
 
 syntax "`[translation_unit| " translation_unit "]" : term
+
+macro "typedef" type_specifier id:ident ";" : command => do
+  let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.getId.toString⟩
+  let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
+  let cat := mkIdentFrom id `type_name_token
+  `(syntax  $[$stxstx]* : $cat)
+--  return mkNullNode #[stxDecl]
+
+typedef struct Node
+{
+    int Element;
+    struct Node *pNext;
+} Node;
+
+#check `(type_name_token| Node)

@@ -327,10 +327,10 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
 --  | `(type_specifier| $t:type_name_token) => match t with
 --                                               | `($i:ident) => return TypeSpec.TypeName (i.getId.toString)
 --                                               | _ => throw s!"unexpected syntax for type name (token) {t.raw}"
-  | `(type_specifier| Node) => return TypeSpec.TypeName "Node"
-  | `(type_specifier| HashTable) => return TypeSpec.TypeName "HashTable"
-  | `(type_specifier| ProbingHashTable) => return TypeSpec.TypeName "ProbingHashTable"
-  | `(type_specifier| ll) => return TypeSpec.TypeName "ll"
+--  | `(type_specifier| Node) => return TypeSpec.TypeName "Node"
+--  | `(type_specifier| HashTable) => return TypeSpec.TypeName "HashTable"
+--  | `(type_specifier| ProbingHashTable) => return TypeSpec.TypeName "ProbingHashTable"
+--  | `(type_specifier| ll) => return TypeSpec.TypeName "ll"
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for type specifier " ++ x)
           | .none => throw "unexpected syntax for type specifier" 
@@ -558,6 +558,7 @@ partial def mkStatement : Lean.Syntax → Except String Statement
   | `(statement| $s:selection_statement) => Statement.SelStmt <$> (mkSelStmt s)
   | `(statement| $i:iteration_statement) => Statement.IterStmt <$> (mkIterStmt i)
   | `(statement| $j:jump_statement) => Statement.JumpStmt <$> (mkJumpStmt j)
+  | `(statement| typedef $ts:type_specifier $i:ident ;) => Statement.TypeDef <$> (mkTypeSpec ts) <*> (pure i.getId.toString)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for statement " ++ x)
           | .none => throw "unexpected syntax for statement" 

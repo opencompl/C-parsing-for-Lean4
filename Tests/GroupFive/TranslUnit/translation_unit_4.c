@@ -1,3 +1,27 @@
+typedef struct Node Node;
+typedef struct HashTable HashTable;
+typedef struct ProbingHashTable ProbingHashTable;
+typedef long ll;
+
+struct Node
+{
+    int Element;
+    Node *pNext;
+};
+
+struct HashTable
+{
+    int n;
+    Node **table;
+    Node **ending;
+};
+
+struct ProbingHashTable
+{
+    int n;
+    int *table;
+};
+
 HashTable *CreateHashTable(int n);
 ProbingHashTable *CreateProbingHashTable(int n);
 

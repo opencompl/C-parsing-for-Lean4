@@ -336,6 +336,7 @@ inductive Statement where
   | SelStmt : SelStmt → Statement
   | IterStmt : IterStmt → Statement
   | JumpStmt : JumpStmt → Statement
+  | TypeDef : TypeSpec → String → Statement
 
 inductive StmtList where
   | StmtList : List Statement → StmtList
