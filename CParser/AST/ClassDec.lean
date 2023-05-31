@@ -102,6 +102,7 @@ partial def unaryExprToString : UnaryExpr → String
   | .UnaryOpCast o c => (unaryOpToString o) ++ " " ++ (castExprToString c)
   | .SizeOf u => "sizeof " ++ (unaryExprToString u)
   | .SizeOfType t => "sizeof(" ++ (typeNameToString t) ++ ")"
+  | .SizeOfTypeName t => "sizeof(" ++ t ++ ")"
 
 partial def castExprToString : CastExpr → String
   | .Unary u => (unaryExprToString u)

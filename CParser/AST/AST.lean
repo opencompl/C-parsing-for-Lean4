@@ -34,6 +34,7 @@ inductive UnaryExpr where
   | UnaryOpCast : UnaryOp → CastExpr → UnaryExpr
   | SizeOf : UnaryExpr → UnaryExpr
   | SizeOfType : TypeName → UnaryExpr
+  | SizeOfTypeName : String → UnaryExpr
 
 inductive CastExpr where
   | Unary : UnaryExpr → CastExpr

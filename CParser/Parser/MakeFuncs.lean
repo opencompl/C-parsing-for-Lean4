@@ -56,6 +56,7 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| $o:unary_operator $c:cast_expression) => UnaryExpr.UnaryOpCast <$> (mkUnaryOperator o) <*> (mkCastExpression c)
   | `(unary_expression| sizeof $u:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression u)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
+  | `(unary_expression| sizeof ( $t:type_name_token )) => UnaryExpr.SizeOfTypeName <$> (getIdent t)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for unary expression " ++ x)
           | .none => throw "unexpected syntax for unary expression" 

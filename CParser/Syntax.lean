@@ -43,7 +43,8 @@ syntax "++" unary_expression : unary_expression
 syntax "–" unary_expression : unary_expression
 syntax unary_operator cast_expression : unary_expression
 syntax "sizeof" unary_expression : unary_expression
-syntax "sizeof" "(" type_name ")" : unary_expression   -- type_name not in group one
+syntax "sizeof" "(" type_name ")" : unary_expression
+syntax "sizeof" "(" type_name_token ")" : unary_expression
 
 syntax "`[unary_expression| " unary_expression "]" : term
 
