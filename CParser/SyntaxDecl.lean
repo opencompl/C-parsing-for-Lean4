@@ -20,6 +20,7 @@ open Lean.PrettyPrinter
 open Lean.PrettyPrinter.Formatter
 open Regex
 
+declare_syntax_cat ident_or_type
 declare_syntax_cat primary_expression
 declare_syntax_cat postfix_expression
 declare_syntax_cat argument_expression_list

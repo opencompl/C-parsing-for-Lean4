@@ -10,6 +10,7 @@ open Lean.Elab.Command
 
 syntax str : primary_expression
 syntax ident : primary_expression
+syntax type_name_token : primary_expression
 syntax num : primary_expression
 syntax "(" expression ")" : primary_expression
 
@@ -20,7 +21,9 @@ syntax postfix_expression "[" expression "]" : postfix_expression
 syntax postfix_expression "(" ")"  : postfix_expression
 syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
 syntax postfix_expression "." ident : postfix_expression
+syntax postfix_expression "." type_name_token : postfix_expression
 syntax postfix_expression "->" ident : postfix_expression
+syntax postfix_expression "->" type_name_token : postfix_expression
 syntax postfix_expression "++" : postfix_expression
 syntax postfix_expression "–" : postfix_expression
 
@@ -167,11 +170,12 @@ syntax "`[abstract_declarator| " abstract_declarator "]" : term
 
 -- syntax ident : identifier_list
 -- syntax identifier_list "," ident : identifier_list
-syntax sepBy(ident, ",", ", ") : identifier_list
+syntax sepBy((ident <|> type_name_token), ",", ", ") : identifier_list
 
 syntax "`[identifier_list| " identifier_list "]" : term
 
 syntax ident : direct_declarator
+syntax type_name_token : direct_declarator
 syntax "(" declarator ")" : direct_declarator
 syntax direct_declarator "[" constant_expression "]" : direct_declarator
 syntax direct_declarator "[" "]" : direct_declarator
@@ -317,13 +321,11 @@ syntax "`[type_specifier| " type_specifier "]" : term
 -- syntax notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/ : type_name_token
 -----
 
--- Hardcoding struct names works for all statements *after* the struct defn
--- Only comments and `--` left now.
-syntax "ll" : type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
 syntax struct_or_union ident ("{" struct_declaration_list "}")? : struct_or_union_specifier
+syntax struct_or_union type_name_token ("{" struct_declaration_list "}")? : struct_or_union_specifier
 syntax struct_or_union "{" struct_declaration_list "}" : struct_or_union_specifier
 syntax "`[struct_or_union_specifier| " struct_or_union_specifier "]" : term
 
@@ -370,7 +372,9 @@ syntax "`[declarator| " declarator "]" : term
 -- enum_specifier
 syntax "enum" "{" enumerator_list "}"  : enum_specifier
 syntax "enum" ident "{" enumerator_list "}" : enum_specifier
+syntax "enum" type_name_token "{" enumerator_list "}" : enum_specifier
 syntax "enum" ident : enum_specifier
+syntax "enum" type_name_token : enum_specifier
 syntax "`[enum_specifier| " enum_specifier "]" : term
 
 -- enumerator_list
@@ -384,6 +388,7 @@ syntax "`[enumerator_list| " enumerator_list "]" : term
 -- enumerator
 -- syntax ident : enumerator
 syntax ident ("=" constant_expression)? : enumerator
+syntax type_name_token ("=" constant_expression)? : enumerator
 syntax "`[enumerator| " enumerator "]" : term
 
 -- parameter_type_list
@@ -429,6 +434,7 @@ syntax "`[iteration_statement| " iteration_statement "]" : term
 
 -- jump statement
 syntax "goto" ident ";" : jump_statement
+syntax "goto" type_name_token ";" : jump_statement
 syntax "continue" ";" : jump_statement
 syntax "break" ";" : jump_statement
 syntax "return" ";" : jump_statement
@@ -437,6 +443,7 @@ syntax "`[jump_statement| " jump_statement "]" : term
 
 -- labelled statement
 syntax ident ":" statement : labeled_statement
+syntax type_name_token ":" statement : labeled_statement
 syntax "case" constant_expression ":" statement : labeled_statement
 syntax "default" ":" statement : labeled_statement
 syntax "`[labeled_statement| " labeled_statement "]" : term
@@ -490,10 +497,17 @@ macro "typedef" type_specifier id:ident ";" : command => do
   `(syntax  $[$stxstx]* : $cat)
 --  return mkNullNode #[stxDecl]
 
-typedef struct Node
-{
-    int Element;
-    struct Node *pNext;
-} Node;
+typedef struct Node Node;
 
 #check `(type_name_token| Node)
+
+#check `(struct_or_union_specifier| struct Node {
+  int Element;
+  Node x;
+})
+
+typedef struct HashTable HashTable;
+typedef struct ProbingHashTable ProbingHashTable;
+#check `(declaration| HashTable *CreateMyHashTable(int n);)
+
+#check `(declaration| ProbingHashTable *Create(int n);)
