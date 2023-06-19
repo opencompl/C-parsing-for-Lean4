@@ -498,17 +498,18 @@ macro "typedef" type_specifier id:ident ";" : command => do
   `(syntax  $[$stxstx]* : $cat)
 --  return mkNullNode #[stxDecl]
 
-typedef struct Node Node;
-
-#check `(type_name_token| Node)
-
-#check `(struct_or_union_specifier| struct Node {
-  int Element;
-  Node x;
-})
-
-typedef struct HashTable HashTable;
-typedef struct ProbingHashTable ProbingHashTable;
-#check `(declaration| HashTable *CreateMyHashTable(int n);)
-
-#check `(declaration| ProbingHashTable *Create(int n);)
+-- 
+-- typedef struct Node Node;
+-- 
+-- #check `(type_name_token| Node)
+-- 
+-- #check `(struct_or_union_specifier| struct Node {
+--   int Element;
+--   Node x;
+-- })
+-- 
+-- typedef struct HashTable HashTable;
+-- typedef struct ProbingHashTable ProbingHashTable;
+-- #check `(declaration| HashTable *CreateMyHashTable(int n);)
+-- 
+-- #check `(declaration| ProbingHashTable *Create(int n);)
