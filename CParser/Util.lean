@@ -76,6 +76,22 @@ def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List
     | false, '-' :: '-' :: cs => '–' :: substituteMinusH dummy false cs
     | false, c   :: cs        => c   :: substituteMinusH dummy false cs
 
+def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteBackslashH dummy (!inString) cs
+    | _, '\\' :: c :: cs => if c != '\"' then '@' :: c :: substituteBackslashH dummy false cs
+                                             else '\\' :: c :: substituteBackslashH dummy false cs
+    | inString,  c   :: cs        => c   :: substituteBackslashH dummy inString cs
+
+def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteSingleQuoteH dummy (!inString) cs
+    | true,  c   :: cs        => c   :: substituteSingleQuoteH dummy true cs
+    | false, '\'' :: cs => '"' :: substituteSingleQuoteH dummy false cs
+    | false, c   :: cs        => c   :: substituteSingleQuoteH dummy false cs
+
 def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList
          charList.foldl (λ a b => a ++ b.toString) ""
@@ -83,8 +99,11 @@ def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String �
 def removeSingleLineComments := wrapHelper removeSingleLineCommentsH
 def removeMultiLineComments  := wrapHelper removeMultiLineCommentsH
 def substituteMinus          := wrapHelper substituteMinusH
+def substituteBackslash    := wrapHelper substituteBackslashH
+def substituteSingleQuote    := wrapHelper substituteSingleQuoteH
 
 def removeComments := removeMultiLineComments ∘ removeSingleLineComments
+def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
 
 abbrev ParseError := String
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
@@ -96,7 +115,7 @@ String → Environment → Except String α := λ s env => do
 def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
 (s : String) (env : Environment) : Except String α :=
   let parseFun := mkParseFun syntaxcat ntparser
-  let s := substituteMinus (removeComments s)
+  let s := makeSubstitution (removeComments s)
   parseFun s env
   -- match parseFun s env with
   --  | .error msg => (some msg, default)
