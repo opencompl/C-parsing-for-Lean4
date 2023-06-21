@@ -2,7 +2,7 @@ import Lean
 import Init.Data.String
 -- import Lean.Parser.Types
 
-open Lean Parser
+open Lean Parser Elab.Command
 
 -- for now: just single-line comments
 -- TODO: this also isn't good enough, it will break if there's a string literal with // inside it, and it shouldn't
@@ -80,8 +80,9 @@ def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : 
   match inString, input with
     | _,     []               => []
     | _,     '"' :: cs        => '"' :: substituteBackslashH dummy (!inString) cs
-    | _, '\\' :: c :: cs => if c != '\"' then '@' :: c :: substituteBackslashH dummy false cs
-                                             else '\\' :: c :: substituteBackslashH dummy false cs
+    | _, '\\' :: c :: cs => if c == '\\' then '@' :: '@' :: substituteBackslashH dummy inString cs
+                            else if c != '\"' then '@' :: substituteBackslashH dummy inString (c :: cs)
+                            else '\\' :: substituteBackslashH dummy inString (c :: cs)
     | inString,  c   :: cs        => c   :: substituteBackslashH dummy inString cs
 
 def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
@@ -106,14 +107,72 @@ def removeComments := removeMultiLineComments ∘ removeSingleLineComments
 def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
 
 abbrev ParseError := String
+structure PEState where
+  env : Environment
+  input : String
+  stack : List Syntax
+ 
+partial def runParserCategoryTranslationUnitHelper (env : Environment)
+                                                   (input : String)
+                                                   (fileName := "<input>")
+                                                   (stack : List Syntax) : CommandElabM $ List Syntax :=
+
+   
+   let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
+   let ictx := mkInputContext input fileName
+   let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
+   let stx := s.stxStack.back
+   let stack := stack.cons stx
+   if (s.pos.byteIdx ≥ input.length) then return stack else
+   do match stx with
+    | (Syntax.node _ _ -- external declaration
+        #[(Syntax.node _ _ -- declaration
+           #[(Syntax.node _ _ -- declaration specifiers
+               #[(Syntax.node _ _ -- storage class specifier
+                   #[Lean.Syntax.atom _ "typedef"]),
+                 (Syntax.node _ _ -- declaration specifiers
+                   #[Lean.Syntax.node _ _ _ -- type specifier
+                      ])]),
+             (Syntax.node _ _ -- null
+               #[Syntax.node _ _ -- init declarator list
+                  #[Syntax.node _ _ -- null
+                     #[Syntax.node _ _ -- init declarator
+                        #[(Syntax.node _ _ -- declarator
+                            #[(Syntax.node _ `null _),
+                              (Syntax.node _ _ -- direct_declarator
+                                #[Lean.Syntax.ident _ id _ _])]),
+                          (Syntax.node _ _ _ -- null
+                            )]]]]),
+             (Lean.Syntax.atom _ ";")])]) => let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.toString⟩
+                                             let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
+                                             let cat := mkIdentFrom stx `type_name_token
+                                             let newDec ← `(syntax  $[$stxstx]* : $cat)
+                                             elabCommand newDec
+                                             runParserCategoryTranslationUnitHelper env (input.drop s.pos.byteIdx) fileName stack
+    | _ => runParserCategoryTranslationUnitHelper env (input.drop s.pos.byteIdx) fileName stack
+
+def runParserCategoryTranslationUnit (env : Environment) (input : String) (fileName := "<input>") : CommandElabM Syntax :=
+   do
+      let extDecls ← runParserCategoryTranslationUnitHelper env input fileName []
+      let info := (extDecls.get! 0).getHeadInfo
+      return Syntax.node1 info `translation_unit_ $
+              Syntax.node info `null extDecls.toArray.reverse
+
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
-String → Environment → Except String α := λ s env => do
-  ntparser (← runParserCategory env syntaxcat s)
+String → Environment → CommandElabM α := λ s env =>
+  if syntaxcat == `translation_unit then do
+  let stx ← runParserCategoryTranslationUnit env s
+  match (ntparser stx) with
+   | Except.ok t => return t
+   | Except.error str => throwError str
+ else match ((runParserCategory env syntaxcat s) >>= ntparser) with
+  | Except.ok t => return t
+  | Except.error str => throwError str
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
-def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
-(s : String) (env : Environment) : Except String α :=
+def mkNonTerminalParser {α : Type}  (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
+(s : String) (env : Environment) : CommandElabM α :=
   let parseFun := mkParseFun syntaxcat ntparser
   let s := makeSubstitution (removeComments s)
   parseFun s env

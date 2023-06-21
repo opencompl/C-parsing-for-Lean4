@@ -8,12 +8,13 @@ open IO
 open IO.FS
 open System
 open AST
+open Elab.Command
 
 abbrev ParseOutput := String
 
-abbrev Checker := (String → Lean.Environment → Except ParseError ParseOutput)
+abbrev Checker := (String → Lean.Environment → CommandElabM ParseOutput)
 
-def directory_checker_map : List (FilePath × Checker) := 
+def directory_checker_map : List (FilePath × Checker) := /-
  [(FilePath.mk "./Tests/GroupOne/AddExpr", fun str env => (Functor.map ToString.toString $ parseAddExpression str env))
  ,(FilePath.mk "./Tests/GroupOne/AndExpr", fun str env => (Functor.map ToString.toString $ parseAndExpression str env))
  ,(FilePath.mk "./Tests/GroupOne/ArgExprList", fun str env => (Functor.map ToString.toString $ parseArgExprList str env))
@@ -77,6 +78,8 @@ def directory_checker_map : List (FilePath × Checker) :=
  ,(FilePath.mk "./Tests/GroupFour/SelStmt", fun str env => (Functor.map ToString.toString $ parseSelStmt str env))
  ,(FilePath.mk "./Tests/GroupFour/Statement", fun str env => (Functor.map ToString.toString $ parseStatement str env))
  ,(FilePath.mk "./Tests/GroupFour/StmtList", fun str env => (Functor.map ToString.toString $ parseStmtList str env))
+ ] ++ -/
+ [(FilePath.mk "./Tests/GroupFive/TUTemp", fun str env => (Functor.map ToString.toString $ parseTranslUnit str env))
  ] ++
  [(FilePath.mk "./Tests/GroupFive/ExternDecl", fun str env => (Functor.map ToString.toString $ parseExternDecl str env))
  ,(FilePath.mk "./Tests/GroupFive/FuncDef", fun str env => (Functor.map ToString.toString $ parseFuncDef str env))
@@ -104,13 +107,26 @@ def checkFileParse (env: Lean.Environment)
   let preprocessed := lines --preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
   -- let pipeline := Lean.quote [file]
-  match checker fileStr env with
-    | .error e => do 
-       IO.println $ s!"{filepath}, error, {e}"
-       return TestResult.Failure
-    | .ok ast => do
-      IO.println $ s!"{filepath}, ok,\nAST:\n" ++ ast
-      return TestResult.Success
+
+-- Extracting string from CommandElabM
+  let parsed := checker fileStr env
+  let runOnce := parsed.run {fileName := filepath.toString, fileMap := Inhabited.default, tacticCache? := .none}
+  let runTwice := runOnce.run {env := env, maxRecDepth := defaultMaxRecDepth}
+  match (runTwice .unit) with
+    | .ok (ast, _) _ => do IO.println $ s!"{filepath}, ok, AST:\n" ++ ast
+                        return TestResult.Success
+    | .error e _ => do match e with
+                        | .error ref msg => IO.println s!"{filepath}, error {ref}"
+                                            IO.println (← msg.toString)
+                        | _ => IO.println s!"{filepath}, internal error" -- should be unreachable
+                    return TestResult.Failure
+--  match (checker fileStr env) with
+--    | .error => do 
+--       IO.println $ s!"{filepath}, error, {e}"
+--       return TestResult.Failure
+--    | .ok ast => do
+--      IO.println $ s!"{filepath}, ok,\nAST:\n" ++ ast
+--      return TestResult.Success
 
 def runTestHarness: IO UInt32 := do
   let isFile (p: FilePath) : IO Bool := do

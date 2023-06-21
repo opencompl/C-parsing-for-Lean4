@@ -498,6 +498,37 @@ macro "typedef" type_specifier id:ident ";" : command => do
   `(syntax  $[$stxstx]* : $cat)
 --  return mkNullNode #[stxDecl]
 
+#check `(command| syntax Foo : type_name_token)
+
+#check `(external_declaration| typedef struct Foo Foo;)
+#check `(external_declaration| typedef long ll;)
+
+#check `(translation_unit| int char x, y, z = x /= y *= z++;
+char int (*foo)[42] {
+    bar->baz.foo = z;
+    goto y;
+    label: x += z;
+    for (i = 0; i <= 10; i++)
+    {
+        foo++;
+    }
+    ;
+})
+
+/-
+let newDec := Lean.Syntax.node info `Lean.Parser.Command.syntax
+                #[Syntax.node info `null #[], Syntax.node info `null #[],
+                  Syntax.node1 info `Lean.Parser.Term.attrKind (Syntax.node info `null #[]), Lean.Syntax.atom info "syntax",
+                  Syntax.node info `null #[], Syntax.node info `null #[], Syntax.node info `null #[],
+                  Syntax.node1 info `null
+                    (Syntax.node2 info `Lean.Parser.Syntax.cat
+                      (Syntax.ident info id n [])
+                      (Syntax.node info `null #[])),
+                  Lean.Syntax.atom info ":",
+                  Syntax.ident info (String.toSubstring' "type_name_token") n
+                    [Syntax.Preresolved.namespace `type_name_token]]
+-/
+
 -- 
 -- typedef struct Node Node;
 -- 
