@@ -112,19 +112,23 @@ structure PEState where
   input : String
   stack : List Syntax
  
-partial def runParserCategoryTranslationUnitHelper (env : Environment)
+partial def runParserCategoryTranslationUnitHelper
                                                    (input : String)
                                                    (fileName := "<input>")
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
 
    
+   do 
    let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
    let ictx := mkInputContext input fileName
+   let env ← getEnv
    let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
+   if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
+   dbg_trace stx
    let stack := stack.cons stx
    if (s.pos.byteIdx ≥ input.length) then return stack else
-   do match stx with
+   match stx with
     | (Syntax.node _ _ -- external declaration
         #[(Syntax.node _ _ -- declaration
            #[(Syntax.node _ _ -- declaration specifiers
@@ -147,13 +151,14 @@ partial def runParserCategoryTranslationUnitHelper (env : Environment)
                                              let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
                                              let cat := mkIdentFrom stx `type_name_token
                                              let newDec ← `(syntax  $[$stxstx]* : $cat)
+                                             dbg_trace newDec
                                              elabCommand newDec
-                                             runParserCategoryTranslationUnitHelper env (input.drop s.pos.byteIdx) fileName stack
-    | _ => runParserCategoryTranslationUnitHelper env (input.drop s.pos.byteIdx) fileName stack
+                                             runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
+    | _ => runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
 
 def runParserCategoryTranslationUnit (env : Environment) (input : String) (fileName := "<input>") : CommandElabM Syntax :=
    do
-      let extDecls ← runParserCategoryTranslationUnitHelper env input fileName []
+      let extDecls ← runParserCategoryTranslationUnitHelper input fileName []
       let info := (extDecls.get! 0).getHeadInfo
       return Syntax.node1 info `translation_unit_ $
               Syntax.node info `null extDecls.toArray.reverse
