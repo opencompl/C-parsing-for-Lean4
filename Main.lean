@@ -14,7 +14,7 @@ abbrev ParseOutput := String
 
 abbrev Checker := (String → Lean.Environment → CommandElabM ParseOutput)
 
-def directory_checker_map : List (FilePath × Checker) := /-
+def directory_checker_map : List (FilePath × Checker) :=
  [(FilePath.mk "./Tests/GroupOne/AddExpr", fun str env => (Functor.map ToString.toString $ parseAddExpression str env))
  ,(FilePath.mk "./Tests/GroupOne/AndExpr", fun str env => (Functor.map ToString.toString $ parseAndExpression str env))
  ,(FilePath.mk "./Tests/GroupOne/ArgExprList", fun str env => (Functor.map ToString.toString $ parseArgExprList str env))
@@ -78,8 +78,6 @@ def directory_checker_map : List (FilePath × Checker) := /-
  ,(FilePath.mk "./Tests/GroupFour/SelStmt", fun str env => (Functor.map ToString.toString $ parseSelStmt str env))
  ,(FilePath.mk "./Tests/GroupFour/Statement", fun str env => (Functor.map ToString.toString $ parseStatement str env))
  ,(FilePath.mk "./Tests/GroupFour/StmtList", fun str env => (Functor.map ToString.toString $ parseStmtList str env))
- ] ++ -/
- [(FilePath.mk "./Tests/GroupFive/TUTemp", fun str env => (Functor.map ToString.toString $ parseTranslUnit str env))
  ] ++
  [(FilePath.mk "./Tests/GroupFive/ExternDecl", fun str env => (Functor.map ToString.toString $ parseExternDecl str env))
  ,(FilePath.mk "./Tests/GroupFive/FuncDef", fun str env => (Functor.map ToString.toString $ parseFuncDef str env))

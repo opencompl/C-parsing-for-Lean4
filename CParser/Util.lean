@@ -107,17 +107,11 @@ def removeComments := removeMultiLineComments ∘ removeSingleLineComments
 def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
 
 abbrev ParseError := String
-structure PEState where
-  env : Environment
-  input : String
-  stack : List Syntax
  
 partial def runParserCategoryTranslationUnitHelper
                                                    (input : String)
                                                    (fileName := "<input>")
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
-
-   
    do 
    let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
    let ictx := mkInputContext input fileName
@@ -125,7 +119,6 @@ partial def runParserCategoryTranslationUnitHelper
    let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
-   dbg_trace stx
    let stack := stack.cons stx
    if (s.pos.byteIdx ≥ input.length) then return stack else
    match stx with
@@ -151,12 +144,11 @@ partial def runParserCategoryTranslationUnitHelper
                                              let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
                                              let cat := mkIdentFrom stx `type_name_token
                                              let newDec ← `(syntax  $[$stxstx]* : $cat)
-                                             dbg_trace newDec
                                              elabCommand newDec
                                              runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
     | _ => runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
 
-def runParserCategoryTranslationUnit (env : Environment) (input : String) (fileName := "<input>") : CommandElabM Syntax :=
+def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : CommandElabM Syntax :=
    do
       let extDecls ← runParserCategoryTranslationUnitHelper input fileName []
       let info := (extDecls.get! 0).getHeadInfo
@@ -166,13 +158,9 @@ def runParserCategoryTranslationUnit (env : Environment) (input : String) (fileN
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → CommandElabM α := λ s env =>
   if syntaxcat == `translation_unit then do
-  let stx ← runParserCategoryTranslationUnit env s
-  match (ntparser stx) with
-   | Except.ok t => return t
-   | Except.error str => throwError str
- else match ((runParserCategory env syntaxcat s) >>= ntparser) with
-  | Except.ok t => return t
-  | Except.error str => throwError str
+  let stx ← runParserCategoryTranslationUnit s
+  IO.ofExcept (ntparser stx)
+ else IO.ofExcept ((runParserCategory env syntaxcat s) >>= ntparser)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
@@ -181,9 +169,6 @@ def mkNonTerminalParser {α : Type}  (syntaxcat : Name) (ntparser : Syntax → E
   let parseFun := mkParseFun syntaxcat ntparser
   let s := makeSubstitution (removeComments s)
   parseFun s env
-  -- match parseFun s env with
-  --  | .error msg => (some msg, default)
-  --  | .ok    p   => (none, p)
 
 -- For regex matching
 inductive Regex where
