@@ -127,9 +127,8 @@ partial def runParserCategoryTranslationUnitHelper
            #[(Syntax.node _ _ -- declaration specifiers
                #[(Syntax.node _ _ -- storage class specifier
                    #[Lean.Syntax.atom _ "typedef"]),
-                 (Syntax.node _ _ -- declaration specifiers
-                   #[Lean.Syntax.node _ _ _ -- type specifier
-                      ])]),
+                 (Syntax.node _ _ _ -- declaration specifiers
+                 )]),
              (Syntax.node _ _ -- null
                #[Syntax.node _ _ -- init declarator list
                   #[Syntax.node _ _ -- null
