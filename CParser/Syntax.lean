@@ -10,6 +10,7 @@ open Lean.Elab.Command
 
 syntax str : primary_expression
 syntax ident : primary_expression
+syntax type_name_token : primary_expression
 syntax num : primary_expression
 syntax "(" expression ")" : primary_expression
 
@@ -20,9 +21,11 @@ syntax postfix_expression "[" expression "]" : postfix_expression
 syntax postfix_expression "(" ")"  : postfix_expression
 syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
 syntax postfix_expression "." ident : postfix_expression
+syntax postfix_expression "." type_name_token : postfix_expression
 syntax postfix_expression "->" ident : postfix_expression
+syntax postfix_expression "->" type_name_token : postfix_expression
 syntax postfix_expression "++" : postfix_expression
-syntax postfix_expression "--" : postfix_expression
+syntax postfix_expression "–" : postfix_expression
 
 syntax "`[postfix_expression| " postfix_expression "]" : term
 
@@ -37,10 +40,11 @@ syntax "`[unary_operator| " unary_operator "]" : term
 
 syntax postfix_expression : unary_expression
 syntax "++" unary_expression : unary_expression
-syntax "--" unary_expression : unary_expression
+syntax "–" unary_expression : unary_expression
 syntax unary_operator cast_expression : unary_expression
 syntax "sizeof" unary_expression : unary_expression
-syntax "sizeof" "(" type_name ")" : unary_expression   -- type_name not in group one
+syntax "sizeof" "(" type_name ")" : unary_expression
+syntax "sizeof" "(" type_name_token ")" : unary_expression
 
 syntax "`[unary_expression| " unary_expression "]" : term
 
@@ -167,11 +171,12 @@ syntax "`[abstract_declarator| " abstract_declarator "]" : term
 
 -- syntax ident : identifier_list
 -- syntax identifier_list "," ident : identifier_list
-syntax sepBy(ident, ",", ", ") : identifier_list
+syntax sepBy((ident <|> type_name_token), ",", ", ") : identifier_list
 
 syntax "`[identifier_list| " identifier_list "]" : term
 
 syntax ident : direct_declarator
+syntax type_name_token : direct_declarator
 syntax "(" declarator ")" : direct_declarator
 syntax direct_declarator "[" constant_expression "]" : direct_declarator
 syntax direct_declarator "[" "]" : direct_declarator
@@ -305,19 +310,23 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
--- Excluding the code between the /-*-/ makes 6 "unexpected element" and 6 "expected ';'" errors
--- Including them makes 11 "unexpected element" errors
---   These are all removed by modifying the testcases to
---     have the first statement in a compound_statement
---     either be ";" or be wrapped in "(" ")"
---   Effectively, it has to be made clear that the statement
---     is not a declaration but a statement, so that the first
---     token is not seen as a type_name
-syntax ident notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/: type_name_token
+-- Ignore following
+  -- Excluding the code between the /-*-/ makes 6 "unexpected element" and 6 "expected ';'" errors
+  -- Including them makes 11 "unexpected element" errors
+  --   These are all removed by modifying the testcases to
+  --     have the first statement in a compound_statement
+  --     either be ";" or be wrapped in "(" ")"
+  --   Effectively, it has to be made clear that the statement
+  --     is not a declaration but a statement, so that the first
+  --     token is not seen as a type_name
+-- syntax notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/ : type_name_token
+-----
+
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
 syntax struct_or_union ident ("{" struct_declaration_list "}")? : struct_or_union_specifier
+syntax struct_or_union type_name_token ("{" struct_declaration_list "}")? : struct_or_union_specifier
 syntax struct_or_union "{" struct_declaration_list "}" : struct_or_union_specifier
 syntax "`[struct_or_union_specifier| " struct_or_union_specifier "]" : term
 
@@ -364,7 +373,9 @@ syntax "`[declarator| " declarator "]" : term
 -- enum_specifier
 syntax "enum" "{" enumerator_list "}"  : enum_specifier
 syntax "enum" ident "{" enumerator_list "}" : enum_specifier
+syntax "enum" type_name_token "{" enumerator_list "}" : enum_specifier
 syntax "enum" ident : enum_specifier
+syntax "enum" type_name_token : enum_specifier
 syntax "`[enum_specifier| " enum_specifier "]" : term
 
 -- enumerator_list
@@ -378,6 +389,7 @@ syntax "`[enumerator_list| " enumerator_list "]" : term
 -- enumerator
 -- syntax ident : enumerator
 syntax ident ("=" constant_expression)? : enumerator
+syntax type_name_token ("=" constant_expression)? : enumerator
 syntax "`[enumerator| " enumerator "]" : term
 
 -- parameter_type_list
@@ -423,6 +435,7 @@ syntax "`[iteration_statement| " iteration_statement "]" : term
 
 -- jump statement
 syntax "goto" ident ";" : jump_statement
+syntax "goto" type_name_token ";" : jump_statement
 syntax "continue" ";" : jump_statement
 syntax "break" ";" : jump_statement
 syntax "return" ";" : jump_statement
@@ -431,6 +444,7 @@ syntax "`[jump_statement| " jump_statement "]" : term
 
 -- labelled statement
 syntax ident ":" statement : labeled_statement
+syntax type_name_token ":" statement : labeled_statement
 syntax "case" constant_expression ":" statement : labeled_statement
 syntax "default" ":" statement : labeled_statement
 syntax "`[labeled_statement| " labeled_statement "]" : term
@@ -476,3 +490,57 @@ syntax "`[external_declaration| " external_declaration "]" : term
 syntax external_declaration+ : translation_unit
 
 syntax "`[translation_unit| " translation_unit "]" : term
+
+macro "typedef" type_specifier id:ident ";" : command => do
+  let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.getId.toString⟩
+  let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
+  let cat := mkIdentFrom id `type_name_token
+  `(syntax  $[$stxstx]* : $cat)
+--  return mkNullNode #[stxDecl]
+
+#check `(command| syntax Foo : type_name_token)
+
+#check `(external_declaration| typedef struct Foo Foo;)
+#check `(external_declaration| typedef long ll;)
+
+#check `(translation_unit| int char x, y, z = x /= y *= z++;
+char int (*foo)[42] {
+    bar->baz.foo = z;
+    goto y;
+    label: x += z;
+    for (i = 0; i <= 10; i++)
+    {
+        foo++;
+    }
+    ;
+})
+
+/-
+let newDec := Lean.Syntax.node info `Lean.Parser.Command.syntax
+                #[Syntax.node info `null #[], Syntax.node info `null #[],
+                  Syntax.node1 info `Lean.Parser.Term.attrKind (Syntax.node info `null #[]), Lean.Syntax.atom info "syntax",
+                  Syntax.node info `null #[], Syntax.node info `null #[], Syntax.node info `null #[],
+                  Syntax.node1 info `null
+                    (Syntax.node2 info `Lean.Parser.Syntax.cat
+                      (Syntax.ident info id n [])
+                      (Syntax.node info `null #[])),
+                  Lean.Syntax.atom info ":",
+                  Syntax.ident info (String.toSubstring' "type_name_token") n
+                    [Syntax.Preresolved.namespace `type_name_token]]
+-/
+
+-- 
+-- typedef struct Node Node;
+-- 
+-- #check `(type_name_token| Node)
+-- 
+-- #check `(struct_or_union_specifier| struct Node {
+--   int Element;
+--   Node x;
+-- })
+-- 
+-- typedef struct HashTable HashTable;
+-- typedef struct ProbingHashTable ProbingHashTable;
+-- #check `(declaration| HashTable *CreateMyHashTable(int n);)
+-- 
+-- #check `(declaration| ProbingHashTable *Create(int n);)

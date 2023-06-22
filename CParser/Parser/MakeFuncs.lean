@@ -5,9 +5,17 @@ import Lean
 
 open AST
 open Lean -- for SepArray
+
+def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
+  match x.raw with
+    | Syntax.node _ name #[Syntax.atom _ val] => if (String.substrEq (name.toString) 0 "type_name_token" 0 15) then return val else throw name.toString
+    | Syntax.ident _ _ val _ => return val.toString
+    | _ => throw s!"{x.raw}"
+
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
+  | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
   | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.getNat)
   | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
@@ -20,10 +28,12 @@ partial def mkPostfixExpression : Lean.Syntax → Except String PostfixExpr
   | `(postfix_expression| $p:postfix_expression [ $e:expression ]) => PostfixExpr.SquareBrack <$> (mkPostfixExpression p) <*> (mkExpression e)
   | `(postfix_expression| $p:postfix_expression ( )) => PostfixExpr.CurlyBrack <$> (mkPostfixExpression p)
   | `(postfix_expression| $p:postfix_expression . $i:ident) => PostfixExpr.Identifier <$> (mkPostfixExpression p) <*> (return i.getId.toString)
+  | `(postfix_expression| $p:postfix_expression . $i:type_name_token) => PostfixExpr.Identifier <$> (mkPostfixExpression p) <*> (getIdent i)
   | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) <*> (mkArgExprList args)
   | `(postfix_expression| $p:postfix_expression -> $i:ident) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (return i.getId.toString)
+  | `(postfix_expression| $p:postfix_expression -> $i:type_name_token) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (getIdent i)
   | `(postfix_expression| $p:postfix_expression ++) => PostfixExpr.IncOp <$> (mkPostfixExpression p)
---  | `(postfix_expression| $p:postfix_expression --) => PostfixExpr.DecOp <$> (mkPostfixExpression p)
+  | `(postfix_expression| $p:postfix_expression –) => PostfixExpr.DecOp <$> (mkPostfixExpression p)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for postfix expression " ++ x)
           | .none => throw "unexpected syntax for postfix expression" 
@@ -42,10 +52,11 @@ partial def mkUnaryOperator : Lean.Syntax → Except String UnaryOp
 partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| $p:postfix_expression) => UnaryExpr.PostFix <$> (mkPostfixExpression p)
   | `(unary_expression| ++ $u:unary_expression) => UnaryExpr.IncUnary <$> (mkUnaryExpression u)
---  | `(unary_expression| -- $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
+  | `(unary_expression| – $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
   | `(unary_expression| $o:unary_operator $c:cast_expression) => UnaryExpr.UnaryOpCast <$> (mkUnaryOperator o) <*> (mkCastExpression c)
   | `(unary_expression| sizeof $u:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression u)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
+  | `(unary_expression| sizeof ( $t:type_name_token )) => UnaryExpr.SizeOfTypeName <$> (getIdent t)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for unary expression " ++ x)
           | .none => throw "unexpected syntax for unary expression" 
@@ -213,10 +224,11 @@ partial def mkAbstrDecl : Lean.Syntax → Except String AbstrDecl
           | .some x => throw ("unexpected syntax for abstract declarator " ++ x)
           | .none => throw "unexpected syntax for abstract declarator" 
 
+
 partial def mkIdentList : Lean.Syntax → Except String IdentList
-  | `(identifier_list| $[$xs],*) => do
-      let is : Array String := xs.map (fun i => i.getId.toString)
-      return IdentList.IdentList is.toList
+  | `(identifier_list| $[$xs],*) =>
+     let is : Except String (Array String) := xs.mapM getIdent
+    IdentList.IdentList <$> (is.map Array.toList)
 --  | `(identifier_list| $i:ident) => return (IdentList.Identifier i.getId.toString)
 --  | `(identifier_list| $il:identifier_list , $i:ident) => IdentList.IdentListIdent <$> (mkIdentList il) <*> (return i.getId.toString)
   | s => match s.reprint with
@@ -225,6 +237,7 @@ partial def mkIdentList : Lean.Syntax → Except String IdentList
 
 partial def mkDirDecl : Lean.Syntax → Except String DirDecl
   | `(direct_declarator| $i:ident) => return (DirDecl.Identifier i.getId.toString)
+  | `(direct_declarator| $i:type_name_token) => DirDecl.Identifier <$> (getIdent i)
   | `(direct_declarator| ( $d:declarator )) => DirDecl.DeclRnd <$> (mkDeclarator d)
   | `(direct_declarator| $d:direct_declarator [ $c:constant_expression ]) => DirDecl.DirDecConst <$> (mkDirDecl d) <*> (mkConstExpr c)
   | `(direct_declarator| $d:direct_declarator [ ]) => DirDecl.DirDecSqr <$> (mkDirDecl d)
@@ -324,9 +337,7 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   | `(type_specifier| unsigned) => return TypeSpec.Unsigned
   | `(type_specifier| $s:struct_or_union_specifier) => TypeSpec.SoUSpec <$> (mkStructOrUnionSpec s)
   | `(type_specifier| $e:enum_specifier) => TypeSpec.EnumSpec <$> (mkEnumSpec e)
-  | `(type_specifier| $t:type_name_token) => match t with
-                                              | `($i:ident) => return TypeSpec.TypeName (i.getId.toString)
-                                              | _ => throw s!"unexpected syntax for type name (token) {t.raw}"
+  | `(type_specifier| $t:type_name_token) => TypeSpec.TypeName <$> (getIdent t)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for type specifier " ++ x)
           | .none => throw "unexpected syntax for type specifier" 
@@ -448,8 +459,10 @@ partial def mkStructDeclarationList : Lean.Syntax → Except String StructDeclar
 
 partial def mkStructOrUnionSpec : Lean.Syntax → Except String StructOrUnionSpec
   | `(struct_or_union_specifier| $sou:struct_or_union $i:ident { $sdl:struct_declaration_list }) => StructOrUnionSpec.SoUIdentStructDeclarationList <$> (mkStructOrUnion sou) <*> (return i.getId.toString) <*> (mkStructDeclarationList sdl)
+  | `(struct_or_union_specifier| $sou:struct_or_union $i:type_name_token { $sdl:struct_declaration_list }) => StructOrUnionSpec.SoUIdentStructDeclarationList <$> (mkStructOrUnion sou) <*> (getIdent i) <*> (mkStructDeclarationList sdl)
   | `(struct_or_union_specifier| $sou:struct_or_union { $sdl:struct_declaration_list }) => StructOrUnionSpec.SoUStructDeclarationList <$> (mkStructOrUnion sou) <*> (mkStructDeclarationList sdl)
   | `(struct_or_union_specifier| $sou:struct_or_union $i:ident) => StructOrUnionSpec.SoUIdent <$> (mkStructOrUnion sou) <*> (return i.getId.toString)
+  | `(struct_or_union_specifier| $sou:struct_or_union $i:type_name_token) => StructOrUnionSpec.SoUIdent <$> (mkStructOrUnion sou) <*> (getIdent i)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for struct or union specifier " ++ x)
           | .none => throw "unexpected syntax for struct or union specifier" 
@@ -466,7 +479,9 @@ partial def mkStorClassSpec : Lean.Syntax → Except String StorClassSpec
 
 partial def mkEnumerator : Lean.Syntax → Except String Enumerator
   | `(enumerator| $s:ident) => return (Enumerator.Ident s.getId.toString)
+  | `(enumerator| $s:type_name_token) => Enumerator.Ident <$> (getIdent s)
   | `(enumerator| $s:ident = $ce:constant_expression) => Enumerator.IdentAssignConst <$> (return s.getId.toString) <*> (mkConstExpr ce)
+  | `(enumerator| $s:type_name_token = $ce:constant_expression) => Enumerator.IdentAssignConst <$> (getIdent s) <*> (mkConstExpr ce)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for enumerator " ++ x)
           | .none => throw "unexpected syntax for enumerator" 
@@ -484,7 +499,9 @@ partial def mkEnumList : Lean.Syntax → Except String EnumList
 partial def mkEnumSpec : Lean.Syntax → Except String EnumSpec
   | `(enum_specifier| enum { $e:enumerator_list }) => EnumSpec.EnumList <$> (mkEnumList e)
   | `(enum_specifier| enum $i:ident { $e:enumerator_list }) => EnumSpec.IdentEnumList <$> (return i.getId.toString) <*> (mkEnumList e)
+  | `(enum_specifier| enum $i:type_name_token { $e:enumerator_list }) => EnumSpec.IdentEnumList <$> (getIdent i) <*> (mkEnumList e)
   | `(enum_specifier| enum $i:ident) => return EnumSpec.EnumIdent (i.getId.toString)
+  | `(enum_specifier| enum $i:type_name_token) => EnumSpec.EnumIdent <$> (getIdent i)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for enum specifier " ++ x)
           | .none => throw "unexpected syntax for enum specifier" 
@@ -522,6 +539,7 @@ partial def mkIterStmt : Lean.Syntax → Except String IterStmt
 
 partial def mkJumpStmt : Lean.Syntax → Except String JumpStmt
   | `(jump_statement| goto $i:ident ;) => JumpStmt.Goto <$> (return i.getId.toString)
+  | `(jump_statement| goto $i:type_name_token ;) => JumpStmt.Goto <$> (getIdent i)
   | `(jump_statement| continue ;) => return JumpStmt.Continue
   | `(jump_statement| break ;) => return JumpStmt.Break
   | `(jump_statement| return ;) => return JumpStmt.Return
@@ -532,6 +550,7 @@ partial def mkJumpStmt : Lean.Syntax → Except String JumpStmt
 
 partial def mkLabelStmt : Lean.Syntax → Except String LabelStmt
   | `(labeled_statement| $i:ident : $s:statement) => LabelStmt.Identifier <$> (return i.getId.toString) <*> (mkStatement s)
+  | `(labeled_statement| $i:type_name_token : $s:statement) => LabelStmt.Identifier <$> (getIdent i) <*> (mkStatement s)
   | `(labeled_statement| case $c:constant_expression : $s:statement) => LabelStmt.Case <$> (mkConstExpr c) <*> (mkStatement s)
   | `(labeled_statement| default : $s:statement) => LabelStmt.Default <$> (mkStatement s)
   | s => match s.reprint with

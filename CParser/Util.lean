@@ -2,7 +2,7 @@ import Lean
 import Init.Data.String
 -- import Lean.Parser.Types
 
-open Lean Parser
+open Lean Parser Elab.Command
 
 -- for now: just single-line comments
 -- TODO: this also isn't good enough, it will break if there's a string literal with // inside it, and it shouldn't
@@ -40,73 +40,135 @@ open Lean Parser
 -- def preprocess (lines : Array String ) : Array String :=
 -- lines.map (λ l => removeCommentsLine l)
 
--- 
+-- Helper function
+def removeSingleLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => []
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '\n' :: cs        =>        removeSingleLineCommentsH false inString cs
+    | true,  _,     _    :: cs        =>        removeSingleLineCommentsH true inString cs
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => '"' :: removeSingleLineCommentsH false (!inString) cs
+    | false, true,  c    :: cs        => c   :: removeSingleLineCommentsH false true cs
+-- if in code, // starts a comment
+    | false, false, '/'  :: '/' :: cs =>        removeSingleLineCommentsH true false cs
+    | false, false, c    :: cs        => c   :: removeSingleLineCommentsH false false cs
 
-partial def finishCommentBlockCustom (nesting : Nat) : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
-  let input := c.input
-  let i     := s.pos
-  if input.atEnd i then (eoi s)
-  else
-    let curr := input.get i
-    let i    := input.next i
-    match curr with
-      | '*' => if input.atEnd i then (eoi s)
-               else let curr := input.get i
-                    match curr with
-                      | '/' => if nesting == 1 then (s.next input i)
-                               else finishCommentBlockCustom (nesting-1) c (s.next input i)
-                      | _ => finishCommentBlockCustom nesting c (s.next input i)
-      | '/' => if input.atEnd i then (eoi s)
-               else let curr := input.get i
-                    match curr with
-                      | '*' => finishCommentBlockCustom (nesting+1) c (s.next input i)
-                      | _ => finishCommentBlockCustom nesting c (s.setPos i)
-      | _ => finishCommentBlockCustom nesting c (s.setPos i)
-        where eoi s := s.mkUnexpectedError "unterminated comment"
+-- Helper function
+def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => []
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '*'  :: '/' :: cs =>        removeMultiLineCommentsH false inString cs
+    | true,  _,     _    :: cs        =>        removeMultiLineCommentsH true inString cs
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => '"' :: removeMultiLineCommentsH false (!inString) cs
+    | false, true,  c    :: cs        => c   :: removeMultiLineCommentsH false true cs
+-- if in code, // starts a comment
+    | false, false, '/'  :: '*' :: cs =>        removeMultiLineCommentsH true false cs
+    | false, false, c    :: cs        => c   :: removeMultiLineCommentsH false false cs
 
--- Custom whitespace parser 
-partial def whitespaceCustom : ParserFn := fun (c : Parser.ParserContext) (s : Parser.ParserState) =>
-  let input := c.input
-  let i     := s.pos
-  if input.atEnd i then s
-  else
-    let curr := input.get i
-    if curr.isWhitespace then whitespaceCustom c (s.next input i)
-    else if curr == '/' then
-      let i    := input.next i
-      let curr := input.get i
-      if curr == '/' then Parser.andthenFn (Parser.takeUntilFn (fun c => c = '\n')) whitespaceCustom c (s.next input i)
-      else if curr == '*' then
-        let i    := input.next i
-        Parser.andthenFn (finishCommentBlockCustom 1) whitespaceCustom c (s.next input i)
-      else s
-    else s
+def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteMinusH dummy (!inString) cs
+    | true,  c   :: cs        => c   :: substituteMinusH dummy true cs
+    | false, '-' :: '-' :: cs => '–' :: substituteMinusH dummy false cs
+    | false, c   :: cs        => c   :: substituteMinusH dummy false cs
 
-def runParserCategory (env : Environment) (catName : Name) (input : String) (fileName := "<input>") : Except String Syntax :=
-  let p := andthenFn whitespaceCustom (categoryParserFnImpl catName)
-  let ictx := mkInputContext input fileName
-  let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
-  if s.hasError then
-    Except.error (s.toErrorMsg ictx)
-  else if input.atEnd s.pos then
-    Except.ok s.stxStack.back
-  else
-    Except.error ((s.mkError "end of input").toErrorMsg ictx)
+def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteBackslashH dummy (!inString) cs
+    | _, '\\' :: c :: cs => if c == '\\' then '@' :: '@' :: substituteBackslashH dummy inString cs
+                            else if c != '\"' then '@' :: substituteBackslashH dummy inString (c :: cs)
+                            else '\\' :: substituteBackslashH dummy inString (c :: cs)
+    | inString,  c   :: cs        => c   :: substituteBackslashH dummy inString cs
+
+def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => []
+    | _,     '"' :: cs        => '"' :: substituteSingleQuoteH dummy (!inString) cs
+    | true,  c   :: cs        => c   :: substituteSingleQuoteH dummy true cs
+    | false, '\'' :: cs => '"' :: substituteSingleQuoteH dummy false cs
+    | false, c   :: cs        => c   :: substituteSingleQuoteH dummy false cs
+
+def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
+  λ i => let charList := helper false false i.toList
+         charList.foldl (λ a b => a ++ b.toString) ""
+
+def removeSingleLineComments := wrapHelper removeSingleLineCommentsH
+def removeMultiLineComments  := wrapHelper removeMultiLineCommentsH
+def substituteMinus          := wrapHelper substituteMinusH
+def substituteBackslash    := wrapHelper substituteBackslashH
+def substituteSingleQuote    := wrapHelper substituteSingleQuoteH
+
+def removeComments := removeMultiLineComments ∘ removeSingleLineComments
+def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
 
 abbrev ParseError := String
+ 
+partial def runParserCategoryTranslationUnitHelper
+                                                   (input : String)
+                                                   (fileName := "<input>")
+                                                   (stack : List Syntax) : CommandElabM $ List Syntax :=
+   do 
+   let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
+   let ictx := mkInputContext input fileName
+   let env ← getEnv
+   let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
+   if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
+   let stx := s.stxStack.back
+   let stack := stack.cons stx
+   if (s.pos.byteIdx ≥ input.length) then return stack else
+   match stx with
+    | (Syntax.node _ _ -- external declaration
+        #[(Syntax.node _ _ -- declaration
+           #[(Syntax.node _ _ -- declaration specifiers
+               #[(Syntax.node _ _ -- storage class specifier
+                   #[Lean.Syntax.atom _ "typedef"]),
+                 (Syntax.node _ _ -- declaration specifiers
+                   #[Lean.Syntax.node _ _ _ -- type specifier
+                      ])]),
+             (Syntax.node _ _ -- null
+               #[Syntax.node _ _ -- init declarator list
+                  #[Syntax.node _ _ -- null
+                     #[Syntax.node _ _ -- init declarator
+                        #[(Syntax.node _ _ -- declarator
+                            #[(Syntax.node _ `null _),
+                              (Syntax.node _ _ -- direct_declarator
+                                #[Lean.Syntax.ident _ id _ _])]),
+                          (Syntax.node _ _ _ -- null
+                            )]]]]),
+             (Lean.Syntax.atom _ ";")])]) => let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.toString⟩
+                                             let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
+                                             let cat := mkIdentFrom stx `type_name_token
+                                             let newDec ← `(syntax  $[$stxstx]* : $cat)
+                                             elabCommand newDec
+                                             runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
+    | _ => runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
+
+def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : CommandElabM Syntax :=
+   do
+      let extDecls ← runParserCategoryTranslationUnitHelper input fileName []
+      let info := (extDecls.get! 0).getHeadInfo
+      return Syntax.node1 info `translation_unit_ $
+              Syntax.node info `null extDecls.toArray.reverse
+
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
-String → Environment → Except String α := λ s env => do
-  ntparser (← _root_.runParserCategory env syntaxcat s)
+String → Environment → CommandElabM α := λ s env =>
+  if syntaxcat == `translation_unit then do
+  let stx ← runParserCategoryTranslationUnit s
+  IO.ofExcept (ntparser stx)
+ else IO.ofExcept ((runParserCategory env syntaxcat s) >>= ntparser)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
-def mkNonTerminalParser {α : Type} [Inhabited α] (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
-(s : String) (env : Environment) : Except String α :=
+def mkNonTerminalParser {α : Type}  (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
+(s : String) (env : Environment) : CommandElabM α :=
   let parseFun := mkParseFun syntaxcat ntparser
+  let s := makeSubstitution (removeComments s)
   parseFun s env
-  -- match parseFun s env with
-  --  | .error msg => (some msg, default)
-  --  | .ok    p   => (none, p)
 
 -- For regex matching
 inductive Regex where
