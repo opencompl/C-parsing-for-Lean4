@@ -322,6 +322,7 @@ syntax "`[type_specifier| " type_specifier "]" : term
 -- syntax notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/ : type_name_token
 -----
 
+syntax "__builtin_va_list" : type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
 -- struct_or_union_specifier
