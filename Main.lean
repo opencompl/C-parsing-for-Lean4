@@ -102,13 +102,13 @@ def checkFileParse (env: Lean.Environment)
   (filepath: FilePath)
   (checker: Checker) : IO TestResult := do
   let lines <- IO.FS.lines filepath
-  let preprocessed := lines --preprocess lines
+  let preprocessed := Array.filter (λ l => l.length == 0 || l.get 0 ≠ '#') lines --preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
   -- let pipeline := Lean.quote [file]
 
 -- Extracting string from CommandElabM
   let parsed := checker fileStr env
-  let runOnce := parsed.run {fileName := filepath.toString, fileMap := Inhabited.default, tacticCache? := .none}
+  let runOnce := parsed.run {fileName := filepath.toString, fileMap := FileMap.ofString "", tacticCache? := .none}
   let runTwice := runOnce.run {env := env, maxRecDepth := defaultMaxRecDepth}
   match (runTwice .unit) with
     | .ok (ast, _) _ => do IO.println $ s!"{filepath}, ok, AST:\n" ++ ast
