@@ -107,7 +107,27 @@ def removeComments := removeMultiLineComments ∘ removeSingleLineComments
 def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
 
 abbrev ParseError := String
+
+-- Get the identifier out of an init_declarator
+partial def getIdFrom (s : Syntax) : String := match s.getKind.toString, s.getArgs with
+  | "«init_declarator_=_»", #[decl, _] => getIdFrom decl
+  | "declarator__", #[_, dirDecl] => getIdFrom dirDecl
+  | "direct_declarator_", #[id] => id.getId.toString
+  | "«direct_declarator(_)»", #[_, decl, _] => getIdFrom decl
+  | "«direct_declarator_[_]»", #[dirDecl, _, _, _] => getIdFrom dirDecl
+  | "«direct_declarator_[]»", #[dirDecl, _, _] => getIdFrom dirDecl
+  | "«direct_declarator_(_)»", #[dirDecl, _, _, _] => getIdFrom dirDecl
+  | "«direct_declarator_()»", #[dirDecl, _, _] => getIdFrom dirDecl
+  | _, _ => "" -- only commas
  
+def stringToCommand (stx : Syntax) (s : String) : CommandElabM PUnit := do
+  let stratom : TSyntax `str := ⟨Syntax.mkStrLit $ s⟩
+  let stxstx : Array (TSyntax `stx) := #[← `(stx| $stratom:str)]
+  let cat := mkIdentFrom stx `type_name_token
+  let newDec ← `(syntax $[$stxstx]* : $cat)
+  dbg_trace s
+  elabCommand newDec
+
 partial def runParserCategoryTranslationUnitHelper
                                                    (input : String)
                                                    (fileName := "<input>")
@@ -132,18 +152,10 @@ partial def runParserCategoryTranslationUnitHelper
              (Syntax.node _ _ -- null
                #[Syntax.node _ _ -- init declarator list
                   #[Syntax.node _ _ -- null
-                     #[Syntax.node _ _ -- init declarator
-                        #[(Syntax.node _ _ -- declarator
-                            #[(Syntax.node _ `null _),
-                              (Syntax.node _ _ -- direct_declarator
-                                #[Lean.Syntax.ident _ id _ _])]),
-                          (Syntax.node _ _ _ -- null
-                            )]]]]),
-             (Lean.Syntax.atom _ ";")])]) => let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.toString⟩
-                                             let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
-                                             let cat := mkIdentFrom stx `type_name_token
-                                             let newDec ← `(syntax  $[$stxstx]* : $cat)
-                                             elabCommand newDec
+                     initDeclList]]),
+             (Lean.Syntax.atom _ ";")])]) => let newTypeNames : Array String := .filter (λ s => s.length > 0) $
+                                                                                  .map getIdFrom initDeclList
+                                             let _ ← Array.mapM (stringToCommand stx) newTypeNames
                                              runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
     | _ => runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
 
