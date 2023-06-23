@@ -171,7 +171,7 @@ syntax "`[abstract_declarator| " abstract_declarator "]" : term
 
 -- syntax ident : identifier_list
 -- syntax identifier_list "," ident : identifier_list
-syntax sepBy((ident <|> type_name_token), ",", ", ") : identifier_list
+syntax sepBy(ident, ",", ", ") : identifier_list
 
 syntax "`[identifier_list| " identifier_list "]" : term
 
@@ -492,17 +492,21 @@ syntax external_declaration+ : translation_unit
 
 syntax "`[translation_unit| " translation_unit "]" : term
 
-macro "typedef" type_specifier id:ident ";" : command => do
-  let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.getId.toString⟩
-  let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
-  let cat := mkIdentFrom id `type_name_token
-  `(syntax  $[$stxstx]* : $cat)
+-- macro "typedef" type_specifier id:ident ";" : command => do
+--   let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.getId.toString⟩
+--   let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
+--   let cat := mkIdentFrom id `type_name_token
+--   `(syntax  $[$stxstx]* : $cat)
 --  return mkNullNode #[stxDecl]
 
 #check `(command| syntax Foo : type_name_token)
 
 #check `(external_declaration| typedef struct Foo Foo;)
 #check `(external_declaration| typedef long ll;)
+#check `(external_declaration| typedef void (*sqlite3_syscal_ptr)(void);)
+#check `(external_declaration| typedef int *p, q, (*foo)(void), bar[], baz();)
+#check `(external_declaration| typedef long long int sqlite_int64;)
+
 
 #check `(translation_unit| int char x, y, z = x /= y *= z++;
 char int (*foo)[42] {
