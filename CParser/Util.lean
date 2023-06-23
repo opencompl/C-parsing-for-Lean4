@@ -125,7 +125,6 @@ def stringToCommand (stx : Syntax) (s : String) : CommandElabM PUnit := do
   let stxstx : Array (TSyntax `stx) := #[← `(stx| $stratom:str)]
   let cat := mkIdentFrom stx `type_name_token
   let newDec ← `(syntax $[$stxstx]* : $cat)
-  dbg_trace s
   elabCommand newDec
 
 partial def runParserCategoryTranslationUnitHelper
