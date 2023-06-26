@@ -14,8 +14,51 @@ syntax "L" : arith_type_spec
 
 syntax "[arith_type_spec| " arith_type_spec "]" : term
 
+-- syntax arith_type_spec : arith_type_spec_list
+-- syntax arith_type_spec noWs arith_type_spec_list : arith_type_spec_list
+
 syntax arith_type_spec : arith_type_spec_list
-syntax arith_type_spec noWs arith_type_spec_list : arith_type_spec_list
+syntax "ll" : arith_type_spec_list
+syntax "lL" : arith_type_spec_list
+syntax "Ll" : arith_type_spec_list
+syntax "LL" : arith_type_spec_list
+
+syntax "lu" : arith_type_spec_list
+syntax "lU" : arith_type_spec_list
+syntax "Lu" : arith_type_spec_list
+syntax "LU" : arith_type_spec_list
+
+syntax "ul" : arith_type_spec_list
+syntax "Ul" : arith_type_spec_list
+syntax "uL" : arith_type_spec_list
+syntax "UL" : arith_type_spec_list
+
+syntax "lul" : arith_type_spec_list
+syntax "luL" : arith_type_spec_list
+syntax "lUl" : arith_type_spec_list
+syntax "lUL" : arith_type_spec_list
+syntax "Lul" : arith_type_spec_list
+syntax "LuL" : arith_type_spec_list
+syntax "LUl" : arith_type_spec_list
+syntax "LUL" : arith_type_spec_list
+
+syntax "llu" : arith_type_spec_list
+syntax "llU" : arith_type_spec_list
+syntax "lLu" : arith_type_spec_list
+syntax "lLU" : arith_type_spec_list
+syntax "Llu" : arith_type_spec_list
+syntax "LlU" : arith_type_spec_list
+syntax "LLu" : arith_type_spec_list
+syntax "LLU" : arith_type_spec_list
+
+syntax "ull" : arith_type_spec_list
+syntax "ulL" : arith_type_spec_list
+syntax "uLl" : arith_type_spec_list
+syntax "uLL" : arith_type_spec_list
+syntax "Ull" : arith_type_spec_list
+syntax "UlL" : arith_type_spec_list
+syntax "ULl" : arith_type_spec_list
+syntax "ULL" : arith_type_spec_list
 
 syntax "[arith_type_spec_list|" arith_type_spec_list "]" : term
 

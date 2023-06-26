@@ -20,8 +20,8 @@ open Lean.PrettyPrinter
 open Lean.PrettyPrinter.Formatter
 open Regex
 
-declare_syntax_cat arith_type_spec
-declare_syntax_cat arith_type_spec_list
+declare_syntax_cat arith_type_spec (behavior := symbol)
+declare_syntax_cat arith_type_spec_list (behavior := symbol)
 declare_syntax_cat primary_expression
 declare_syntax_cat postfix_expression
 declare_syntax_cat argument_expression_list
