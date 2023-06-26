@@ -104,7 +104,7 @@ def checkFileParse (env: Lean.Environment)
   (filepath: FilePath)
   (checker: Checker) : IO TestResult := do
   let lines <- IO.FS.lines filepath
-  let preprocessed := Array.filter (λ l => l.length > 0 && l.get 0 ≠ '#') lines --preprocess lines
+  let preprocessed := Array.filter (λ line => line.length > 0 && line.get 0 ≠ '#') lines --preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
   -- let pipeline := Lean.quote [file]
 

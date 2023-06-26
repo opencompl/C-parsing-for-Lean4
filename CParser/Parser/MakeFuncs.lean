@@ -17,6 +17,7 @@ partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
   | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
   | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.getNat)
+  | `(primary_expression| $n:num$a:arith_type_spec_list) => return (PrimaryExpr.Constant n.getNat)
   | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
   | s => match s.reprint with
@@ -51,10 +52,10 @@ partial def mkUnaryOperator : Lean.Syntax → Except String UnaryOp
 
 partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| $p:postfix_expression) => UnaryExpr.PostFix <$> (mkPostfixExpression p)
-  | `(unary_expression| ++ $u:unary_expression) => UnaryExpr.IncUnary <$> (mkUnaryExpression u)
-  | `(unary_expression| – $u:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression u)
+  | `(unary_expression| ++ $un:unary_expression) => UnaryExpr.IncUnary <$> (mkUnaryExpression un)
+  | `(unary_expression| – $un:unary_expression) => UnaryExpr.DecUnary <$> (mkUnaryExpression un)
   | `(unary_expression| $o:unary_operator $c:cast_expression) => UnaryExpr.UnaryOpCast <$> (mkUnaryOperator o) <*> (mkCastExpression c)
-  | `(unary_expression| sizeof $u:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression u)
+  | `(unary_expression| sizeof $un:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression un)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
   | `(unary_expression| sizeof ( $t:type_name_token )) => UnaryExpr.SizeOfTypeName <$> (getIdent t)
   | s => match s.reprint with
@@ -62,7 +63,7 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
           | .none => throw "unexpected syntax for unary expression" 
 
 partial def mkCastExpression : Lean.Syntax → Except String CastExpr
-  | `(cast_expression| $u:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression u)
+  | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
   | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for cast expression " ++ x)
@@ -134,21 +135,21 @@ partial def mkIOrExpression : Lean.Syntax → Except String IOrExpr
 
 partial def mkLAndExpression : Lean.Syntax → Except String LAndExpr
   | `(logical_and_expression| $i:inclusive_or_expression) => LAndExpr.IOr <$> (mkIOrExpression i)
-    | `(logical_and_expression| $l:logical_and_expression && $i:inclusive_or_expression) => LAndExpr.LAndDblAmp <$> (mkLAndExpression l) <*> (mkIOrExpression i)
+    | `(logical_and_expression| $lo:logical_and_expression && $i:inclusive_or_expression) => LAndExpr.LAndDblAmp <$> (mkLAndExpression lo) <*> (mkIOrExpression i)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for logical and expression " ++ x)
           | .none => throw "unexpected syntax for logical and expression" 
 
 partial def mkLOrExpression : Lean.Syntax → Except String LOrExpr
-  | `(logical_or_expression| $l:logical_and_expression) => LOrExpr.LAnd <$> (mkLAndExpression l)
+  | `(logical_or_expression| $lo:logical_and_expression) => LOrExpr.LAnd <$> (mkLAndExpression lo)
   | `(logical_or_expression| $lo:logical_or_expression || $la:logical_and_expression) => LOrExpr.LOrDblPipe <$> (mkLOrExpression lo) <*> (mkLAndExpression la)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for logical or expression " ++ x)
           | .none => throw "unexpected syntax for logical or expression" 
 
 partial def mkCondExpression : Lean.Syntax → Except String CondExpr
-  | `(conditional_expression| $l:logical_or_expression) => CondExpr.LOr <$> (mkLOrExpression l)
-  | `(conditional_expression| $l:logical_or_expression ? $e:expression : $c:conditional_expression) => CondExpr.CondTernary <$> (mkLOrExpression l) <*> (mkExpression e) <*> (mkCondExpression c)
+  | `(conditional_expression| $lo:logical_or_expression) => CondExpr.LOr <$> (mkLOrExpression lo)
+  | `(conditional_expression| $lo:logical_or_expression ? $e:expression : $c:conditional_expression) => CondExpr.CondTernary <$> (mkLOrExpression lo) <*> (mkExpression e) <*> (mkCondExpression c)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for conditional expression " ++ x)
           | .none => throw "unexpected syntax for conditional expression" 
@@ -171,7 +172,7 @@ partial def mkAssmtOperator : Lean.Syntax → Except String AssmtOp
 
 partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
   | `(assignment_expression| $c:conditional_expression) => AssmtExpr.Cond <$> (mkCondExpression c)
-  | `(assignment_expression| $u:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression u) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
+  | `(assignment_expression| $un:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression un) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for assignment expression " ++ x)
           | .none => throw "unexpected syntax for assignment expression" 
@@ -567,7 +568,7 @@ partial def mkCompStmt : Lean.Syntax → Except String CompStmt
           | .none => throw "unexpected syntax for compound statement" 
 
 partial def mkStatement : Lean.Syntax → Except String Statement
-  | `(statement| $l:labeled_statement) => Statement.LabelStmt <$> (mkLabelStmt l)
+  | `(statement| $ls:labeled_statement) => Statement.LabelStmt <$> (mkLabelStmt ls)
   | `(statement| $c:compound_statement) => Statement.CompStmt <$> (mkCompStmt c)
   | `(statement| $e:expression_statement) => Statement.ExprStmt <$> (mkExprStmt e)
   | `(statement| $s:selection_statement) => Statement.SelStmt <$> (mkSelStmt s)
@@ -581,9 +582,9 @@ partial def mkStmtList : Lean.Syntax → Except String StmtList
 --  | `(statement_list| $[$xs]*) => do
 --      let ss <- xs.mapM mkStatement
 --      return StmtList.StmtList ss.toList
-  | `(statement_list| $s:statement) => (λ l => StmtList.StmtList [l]) <$> mkStatement s
+  | `(statement_list| $s:statement) => (λ s => StmtList.StmtList [s]) <$> mkStatement s
   | `(statement_list| $s:statement $sl:statement_list) =>
-     (λ (StmtList.StmtList sl) l  => StmtList.StmtList ([l] ++ sl)) <$> (mkStmtList sl) <*> (mkStatement s)
+     (λ (StmtList.StmtList sl) li  => StmtList.StmtList ([li] ++ sl)) <$> (mkStmtList sl) <*> (mkStatement s)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for statement list " ++ x)
           | .none => throw "unexpected syntax for statement list" 

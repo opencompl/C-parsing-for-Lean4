@@ -7,11 +7,23 @@ open Lean.Parser -- for (sepBy ...)
 open Lean.Elab
 open Lean.Elab.Command
 
+syntax "u" : arith_type_spec
+syntax "U" : arith_type_spec
+syntax "l" : arith_type_spec
+syntax "L" : arith_type_spec
+
+syntax "[arith_type_spec| " arith_type_spec "]" : term
+
+syntax arith_type_spec : arith_type_spec_list
+syntax arith_type_spec noWs arith_type_spec_list : arith_type_spec_list
+
+syntax "[arith_type_spec_list|" arith_type_spec_list "]" : term
 
 syntax str : primary_expression
 syntax ident : primary_expression
 syntax type_name_token : primary_expression
 syntax num : primary_expression
+syntax num noWs arith_type_spec_list : primary_expression
 syntax "(" expression ")" : primary_expression
 
 syntax "`[primary_expression| " primary_expression "]" : term
