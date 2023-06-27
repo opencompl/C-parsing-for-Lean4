@@ -15,7 +15,7 @@ def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
+  -- | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
   | `(primary_expression| $n:extended_num) => return PrimaryExpr.Constant (n.raw.getArg 0).toNat
   | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
@@ -61,7 +61,21 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
           | .some x => throw ("unexpected syntax for unary expression " ++ x)
           | .none => throw "unexpected syntax for unary expression" 
 
-partial def mkCastExpression : Lean.Syntax → Except String CastExpr
+-- -- partial def mkCastExpression : Lean.Syntax → Except String CastExpr
+-- partial def mkCastExpression : Lean.Syntax → Except String CastExpr := λ stx => dbg_trace stx
+--   match stx with
+--       | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
+--       | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
+--       -- | s => dbg_trace s
+--       | s => match s.reprint with
+--               | .some x => dbg_trace s
+--                           throw ("unexpected syntax for cast expression " ++ x)
+--               | .none => dbg_trace s
+--                         throw "unexpected syntax for cast expression" 
+
+partial def mkCastExpression : Lean.Syntax → Except String CastExpr := λ stx =>
+dbg_trace stx
+match stx with
   | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
   | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
   | s => match s.reprint with

@@ -19,7 +19,7 @@ attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesize
 syntax num (noWs arith_type_specs)?: extended_num
 
 syntax ident : primary_expression
-syntax type_name_token : primary_expression
+-- syntax type_name_token : primary_expression
 syntax extended_num : primary_expression
 syntax str : primary_expression
 syntax "(" expression ")" : primary_expression
@@ -60,6 +60,7 @@ syntax "`[unary_expression| " unary_expression "]" : term
 
 syntax unary_expression : cast_expression
 syntax "(" type_name ")" cast_expression : cast_expression
+-- syntax "(" type_name_token ")" cast_expression : cast_expression
 
 syntax "`[cast_expression| " cast_expression "]" : term
 
