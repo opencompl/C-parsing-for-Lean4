@@ -74,6 +74,7 @@ mutual
 partial def primaryExprToString : PrimaryExpr → String
   | .Identifier s => s
   | .Constant c => toString c
+  | .FloatConstant c => toString c
   | .StringLit s => "\"" ++ s ++ "\""
   | .BracketExpr e => "(" ++ (expressionToString e) ++ ")"
 

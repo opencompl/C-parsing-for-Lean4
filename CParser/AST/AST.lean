@@ -6,6 +6,7 @@ mutual
 inductive PrimaryExpr where
   | Identifier : String → PrimaryExpr
   | Constant : Int → PrimaryExpr
+  | FloatConstant : Float → PrimaryExpr
   | StringLit : String → PrimaryExpr
   | BracketExpr : Expression → PrimaryExpr
 
