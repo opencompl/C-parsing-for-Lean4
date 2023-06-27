@@ -7,66 +7,21 @@ open Lean.Parser -- for (sepBy ...)
 open Lean.Elab
 open Lean.Elab.Command
 
-syntax "u" : arith_type_spec
-syntax "U" : arith_type_spec
-syntax "l" : arith_type_spec
-syntax "L" : arith_type_spec
+def arith_type_specs : Parser where
+  fn c s :=
+    let startPos := s.pos
+    let s := takeWhileFn "uUlL".contains c s
+    mkNodeToken `arith_type_specs startPos c s
 
-syntax "[arith_type_spec| " arith_type_spec "]" : term
+attribute [combinator_formatter arith_type_specs] PrettyPrinter.Formatter.pushNone.formatter
+attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesizer.pushNone.parenthesizer
 
--- syntax arith_type_spec : arith_type_spec_list
--- syntax arith_type_spec noWs arith_type_spec_list : arith_type_spec_list
+syntax num (noWs arith_type_specs)?: extended_num
 
-syntax arith_type_spec : arith_type_spec_list
-syntax "ll" : arith_type_spec_list
-syntax "lL" : arith_type_spec_list
-syntax "Ll" : arith_type_spec_list
-syntax "LL" : arith_type_spec_list
-
-syntax "lu" : arith_type_spec_list
-syntax "lU" : arith_type_spec_list
-syntax "Lu" : arith_type_spec_list
-syntax "LU" : arith_type_spec_list
-
-syntax "ul" : arith_type_spec_list
-syntax "Ul" : arith_type_spec_list
-syntax "uL" : arith_type_spec_list
-syntax "UL" : arith_type_spec_list
-
-syntax "lul" : arith_type_spec_list
-syntax "luL" : arith_type_spec_list
-syntax "lUl" : arith_type_spec_list
-syntax "lUL" : arith_type_spec_list
-syntax "Lul" : arith_type_spec_list
-syntax "LuL" : arith_type_spec_list
-syntax "LUl" : arith_type_spec_list
-syntax "LUL" : arith_type_spec_list
-
-syntax "llu" : arith_type_spec_list
-syntax "llU" : arith_type_spec_list
-syntax "lLu" : arith_type_spec_list
-syntax "lLU" : arith_type_spec_list
-syntax "Llu" : arith_type_spec_list
-syntax "LlU" : arith_type_spec_list
-syntax "LLu" : arith_type_spec_list
-syntax "LLU" : arith_type_spec_list
-
-syntax "ull" : arith_type_spec_list
-syntax "ulL" : arith_type_spec_list
-syntax "uLl" : arith_type_spec_list
-syntax "uLL" : arith_type_spec_list
-syntax "Ull" : arith_type_spec_list
-syntax "UlL" : arith_type_spec_list
-syntax "ULl" : arith_type_spec_list
-syntax "ULL" : arith_type_spec_list
-
-syntax "[arith_type_spec_list|" arith_type_spec_list "]" : term
-
-syntax str : primary_expression
 syntax ident : primary_expression
 syntax type_name_token : primary_expression
-syntax num : primary_expression
-syntax num noWs arith_type_spec_list : primary_expression
+syntax extended_num : primary_expression
+syntax str : primary_expression
 syntax "(" expression ")" : primary_expression
 
 syntax "`[primary_expression| " primary_expression "]" : term

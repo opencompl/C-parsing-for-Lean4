@@ -16,8 +16,7 @@ mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
   | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
-  | `(primary_expression| $n:num) => return (PrimaryExpr.Constant n.getNat)
-  | `(primary_expression| $n:num$arith_type_spec_list) => return (PrimaryExpr.Constant n.getNat)
+  | `(primary_expression| $n:extended_num) => return PrimaryExpr.Constant (n.raw.getArg 0).toNat
   | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
   | s => match s.reprint with
