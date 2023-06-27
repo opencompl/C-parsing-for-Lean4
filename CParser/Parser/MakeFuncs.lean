@@ -73,9 +73,7 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
 --               | .none => dbg_trace s
 --                         throw "unexpected syntax for cast expression" 
 
-partial def mkCastExpression : Lean.Syntax → Except String CastExpr := λ stx =>
-dbg_trace stx
-match stx with
+partial def mkCastExpression : Lean.Syntax → Except String CastExpr
   | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
   | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
   | s => match s.reprint with
