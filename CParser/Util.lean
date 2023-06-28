@@ -54,6 +54,20 @@ def removeSingleLineCommentsH (inComment : Bool) (inString : Bool) (input : List
     | false, false, '/'  :: '/' :: cs =>        removeSingleLineCommentsH true false cs
     | false, false, c    :: cs        => c   :: removeSingleLineCommentsH false false cs
 
+def removeSingleLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => accum.reverse
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '\n' :: cs        => removeSingleLineCommentsTailH false inString cs accum
+    | true,  _,     _    :: cs        => removeSingleLineCommentsTailH true inString cs accum
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => removeSingleLineCommentsTailH false (!inString) cs ('"' :: accum)
+    | false, true,  c    :: cs        => removeSingleLineCommentsTailH false true cs (c :: accum)
+-- if in code, // starts a comment
+    | false, false, '/'  :: '/' :: cs => removeSingleLineCommentsTailH true false cs accum
+    | false, false, c    :: cs        => removeSingleLineCommentsTailH false false cs (c :: accum)
+
+
 -- Helper function
 def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
   match inComment, inString, input with
@@ -68,6 +82,19 @@ def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List 
     | false, false, '/'  :: '*' :: cs =>        removeMultiLineCommentsH true false cs
     | false, false, c    :: cs        => c   :: removeMultiLineCommentsH false false cs
 
+def removeMultiLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+  match inComment, inString, input with
+    | _,     _,     []                => accum.reverse
+-- if in a comment, leave on newline, otherwise stay
+    | true,  _,     '*'  :: '/' :: cs => removeMultiLineCommentsTailH false inString cs accum
+    | true,  _,     _    :: cs        => removeMultiLineCommentsTailH true inString cs accum
+-- if in code, a string can have any character other than '"'
+    | false, _,     '"'  :: cs        => removeMultiLineCommentsTailH false (!inString) cs ('"' :: accum)
+    | false, true,  c    :: cs        => removeMultiLineCommentsTailH false true cs (c :: accum)
+-- if in code, // starts a comment
+    | false, false, '/'  :: '*' :: cs => removeMultiLineCommentsTailH true false cs accum
+    | false, false, c    :: cs        => removeMultiLineCommentsTailH false false cs (c :: accum)
+
 def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
   match inString, input with
     | _,     []               => []
@@ -75,6 +102,14 @@ def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List
     | true,  c   :: cs        => c   :: substituteMinusH dummy true cs
     | false, '-' :: '-' :: cs => '–' :: substituteMinusH dummy false cs
     | false, c   :: cs        => c   :: substituteMinusH dummy false cs
+
+def substituteMinusTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => accum.reverse
+    | _,     '"' :: cs        => substituteMinusTailH dummy (!inString) cs ('"' :: accum)
+    | true,  c   :: cs        => substituteMinusTailH dummy true cs (c :: accum)
+    | false, '-' :: '-' :: cs => substituteMinusTailH dummy false cs ('–' :: accum)
+    | false, c   :: cs        => substituteMinusTailH dummy false cs (c :: accum)
 
 def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
   match inString, input with
@@ -85,6 +120,15 @@ def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : 
                             else '\\' :: substituteBackslashH dummy inString (c :: cs)
     | inString,  c   :: cs        => c   :: substituteBackslashH dummy inString cs
 
+def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => accum.reverse
+    | _,     '"' :: cs        => substituteBackslashTailH dummy (!inString) cs ('"' :: accum)
+    | _, '\\' :: c :: cs      => if c == '\\' then substituteBackslashTailH dummy inString cs ('@' :: '@' :: accum)
+                                 else if c != '\"' then substituteBackslashTailH dummy inString (c :: cs) ('@' :: accum)
+                                 else substituteBackslashTailH dummy inString (c :: cs) ('\\' :: accum)
+    | inString,  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
+
 def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
   match inString, input with
     | _,     []               => []
@@ -93,15 +137,27 @@ def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) 
     | false, '\'' :: cs => '"' :: substituteSingleQuoteH dummy false cs
     | false, c   :: cs        => c   :: substituteSingleQuoteH dummy false cs
 
+def substituteSingleQuoteTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+  match inString, input with
+    | _,     []               => accum.reverse
+    | _,     '"' :: cs        => substituteSingleQuoteTailH dummy (!inString) cs ('"' :: accum)
+    | true,  c   :: cs        => substituteSingleQuoteTailH dummy true cs (c :: accum)
+    | false, '\'' :: cs       => substituteSingleQuoteTailH dummy false cs ('"' :: accum)
+    | false, c   :: cs        => substituteSingleQuoteTailH dummy false cs (c :: accum)
+
 def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList
          charList.foldl (λ a b => a ++ b.toString) ""
 
-def removeSingleLineComments := wrapHelper removeSingleLineCommentsH
-def removeMultiLineComments  := wrapHelper removeMultiLineCommentsH
-def substituteMinus          := wrapHelper substituteMinusH
-def substituteBackslash    := wrapHelper substituteBackslashH
-def substituteSingleQuote    := wrapHelper substituteSingleQuoteH
+def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
+  λ i => let charList := helper false false i.toList []
+         charList.foldl (λ a b => a ++ b.toString) ""
+
+def removeSingleLineComments := wrapHelperTail removeSingleLineCommentsTailH
+def removeMultiLineComments  := wrapHelperTail removeMultiLineCommentsTailH
+def substituteMinus          := wrapHelperTail substituteMinusTailH
+def substituteBackslash      := wrapHelperTail substituteBackslashTailH
+def substituteSingleQuote    := wrapHelperTail substituteSingleQuoteTailH
 
 def removeComments := removeMultiLineComments ∘ removeSingleLineComments
 def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
