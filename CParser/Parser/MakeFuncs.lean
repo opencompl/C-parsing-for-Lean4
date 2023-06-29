@@ -84,8 +84,8 @@ partial def mkCastExpression : Lean.Syntax → Except String CastExpr
             let args := s.getArgs
             let c := args.find? (λ stx => stx.getKind.toString == "«cast_expression(_)_»")
             match c with
-              | some stx => mkCastExpression stx
-              | none => match s.reprint with
+              | .some stx => mkCastExpression stx
+              | .none => match s.reprint with
                           | .some x => throw ("unexpected syntax for cast expression " ++ x)
                           | .none => throw "unexpected syntax for cast expression" 
          else match s.reprint with
@@ -586,9 +586,17 @@ partial def mkCompStmt : Lean.Syntax → Except String CompStmt
   | `(compound_statement| { $sl:statement_list }) => CompStmt.StmtList <$> (mkStmtList sl)
   | `(compound_statement| { $dl:declaration_list }) => CompStmt.DeclList <$> (mkDeclList dl)
   | `(compound_statement| { $dl:declaration_list $sl:statement_list }) => CompStmt.DeclListStmtList <$> (mkDeclList dl) <*> (mkStmtList sl)
-  | s => match s.reprint with
-          | .some x => throw ("unexpected syntax for compound statement " ++ x)
-          | .none => throw "unexpected syntax for compound statement" 
+  | s => if s.getKind.toString == "choice"
+         then let args := s.getArgs
+              let c := args.find? (λ stx => stx.getKind.toString == "«compound_statement{__}»")
+              match c with
+                | .some stx => mkCompStmt stx
+                | .none => match s.reprint with
+                            | .some x => throw ("unexpected syntax for compound statement " ++ x ++ "\n" ++ s!"{s}")
+                            | .none => throw "unexpected syntax for compound statement" 
+         else match s.reprint with
+                            | .some x => throw ("unexpected syntax for compound statement " ++ x ++ "\n" ++ s!"{s}")
+                            | .none => throw "unexpected syntax for compound statement" 
 
 partial def mkStatement : Lean.Syntax → Except String Statement
   | `(statement| $ls:labeled_statement) => Statement.LabelStmt <$> (mkLabelStmt ls)
