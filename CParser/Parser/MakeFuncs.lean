@@ -79,9 +79,18 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
 partial def mkCastExpression : Lean.Syntax → Except String CastExpr
   | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
   | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
-  | s => match s.reprint with
-          | .some x => throw ("unexpected syntax for cast expression " ++ x)
-          | .none => throw "unexpected syntax for cast expression" 
+  | s => 
+          if s.getKind == "choice" then
+            let args := s.getArgs
+            let c := args.find? (λ stx => stx.getKind.toString == "«cast_expression(_)_»")
+            match c with
+              | some stx => mkCastExpression stx
+              | none => match s.reprint with
+                          | .some x => throw ("unexpected syntax for cast expression " ++ x)
+                          | .none => throw "unexpected syntax for cast expression" 
+         else match s.reprint with
+                | .some x => throw ("unexpected syntax for cast expression " ++ x)
+                | .none => throw "unexpected syntax for cast expression" 
 
 partial def mkMultExpression : Lean.Syntax → Except String MultExpr
   | `(multiplicative_expression| $c:cast_expression) => MultExpr.Cast <$> (mkCastExpression c)
