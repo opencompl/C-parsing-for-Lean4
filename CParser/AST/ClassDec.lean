@@ -75,6 +75,7 @@ partial def primaryExprToString : PrimaryExpr → String
   | .Identifier s => s
   | .Constant c => toString c
   | .FloatConstant c => toString c
+  | .CharLit c => "'" ++ toString c ++ "'"
   | .StringLit s => "\"" ++ s ++ "\""
   | .BracketExpr e => "(" ++ (expressionToString e) ++ ")"
 
