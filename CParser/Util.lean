@@ -1,5 +1,6 @@
 import Lean
-import Init.Data.String
+import CParser.Token
+
 -- import Lean.Parser.Types
 
 open Lean Parser Elab.Command
@@ -133,7 +134,7 @@ partial def runParserCategoryTranslationUnitHelper
      options := {}
      prec := 0
      tokens := getTokenTable env
-     tokenFn := tokenFnCore
+     tokenFn := CParser.tokenFnCore
    } (s.setCache $ initCacheForInput ictx.input)
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
