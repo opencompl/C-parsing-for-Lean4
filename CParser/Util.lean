@@ -191,7 +191,13 @@ partial def runParserCategoryTranslationUnitHelper
    let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
    let ictx := mkInputContext input fileName
    let env ← getEnv
-   let s := p.run ictx { env, options := {} } (getTokenTable env) (mkParserState input)
+   let s := p.run { ictx with
+     env
+     options := {}
+     prec := 0
+     tokens := getTokenTable env
+     tokenFn := tokenFnCore
+   } (mkParserState input)
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
    let stack := stack.cons stx

@@ -10,8 +10,8 @@ open Lean.Elab.Command
 def arith_type_specs : Parser where
   fn c s :=
     let startPos := s.pos
-    let s := takeWhileFn "uUlL".contains c s
-    mkNodeToken `arith_type_specs startPos c s
+    let s := takeWhileFn "uUlL".contains c.toTokenParserContext s
+    mkNodeToken `arith_type_specs startPos whitespace c.toTokenParserContext s
 
 attribute [combinator_formatter arith_type_specs] PrettyPrinter.Formatter.pushNone.formatter
 attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesizer.pushNone.parenthesizer
