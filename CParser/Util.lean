@@ -41,19 +41,6 @@ open Lean Parser Elab.Command
 -- lines.map (λ l => removeCommentsLine l)
 
 -- Helper function
-def removeSingleLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
-  match inComment, inString, input with
-    | _,     _,     []                => []
--- if in a comment, leave on newline, otherwise stay
-    | true,  _,     '\n' :: cs        =>        removeSingleLineCommentsH false inString cs
-    | true,  _,     _    :: cs        =>        removeSingleLineCommentsH true inString cs
--- if in code, a string can have any character other than '"'
-    | false, _,     '"'  :: cs        => '"' :: removeSingleLineCommentsH false (!inString) cs
-    | false, true,  c    :: cs        => c   :: removeSingleLineCommentsH false true cs
--- if in code, // starts a comment
-    | false, false, '/'  :: '/' :: cs =>        removeSingleLineCommentsH true false cs
-    | false, false, c    :: cs        => c   :: removeSingleLineCommentsH false false cs
-
 def removeSingleLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match inComment, inString, input with
     | _,     _,     []                => accum.reverse
@@ -69,19 +56,6 @@ def removeSingleLineCommentsTailH (inComment : Bool) (inString : Bool) (input : 
 
 
 -- Helper function
-def removeMultiLineCommentsH (inComment : Bool) (inString : Bool) (input : List Char) : List Char :=
-  match inComment, inString, input with
-    | _,     _,     []                => []
--- if in a comment, leave on newline, otherwise stay
-    | true,  _,     '*'  :: '/' :: cs =>        removeMultiLineCommentsH false inString cs
-    | true,  _,     _    :: cs        =>        removeMultiLineCommentsH true inString cs
--- if in code, a string can have any character other than '"'
-    | false, _,     '"'  :: cs        => '"' :: removeMultiLineCommentsH false (!inString) cs
-    | false, true,  c    :: cs        => c   :: removeMultiLineCommentsH false true cs
--- if in code, // starts a comment
-    | false, false, '/'  :: '*' :: cs =>        removeMultiLineCommentsH true false cs
-    | false, false, c    :: cs        => c   :: removeMultiLineCommentsH false false cs
-
 def removeMultiLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match inComment, inString, input with
     | _,     _,     []                => accum.reverse
@@ -95,14 +69,6 @@ def removeMultiLineCommentsTailH (inComment : Bool) (inString : Bool) (input : L
     | false, false, '/'  :: '*' :: cs => removeMultiLineCommentsTailH true false cs accum
     | false, false, c    :: cs        => removeMultiLineCommentsTailH false false cs (c :: accum)
 
-def substituteMinusH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => []
-    | _,     '"' :: cs        => '"' :: substituteMinusH dummy (!inString) cs
-    | true,  c   :: cs        => c   :: substituteMinusH dummy true cs
-    | false, '-' :: '-' :: cs => '–' :: substituteMinusH dummy false cs
-    | false, c   :: cs        => c   :: substituteMinusH dummy false cs
-
 def substituteMinusTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match inString, input with
     | _,     []               => accum.reverse
@@ -110,15 +76,6 @@ def substituteMinusTailH (dummy : Bool) (inString : Bool) (input : List Char) (a
     | true,  c   :: cs        => substituteMinusTailH dummy true cs (c :: accum)
     | false, '-' :: '-' :: cs => substituteMinusTailH dummy false cs ('–' :: accum)
     | false, c   :: cs        => substituteMinusTailH dummy false cs (c :: accum)
-
-def substituteBackslashH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => []
-    | _,     '"' :: cs        => '"' :: substituteBackslashH dummy (!inString) cs
-    | _, '\\' :: c :: cs => if c == '\\' then '@' :: '@' :: substituteBackslashH dummy inString cs
-                            else if c != '\"' then '@' :: substituteBackslashH dummy inString (c :: cs)
-                            else '\\' :: substituteBackslashH dummy inString (c :: cs)
-    | inString,  c   :: cs        => c   :: substituteBackslashH dummy inString cs
 
 def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match inString, input with
@@ -129,26 +86,6 @@ def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char
                                  else substituteBackslashTailH dummy inString (c :: cs) ('\\' :: accum)
     | inString,  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
 
-def substituteSingleQuoteH (dummy : Bool) (inString : Bool) (input : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => []
-    | _,     '"' :: cs        => '"' :: substituteSingleQuoteH dummy (!inString) cs
-    | true,  c   :: cs        => c   :: substituteSingleQuoteH dummy true cs
-    | false, '\'' :: cs => '"' :: substituteSingleQuoteH dummy false cs
-    | false, c   :: cs        => c   :: substituteSingleQuoteH dummy false cs
-
-def substituteSingleQuoteTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => accum.reverse
-    | _,     '"' :: cs        => substituteSingleQuoteTailH dummy (!inString) cs ('"' :: accum)
-    | true,  c   :: cs        => substituteSingleQuoteTailH dummy true cs (c :: accum)
-    | false, '\'' :: cs       => substituteSingleQuoteTailH dummy false cs ('"' :: accum)
-    | false, c   :: cs        => substituteSingleQuoteTailH dummy false cs (c :: accum)
-
-def wrapHelper (helper : Bool → Bool → List Char → List Char) : (String → String) :=
-  λ i => let charList := helper false false i.toList
-         charList.foldl (λ a b => a ++ b.toString) ""
-
 def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList []
          charList.foldl (λ a b => a ++ b.toString) ""
@@ -157,10 +94,9 @@ def removeSingleLineComments := wrapHelperTail removeSingleLineCommentsTailH
 def removeMultiLineComments  := wrapHelperTail removeMultiLineCommentsTailH
 def substituteMinus          := wrapHelperTail substituteMinusTailH
 def substituteBackslash      := wrapHelperTail substituteBackslashTailH
-def substituteSingleQuote    := wrapHelperTail substituteSingleQuoteTailH
 
 def removeComments := removeMultiLineComments ∘ removeSingleLineComments
-def makeSubstitution := substituteBackslash ∘ substituteSingleQuote ∘ substituteMinus
+def makeSubstitution := substituteMinus ∘ substituteBackslash
 
 abbrev ParseError := String
 
@@ -184,12 +120,13 @@ def stringToCommand (stx : Syntax) (s : String) : CommandElabM PUnit := do
   elabCommand newDec
 
 partial def runParserCategoryTranslationUnitHelper
-                                                   (input : String)
+                                                   (ictx : InputContext)
+                                                   (s : ParserState)
                                                    (fileName := "<input>")
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
    do 
    let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
-   let ictx := mkInputContext input fileName
+   -- let ictx := mkInputContext input fileName
    let env ← getEnv
    let s := p.run { ictx with
      env
@@ -197,11 +134,11 @@ partial def runParserCategoryTranslationUnitHelper
      prec := 0
      tokens := getTokenTable env
      tokenFn := tokenFnCore
-   } (mkParserState input)
+   } (s.setCache $ initCacheForInput ictx.input)
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
    let stack := stack.cons stx
-   if (s.pos.byteIdx ≥ input.length) then return stack else
+   if (s.pos.byteIdx ≥ ictx.input.length) then return stack else
    match stx with
     | (Syntax.node _ _ -- external declaration
         #[(Syntax.node _ _ -- declaration
@@ -217,12 +154,12 @@ partial def runParserCategoryTranslationUnitHelper
              (Lean.Syntax.atom _ ";")])]) => let newTypeNames : Array String := .filter (λ s => s.length > 0) $
                                                                                   .map getIdFrom initDeclList
                                              let _ ← Array.mapM (stringToCommand stx) newTypeNames
-                                             runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
-    | _ => runParserCategoryTranslationUnitHelper (input.drop s.pos.byteIdx) fileName stack
+                                             runParserCategoryTranslationUnitHelper ictx s fileName stack
+    | _ => runParserCategoryTranslationUnitHelper ictx s fileName stack
 
 def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : CommandElabM Syntax :=
    do
-      let extDecls ← runParserCategoryTranslationUnitHelper input fileName []
+      let extDecls ← runParserCategoryTranslationUnitHelper (mkInputContext input fileName) (mkParserState input) fileName []
       let info := (extDecls.get! 0).getHeadInfo
       return Syntax.node1 info `translation_unit_ $
               Syntax.node info `null extDecls.toArray.reverse

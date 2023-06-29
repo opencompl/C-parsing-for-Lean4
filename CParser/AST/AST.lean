@@ -7,6 +7,7 @@ inductive PrimaryExpr where
   | Identifier : String → PrimaryExpr
   | Constant : Int → PrimaryExpr
   | FloatConstant : Float → PrimaryExpr
+  | CharLit : Char → PrimaryExpr
   | StringLit : String → PrimaryExpr
   | BracketExpr : Expression → PrimaryExpr
 
