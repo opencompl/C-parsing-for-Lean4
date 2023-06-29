@@ -103,7 +103,7 @@ partial def constFnAux (startPos : String.Pos)
                        (s : ParserState) : ParserState :=
   if input.atEnd i then s.mkError "found EOF"
   else let rest := regexConsume r input
-        if (rest.elem "") then (Lean.Parser.mkNodeToken `const startPos whitespace ctx.toTokenParserContext (s.setPos (input.next i)))
+        if (rest.elem "") then (Lean.Parser.mkNodeToken `const startPos CParser.whitespace ctx.toTokenParserContext (s.setPos (input.next i)))
         else s.mkError $ "failed to parse " ++ input ++ "; found " ++ rest.toString
 
 def constFnEntry (r : Regex) (ctx: ParserContext) (s: ParserState): ParserState :=

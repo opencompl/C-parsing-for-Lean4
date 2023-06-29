@@ -4,56 +4,46 @@ open Lean Parser
 
 namespace CParser
 
-variable (pushMissingOnError : Bool) in
 partial def finishCommentBlock (nesting : Nat) : TokenParserFn := fun c s =>
   let input := c.input
   let i     := s.pos
-  if h : input.atEnd i then eoi s
+  if input.atEnd i then eoi s
   else
-    let curr := input.get' i h
-    let i    := input.next' i h
-    if curr == '-' then
-      if h : input.atEnd i then eoi s
+    let curr := input.get i
+    let i    := input.next i
+    if curr == '*' then
+      if input.atEnd i then eoi s
       else
-        let curr := input.get' i h
+        let curr := input.get i
         if curr == '/' then -- "-/" end of comment
-          if nesting == 1 then s.next' input i h
-          else finishCommentBlock (nesting-1) c (s.next' input i h)
+          if nesting == 1 then s.next input i
+          else finishCommentBlock (nesting-1) c (s.next input i)
         else
-          finishCommentBlock nesting c (s.setPos i)
+          finishCommentBlock nesting c (s.next input i)
     else if curr == '/' then
-      if h : input.atEnd i then eoi s
+      if input.atEnd i then eoi s
       else
-        let curr := input.get' i h
-        if curr == '-' then finishCommentBlock (nesting+1) c (s.next' input i h)
+        let curr := input.get i
+        if curr == '*' then finishCommentBlock (nesting+1) c (s.next input i)
         else finishCommentBlock nesting c (s.setPos i)
     else finishCommentBlock nesting c (s.setPos i)
 where
-  eoi s := s.mkUnexpectedError (pushMissing := pushMissingOnError) "unterminated comment"
+  eoi s := s.mkUnexpectedError "unterminated comment"
 
-/-- Consume whitespace and comments -/
 partial def whitespace : TokenParserFn := fun c s =>
   let input := c.input
   let i     := s.pos
-  if h : input.atEnd i then s
+  if input.atEnd i then s
   else
-    let curr := input.get' i h
-    if curr == '\t' then
-      s.mkUnexpectedError (pushMissing := false) "tabs are not allowed; please configure your editor to expand them"
-    else if curr.isWhitespace then whitespace c (s.next' input i h)
-    else if curr == '-' then
-      let i    := input.next' i h
-      let curr := input.get i
-      if curr == '-' then andthenTokenFn (takeUntilFn (fun c => c = '\n')) whitespace c (s.next input i)
-      else s
+    let curr := input.get i
+    if curr.isWhitespace then whitespace c (s.next input i)
     else if curr == '/' then
-      let i        := input.next' i h
-      let curr     := input.get i
-      if curr == '-' then
+      let i    := input.next i
+      let curr := input.get i
+      if curr == '/' then andthenTokenFn (takeUntilFn (fun c => c = '\n')) whitespace c (s.next input i)
+      else if curr == '*' then
         let i    := input.next i
-        let curr := input.get i
-        if curr == '-' || curr == '!' then s -- "/--" and "/-!" doc comment are actual tokens
-        else andthenTokenFn (finishCommentBlock (pushMissingOnError := false) 1) whitespace c (s.next input i)
+        andthenTokenFn (finishCommentBlock 1) whitespace c (s.next input i)
       else s
     else s
 
