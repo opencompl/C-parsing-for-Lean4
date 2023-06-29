@@ -54,7 +54,6 @@ def removeSingleLineCommentsTailH (inComment : Bool) (inString : Bool) (input : 
     | false, false, '/'  :: '/' :: cs => removeSingleLineCommentsTailH true false cs accum
     | false, false, c    :: cs        => removeSingleLineCommentsTailH false false cs (c :: accum)
 
-
 -- Helper function
 def removeMultiLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match inComment, inString, input with
@@ -73,18 +72,23 @@ def substituteMinusTailH (dummy : Bool) (inString : Bool) (input : List Char) (a
   match inString, input with
     | _,     []               => accum.reverse
     | _,     '"' :: cs        => substituteMinusTailH dummy (!inString) cs ('"' :: accum)
+    | _,     '\'' :: cs       => substituteMinusTailH dummy (!inString) cs ('\'' :: accum)
     | true,  c   :: cs        => substituteMinusTailH dummy true cs (c :: accum)
     | false, '-' :: '-' :: cs => substituteMinusTailH dummy false cs ('–' :: accum)
     | false, c   :: cs        => substituteMinusTailH dummy false cs (c :: accum)
 
 def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => accum.reverse
-    | _,     '"' :: cs        => substituteBackslashTailH dummy (!inString) cs ('"' :: accum)
-    | _, '\\' :: c :: cs      => if c == '\\' then substituteBackslashTailH dummy inString cs ('@' :: '@' :: accum)
-                                 else if c != '\"' then substituteBackslashTailH dummy inString (c :: cs) ('@' :: accum)
-                                 else substituteBackslashTailH dummy inString (c :: cs) ('\\' :: accum)
-    | inString,  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
+  match input with
+    | []               => accum.reverse
+--    | '\\' :: '0' :: cs => substituteBackslashTailH dummy inString cs ('\u0000' :: accum)
+    | '\\' :: 'a' :: cs => substituteBackslashTailH dummy inString cs ('\u0007' :: accum)
+    | '\\' :: 'b' :: cs => substituteBackslashTailH dummy inString cs ('\u0008' :: accum)
+    | '\\' :: 'e' :: cs => substituteBackslashTailH dummy inString cs ('\u001B' :: accum)
+    | '\\' :: 'f' :: cs => substituteBackslashTailH dummy inString cs ('\u000C' :: accum)
+    | '\\' :: 'v' :: cs => substituteBackslashTailH dummy inString cs ('\u000B' :: accum)
+    | '\\' :: '?' :: cs => substituteBackslashTailH dummy inString cs ('\u003F' :: accum)
+    | '\\' :: '\\' :: cs => substituteBackslashTailH dummy inString cs ('\\' :: '\\' :: accum)
+    |  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
 
 def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList []
@@ -129,7 +133,9 @@ partial def runParserCategoryTranslationUnitHelper
    -- let ictx := mkInputContext input fileName
    let env ← getEnv
    let s := p.run ictx { env, options := {} } (getTokenTable env) (s.setCache $ initCacheForInput ictx.input)
-   if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
+   if s.hasError then throwError (s.toErrorMsg ictx ++ "\n"
+                               ++ toString s.stxStack.back ++ "\n"
+                               ++ ictx.input.extract 0 s.pos) else
    let stx := s.stxStack.back
    let stack := stack.cons stx
    if (s.pos.byteIdx ≥ ictx.input.length) then return stack else
