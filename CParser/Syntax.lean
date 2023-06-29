@@ -19,14 +19,7 @@ attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesize
 syntax num (noWs arith_type_specs)?: extended_num
 
 syntax ident : primary_expression
--- This line allows for variable definitions sharing the names of structs
-    -- e.g. typedef struct Foo Foo;
-    --      void f()
-    --      { int Foo = 3; }
--- but causes ambiguities in deeply nested expressions
--- e.g. (__uint16_t) ((((__bsx) >> 8) & 0xff) | (((__bsx) & 0xff) << 8))
-
--- syntax type_name_token : primary_expression
+syntax type_name_token : primary_expression
 syntax extended_num : primary_expression
 syntax scientific : primary_expression
 syntax char : primary_expression
