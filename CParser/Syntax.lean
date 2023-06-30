@@ -145,6 +145,7 @@ syntax "`[assignment_operator| " assignment_operator "]" : term
 
 syntax conditional_expression : assignment_expression
 syntax unary_expression assignment_operator assignment_expression : assignment_expression
+syntax "(" compound_statement ")" : assignment_expression
 
 syntax "`[assignment_expression| " assignment_expression "]" : term
 
@@ -157,7 +158,6 @@ syntax "`[argument_expression_list| " argument_expression_list "]" : term
 -- syntax assignment_expression : expression
 -- syntax expression "," assignment_expression : expression
 syntax sepBy(assignment_expression, ",", ", ") : expression
-syntax "(" compound_statement ")" : expression
 
 syntax "`[expression| " expression "]" : term
 

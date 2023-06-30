@@ -110,6 +110,7 @@ inductive AssmtOp where
 inductive AssmtExpr where
   | Cond : CondExpr → AssmtExpr
   | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
+  | CompStmt : CompStmt → AssmtExpr
 
 inductive ArgExprList where
   | AssmtExprList : List AssmtExpr → ArgExprList
@@ -118,7 +119,6 @@ inductive ArgExprList where
 
 inductive Expression : Type where
   | AssmtExprList : List AssmtExpr → Expression
-  | CompStmt : CompStmt → Expression 
 --  | ExprAssmtExpr : AssmtExpr → Expression
 --  | ExprAssign : Expression → AssmtExpr → Expression
 

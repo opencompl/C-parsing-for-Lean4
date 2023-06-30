@@ -178,6 +178,7 @@ partial def assmtOpToString : AssmtOp → String
 partial def assmtExprToString : AssmtExpr → String
   | .Cond c => (condExprToString c)
   | .AssignAssmtOp u ao ae => (unaryExprToString u) ++ " " ++ (assmtOpToString ao) ++ " " ++ (assmtExprToString ae)
+  | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
 
 partial def aelToString : ArgExprList → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
@@ -186,7 +187,6 @@ partial def aelToString : ArgExprList → String
 
 partial def expressionToString : Expression → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
-  | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
 --  | .ExprAssmtExpr a => (assmtExprToString a)
 --  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
 
