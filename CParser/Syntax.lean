@@ -515,26 +515,26 @@ syntax "`[translation_unit| " translation_unit "]" : term
 --   `(syntax  $[$stxstx]* : $cat)
 --  return mkNullNode #[stxDecl]
 
-#check `(command| syntax Foo : type_name_token)
-
-#check `(external_declaration| typedef struct Foo Foo;)
-#check `(external_declaration| typedef long ll;)
-#check `(external_declaration| typedef void (*sqlite3_syscal_ptr)(void);)
-#check `(external_declaration| typedef int *p, q, (*foo)(void), bar[], baz();)
-#check `(external_declaration| typedef long long int sqlite_int64;)
-
-
-#check `(translation_unit| int char x, y, z = x /= y *= z++;
-char int (*foo)[42] {
-    bar->baz.foo = z;
-    goto y;
-    label: x += z;
-    for (i = 0; i <= 10; i++)
-    {
-        foo++;
-    }
-    ;
-})
+-- #check `(command| syntax Foo : type_name_token)
+-- 
+-- #check `(external_declaration| typedef struct Foo Foo;)
+-- #check `(external_declaration| typedef long ll;)
+-- #check `(external_declaration| typedef void (*sqlite3_syscal_ptr)(void);)
+-- #check `(external_declaration| typedef int *p, q, (*foo)(void), bar[], baz();)
+-- #check `(external_declaration| typedef long long int sqlite_int64;)
+-- 
+-- 
+-- #check `(translation_unit| int char x, y, z = x /= y *= z++;
+-- char int (*foo)[42] {
+--     bar->baz.foo = z;
+--     goto y;
+--     label: x += z;
+--     for (i = 0; i <= 10; i++)
+--     {
+--         foo++;
+--     }
+--     ;
+-- })
 
 /-
 let newDec := Lean.Syntax.node info `Lean.Parser.Command.syntax
