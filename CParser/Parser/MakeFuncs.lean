@@ -216,6 +216,7 @@ partial def mkExpression : Lean.Syntax → Except String Expression
       return Expression.AssmtExprList aes.toList
 --  | `(expression| $a:assignment_expression) => Expression.ExprAssmtExpr <$> (mkAssmtExpression a)
 --  | `(expression| $e:expression , $ae:assignment_expression) => Expression.ExprAssign <$> (mkExpression e) <*> (mkAssmtExpression ae)
+  | `(expression| ( $c:compound_statement )) => Expression.CompStmt <$> (mkCompStmt c)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for expression " ++ x)
           | .none => throw "unexpected syntax for expression" 

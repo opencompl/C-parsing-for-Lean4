@@ -186,6 +186,7 @@ partial def aelToString : ArgExprList → String
 
 partial def expressionToString : Expression → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
+  | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
 --  | .ExprAssmtExpr a => (assmtExprToString a)
 --  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
 

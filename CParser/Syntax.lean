@@ -157,6 +157,7 @@ syntax "`[argument_expression_list| " argument_expression_list "]" : term
 -- syntax assignment_expression : expression
 -- syntax expression "," assignment_expression : expression
 syntax sepBy(assignment_expression, ",", ", ") : expression
+syntax "(" compound_statement ")" : expression
 
 syntax "`[expression| " expression "]" : term
 
