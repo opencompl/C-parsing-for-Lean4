@@ -6,13 +6,17 @@ import CParser.Token
 open Lean Parser Elab.Command
 
 def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => accum.reverse
-    | _,     '"' :: cs        => substituteBackslashTailH dummy (!inString) cs ('"' :: accum)
-    | _, '\\' :: c :: cs      => if c == '\\' then substituteBackslashTailH dummy inString cs ('@' :: '@' :: accum)
-                                 else if c != '\"' then substituteBackslashTailH dummy inString (c :: cs) ('@' :: accum)
-                                 else substituteBackslashTailH dummy inString (c :: cs) ('\\' :: accum)
-    | inString,  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
+  match input with
+    | []               => accum.reverse
+--    | '\\' :: '0' :: cs => substituteBackslashTailH dummy inString cs ('\u0000' :: accum)
+    | '\\' :: 'a' :: cs => substituteBackslashTailH dummy inString cs ('\u0007' :: accum)
+    | '\\' :: 'b' :: cs => substituteBackslashTailH dummy inString cs ('\u0008' :: accum)
+    | '\\' :: 'e' :: cs => substituteBackslashTailH dummy inString cs ('\u001B' :: accum)
+    | '\\' :: 'f' :: cs => substituteBackslashTailH dummy inString cs ('\u000C' :: accum)
+    | '\\' :: 'v' :: cs => substituteBackslashTailH dummy inString cs ('\u000B' :: accum)
+    | '\\' :: '?' :: cs => substituteBackslashTailH dummy inString cs ('\u003F' :: accum)
+    | '\\' :: '\\' :: cs => substituteBackslashTailH dummy inString cs ('\\' :: '\\' :: accum)
+    |  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
 
 def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
   λ i => let charList := helper false false i.toList []

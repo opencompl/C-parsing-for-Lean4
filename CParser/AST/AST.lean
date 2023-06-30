@@ -110,6 +110,7 @@ inductive AssmtOp where
 inductive AssmtExpr where
   | Cond : CondExpr → AssmtExpr
   | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
+  | CompStmt : CompStmt → AssmtExpr
 
 inductive ArgExprList where
   | AssmtExprList : List AssmtExpr → ArgExprList
