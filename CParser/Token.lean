@@ -244,7 +244,7 @@ partial def identFnAux (startPos : String.Pos) (tk : Option Token) (r : Name) : 
             mkIdResult startPos tk r c s
       else if isIdFirst curr then
         let startPart := i
-        let s         := takeWhileFn isIdRest c (s.next input i)
+        let s         := takeWhileFn (λ c => c.isAlphanum || c = '_') c (s.next input i)
         let stopPart  := s.pos
         let r := .str r (input.extract startPart stopPart)
         if isIdCont input s then
