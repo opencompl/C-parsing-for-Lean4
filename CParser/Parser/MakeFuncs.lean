@@ -196,7 +196,7 @@ partial def mkAssmtOperator : Lean.Syntax → Except String AssmtOp
 partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
   | `(assignment_expression| $c:conditional_expression) => AssmtExpr.Cond <$> (mkCondExpression c)
   | `(assignment_expression| $un:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression un) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
-  | `(assignment_expression| ( $c:compound_statement )) => Expression.CompStmt <$> (mkCompStmt c)
+  | `(assignment_expression| ( $c:compound_statement )) => AssmtExpr.CompStmt <$> (mkCompStmt c)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for assignment expression " ++ x)
           | .none => throw "unexpected syntax for assignment expression" 
