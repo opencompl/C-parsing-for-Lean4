@@ -1,81 +1,9 @@
 import Lean
-import Init.Data.String
+import CParser.Token
+
 -- import Lean.Parser.Types
 
 open Lean Parser Elab.Command
-
--- for now: just single-line comments
--- TODO: this also isn't good enough, it will break if there's a string literal with // inside it, and it shouldn't
--- bollu:
---   Is this correct? This only removes LEADING comments. It does not seem to remove something like:
---   abb // cc
---   ?
-
--- -- First argument is 1 iff a double quote is unterminated
--- def removeCommentsLineCharList (inString: Bool) (xs: List Char): List Char := 
---   match xs with
---   | /-
---       if we see //, and we are not in a string, then remove everything.
---      -/ '/'::'/'::xs => if inString then '/'::'/'::removeCommentsLineCharList inString xs else []
---   | /-
---      if we see \", then we have not entered a string (it is an escaped string quote). So continue as normal
---     -/'\\'::'"'::xs => '\\'::'"'::removeCommentsLineCharList inString xs -- escaped string literal
---   | /-
---      if we see a ", and we have NOT seen a \ " (ie, this double quote is not escaped), then we are now in a string.
---     -/ '"'::xs => '"'::removeCommentsLineCharList (!inString) xs
---   | /-
---      ignore everything else and continue.
---     -/x::xs => x::removeCommentsLineCharList inString xs
---   | [] => []
-
--- #eval (removeCommentsLineCharList (inString := False) ['"', '/', '/', 'b', 'o', 'i', '"'])
--- #eval (removeCommentsLineCharList (inString := False) ['f', '/', '/', 'b', 'o', 'i', '"'])
--- #eval (removeCommentsLineCharList (inString := False) ['f', '"', '/', '/', '"', 'b', '/', '/', 'o', 'i', '"'])
-
--- def removeCommentsLine : String → String :=
--- λ s => { data := removeCommentsLineCharList (inString := False) s.data }
-
--- -- extra layer of abstraction for when we add
--- -- more preprocessing funcitons (like multiline comments)
--- def preprocess (lines : Array String ) : Array String :=
--- lines.map (λ l => removeCommentsLine l)
-
--- Helper function
-def removeSingleLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inComment, inString, input with
-    | _,     _,     []                => accum.reverse
--- if in a comment, leave on newline, otherwise stay
-    | true,  _,     '\n' :: cs        => removeSingleLineCommentsTailH false inString cs accum
-    | true,  _,     _    :: cs        => removeSingleLineCommentsTailH true inString cs accum
--- if in code, a string can have any character other than '"'
-    | false, _,     '"'  :: cs        => removeSingleLineCommentsTailH false (!inString) cs ('"' :: accum)
-    | false, true,  c    :: cs        => removeSingleLineCommentsTailH false true cs (c :: accum)
--- if in code, // starts a comment
-    | false, false, '/'  :: '/' :: cs => removeSingleLineCommentsTailH true false cs accum
-    | false, false, c    :: cs        => removeSingleLineCommentsTailH false false cs (c :: accum)
-
--- Helper function
-def removeMultiLineCommentsTailH (inComment : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inComment, inString, input with
-    | _,     _,     []                => accum.reverse
--- if in a comment, leave on newline, otherwise stay
-    | true,  _,     '*'  :: '/' :: cs => removeMultiLineCommentsTailH false inString cs accum
-    | true,  _,     _    :: cs        => removeMultiLineCommentsTailH true inString cs accum
--- if in code, a string can have any character other than '"'
-    | false, _,     '"'  :: cs        => removeMultiLineCommentsTailH false (!inString) cs ('"' :: accum)
-    | false, true,  c    :: cs        => removeMultiLineCommentsTailH false true cs (c :: accum)
--- if in code, // starts a comment
-    | false, false, '/'  :: '*' :: cs => removeMultiLineCommentsTailH true false cs accum
-    | false, false, c    :: cs        => removeMultiLineCommentsTailH false false cs (c :: accum)
-
-def substituteMinusTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match inString, input with
-    | _,     []               => accum.reverse
-    | _,     '"' :: cs        => substituteMinusTailH dummy (!inString) cs ('"' :: accum)
-    | _,     '\'' :: cs       => substituteMinusTailH dummy (!inString) cs ('\'' :: accum)
-    | true,  c   :: cs        => substituteMinusTailH dummy true cs (c :: accum)
-    | false, '-' :: '-' :: cs => substituteMinusTailH dummy false cs ('–' :: accum)
-    | false, c   :: cs        => substituteMinusTailH dummy false cs (c :: accum)
 
 def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match input with
@@ -94,13 +22,9 @@ def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List 
   λ i => let charList := helper false false i.toList []
          charList.foldl (λ a b => a ++ b.toString) ""
 
-def removeSingleLineComments := wrapHelperTail removeSingleLineCommentsTailH
-def removeMultiLineComments  := wrapHelperTail removeMultiLineCommentsTailH
-def substituteMinus          := wrapHelperTail substituteMinusTailH
 def substituteBackslash      := wrapHelperTail substituteBackslashTailH
 
-def removeComments := removeMultiLineComments ∘ removeSingleLineComments
-def makeSubstitution := substituteMinus ∘ substituteBackslash
+def makeSubstitution := substituteBackslash
 
 abbrev ParseError := String
 
@@ -129,13 +53,17 @@ partial def runParserCategoryTranslationUnitHelper
                                                    (fileName := "<input>")
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
    do 
-   let p := andthenFn whitespace (categoryParserFnImpl `external_declaration)
+   let p := andthenFn CParser.whitespace (categoryParserFnImpl `external_declaration)
    -- let ictx := mkInputContext input fileName
    let env ← getEnv
-   let s := p.run ictx { env, options := {} } (getTokenTable env) (s.setCache $ initCacheForInput ictx.input)
-   if s.hasError then throwError (s.toErrorMsg ictx ++ "\n"
-                               ++ toString s.stxStack.back ++ "\n"
-                               ++ ictx.input.extract 0 s.pos) else
+   let s := p.run { ictx with
+     env
+     options := {}
+     prec := 0
+     tokens := getTokenTable env
+     tokenFn := CParser.tokenFnCore
+   } (s.setCache $ initCacheForInput ictx.input)
+   if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
    let stack := stack.cons stx
    if (s.pos.byteIdx ≥ ictx.input.length) then return stack else
@@ -169,14 +97,14 @@ String → Environment → CommandElabM α := λ s env =>
   if syntaxcat == `translation_unit then do
   let stx ← runParserCategoryTranslationUnit s
   IO.ofExcept (ntparser stx)
- else IO.ofExcept ((runParserCategory env syntaxcat s) >>= ntparser)
+ else IO.ofExcept ((runParserCategory env syntaxcat s (tokenFn := CParser.tokenFnCore)) >>= ntparser)
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
 def mkNonTerminalParser {α : Type}  (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
 (s : String) (env : Environment) : CommandElabM α :=
   let parseFun := mkParseFun syntaxcat ntparser
-  let s := makeSubstitution (removeComments s)
+  let s := makeSubstitution s
   parseFun s env
 
 -- For regex matching

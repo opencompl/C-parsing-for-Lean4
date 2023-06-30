@@ -10,8 +10,8 @@ open Lean.Elab.Command
 def arith_type_specs : Parser where
   fn c s :=
     let startPos := s.pos
-    let s := takeWhileFn "uUlL".contains c s
-    mkNodeToken `arith_type_specs startPos c s
+    let s := takeWhileFn "uUlL".contains c.toTokenParserContext s
+    mkNodeToken `arith_type_specs startPos CParser.whitespace c.toTokenParserContext s
 
 attribute [combinator_formatter arith_type_specs] PrettyPrinter.Formatter.pushNone.formatter
 attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesizer.pushNone.parenthesizer
@@ -28,6 +28,8 @@ syntax "(" expression ")" : primary_expression
 
 syntax "`[primary_expression| " primary_expression "]" : term
 
+syntax dec_sym := "--"
+
 syntax primary_expression : postfix_expression
 syntax postfix_expression "[" expression "]" : postfix_expression
 syntax postfix_expression "(" ")"  : postfix_expression
@@ -37,7 +39,7 @@ syntax postfix_expression "." type_name_token : postfix_expression
 syntax postfix_expression "->" ident : postfix_expression
 syntax postfix_expression "->" type_name_token : postfix_expression
 syntax postfix_expression "++" : postfix_expression
-syntax postfix_expression "–" : postfix_expression
+syntax postfix_expression dec_sym : postfix_expression
 
 syntax "`[postfix_expression| " postfix_expression "]" : term
 
@@ -52,7 +54,7 @@ syntax "`[unary_operator| " unary_operator "]" : term
 
 syntax postfix_expression : unary_expression
 syntax "++" unary_expression : unary_expression
-syntax "–" unary_expression : unary_expression
+syntax dec_sym unary_expression : unary_expression
 syntax unary_operator cast_expression : unary_expression
 syntax "sizeof" unary_expression : unary_expression
 syntax "sizeof" "(" type_name ")" : unary_expression
