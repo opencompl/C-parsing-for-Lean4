@@ -9,37 +9,7 @@ def isHex (c : Char) : Bool := c.isDigit || "abcdefABCDEF".contains c
 
 def isOct (c : Char) : Bool := "01234567".contains c
 
-partial def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
-  match input with
-    | []               => accum.reverse
-    | '\\' :: 'a' :: cs => substituteBackslashTailH dummy inString cs ('\u0007' :: accum)
-    | '\\' :: 'b' :: cs => substituteBackslashTailH dummy inString cs ('\u0008' :: accum)
-    | '\\' :: 'e' :: cs => substituteBackslashTailH dummy inString cs ('\u001B' :: accum)
-    | '\\' :: 'f' :: cs => substituteBackslashTailH dummy inString cs ('\u000C' :: accum)
-    | '\\' :: 'v' :: cs => substituteBackslashTailH dummy inString cs ('\u000B' :: accum)
-    | '\\' :: '?' :: cs => substituteBackslashTailH dummy inString cs ('\u003F' :: accum)
-    | '\\' :: '\\' :: cs => substituteBackslashTailH dummy inString cs ('\\' :: '\\' :: accum)
-    | '\\' :: cs => let seq := cs.takeWhile isHex
-                    let rem := cs.dropWhile isHex
-                    if seq.length == 4 || seq.length == 8
-                    then substituteBackslashTailH dummy inString rem (seq.reverse ++ ['x', '0'] ++ accum)
-                      -- \hhhh or \hhhhhhhh
-                    else
-                    let seq := cs.takeWhile isOct
-                    let rem := cs.dropWhile isOct
-                    if seq.length >= 1 && seq.length <= 3
-                    then substituteBackslashTailH dummy inString rem (seq.reverse ++ ['0'] ++ accum)
-                      -- \ooo or \oo or \o
-                    else substituteBackslashTailH dummy inString cs ('\\' :: accum)
-    |  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
-
-def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
-  λ i => let charList := helper false false i.toList []
-         charList.foldl (λ a b => a ++ b.toString) ""
-
-def substituteBackslash      := wrapHelperTail substituteBackslashTailH
-
-def makeSubstitution := substituteBackslash
+def makeSubstitution (s : String) : String := s
 
 abbrev ParseError := String
 

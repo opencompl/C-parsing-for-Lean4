@@ -27,14 +27,7 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 #define  __asm__(x)
 #include <byteswap.h>
 ```
-* One specific anomaly:
-```c
-// Line 21496
-fprintf(stderr,
-      "Digest includes %d invalidly encoded text field%s.\n",
-             sz, (sz>1)? "s": "")
-// Missing semicolon
-```
+* [TODO] `,*` and `,+` are parsed as a single token.
 
 ## The `typedef` Issue
 In C, a `typedef` statement creates a new type name, which cannot be parsed as an identifier within the scope of that `typedef` statement (global or function).  

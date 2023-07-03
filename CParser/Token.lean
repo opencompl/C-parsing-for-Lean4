@@ -72,8 +72,7 @@ def quotedCharCoreFn (isQuotable : Char → Bool) : TokenParserFn := fun c s =>
     else
       s.mkUnexpectedError "invalid escape sequence"
 
-def isQuotableCharDefault (c : Char) : Bool :=
-  c == '\\' || c == '\"' || c == '\'' || c == 'r' || c == 'n' || c == 't'
+def isQuotableCharDefault (c : Char) : Bool := "\\\"'rntabefv?0".contains c || c.isDigit
 
 def quotedCharFn : TokenParserFn :=
   quotedCharCoreFn isQuotableCharDefault
