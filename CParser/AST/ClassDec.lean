@@ -434,6 +434,7 @@ partial def funcDefToString : FuncDef → String
 partial def externDeclToString : ExternDecl → String
   | .FuncDef fd => (funcDefToString fd)
   | .Declaration d => (declarationToString d)
+  | .Semicolon => ";"
 
 partial def translUnitToString : TranslUnit → String
   | .ExternDeclList eds => " ".intercalate (eds.map externDeclToString)

@@ -640,6 +640,7 @@ partial def mkFuncDef : Lean.Syntax → Except String FuncDef
 partial def mkExternDecl : Lean.Syntax → Except String ExternDecl
   | `(external_declaration| $f:function_definition) => ExternDecl.FuncDef <$> (mkFuncDef f)
   | `(external_declaration| $d:declaration) => ExternDecl.Declaration <$> (mkDeclaration d)
+  | `(external_declaration| ;) => return ExternDecl.Semicolon
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for external declaration " ++ x)
           | .none => throw "unexpected syntax for external declaration" 

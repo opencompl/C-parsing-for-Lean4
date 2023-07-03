@@ -501,6 +501,7 @@ syntax "`[function_definition| " function_definition "]" : term
 -- external declaration
 syntax function_definition : external_declaration
 syntax declaration : external_declaration
+syntax ";" : external_declaration
 syntax "`[external_declaration| " external_declaration "]" : term
 
 -- translation unit

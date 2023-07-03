@@ -356,6 +356,7 @@ inductive FuncDef where
 inductive ExternDecl where
   | FuncDef : FuncDef → ExternDecl
   | Declaration : Declaration → ExternDecl
+  | Semicolon : ExternDecl
 
 inductive TranslUnit where
   | ExternDeclList : List ExternDecl → TranslUnit
