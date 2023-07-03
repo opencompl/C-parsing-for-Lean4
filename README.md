@@ -16,9 +16,9 @@ Failed tests can be filtered by piping the output of the command through `grep` 
 ```./build/bin/cParser | grep error```
 
 ## Limitations
-The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`, with some changes. Some of these can be fixed in a straightforward way by string manipulation or extending the grammar.
+The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`.
 
-* Before preprocessing, add the following directives to eliminate these macros from the code and include certain type definitions:
+Before preprocessing, add the following directives to eliminate these macros from the code and include certain type definitions:
 ```c
 #define __attribute__(x)
 #define __extension__
@@ -27,7 +27,6 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 #define  __asm__(x)
 #include <byteswap.h>
 ```
-* [TODO] `,*` and `,+` are parsed as a single token.
 
 ## The `typedef` Issue
 In C, a `typedef` statement creates a new type name, which cannot be parsed as an identifier within the scope of that `typedef` statement (global or function).  
