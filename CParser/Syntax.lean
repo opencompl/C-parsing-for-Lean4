@@ -148,8 +148,8 @@ syntax "`[assignment_operator| " assignment_operator "]" : term
 syntax conditional_expression : assignment_expression
 syntax unary_expression assignment_operator assignment_expression : assignment_expression
 syntax "(" compound_statement ")" : assignment_expression
-syntax "va_arg" "(" expression "," type_name ")" : assignment_expression
-syntax "__builtin_va_arg" "(" expression "," type_name ")" : assignment_expression
+syntax "va_arg" "(" assignment_expression "," type_name ")" : assignment_expression
+syntax "__builtin_va_arg" "(" assignment_expression "," type_name ")" : assignment_expression
 
 syntax "`[assignment_expression| " assignment_expression "]" : term
 

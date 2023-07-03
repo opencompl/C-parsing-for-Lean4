@@ -179,7 +179,7 @@ partial def assmtExprToString : AssmtExpr → String
   | .Cond c => (condExprToString c)
   | .AssignAssmtOp u ao ae => (unaryExprToString u) ++ " " ++ (assmtOpToString ao) ++ " " ++ (assmtExprToString ae)
   | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
-  | .VaArgCall e tn => "va_arg(" ++ (expressionToString e) ++ ", " ++ (typeNameToString tn) ++ ")"
+  | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
 
 partial def aelToString : ArgExprList → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
