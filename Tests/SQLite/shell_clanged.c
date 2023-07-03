@@ -14278,7 +14278,7 @@ int sqlite3_expert_config(sqlite3expert *p, int op, ...){
   __builtin_va_start(ap, op);
   switch( op ){
     case 1: {
-      int iVal = __builtin_va_arg(ap, rc);
+      int iVal = __builtin_va_arg(ap, int);
       if( iVal<0 ) iVal = 0;
       if( iVal>100 ) iVal = 100;
       p->iSample = iVal;
