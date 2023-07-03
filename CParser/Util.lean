@@ -19,7 +19,8 @@ def addTokenTableOfCategory (accum : TokenTable) (cat : Name) : MetaM TokenTable
   let mut tt := accum
   for (k, _) in cat.kinds do
     let (_, p) ← mkParserOfConstant categories k
-    tt := p.info.collectTokens [] |>.foldl (fun tt tk => tt.insert tk tk) tt
+    tt := p.info.collectTokens [] |>.filter (λ t => t ≠ ",*" && t ≠ ",+")
+                                  |>.foldl (fun tt tk => tt.insert tk tk) tt
   return tt
 
 def categoriesList : List Name :=
