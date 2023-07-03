@@ -7,6 +7,8 @@ open Lean Parser Elab.Command
 
 def isHex (c : Char) : Bool := c.isDigit || "abcdefABCDEF".contains c
 
+def isOct (c : Char) : Bool := "01234567".contains c
+
 partial def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match input with
     | []               => accum.reverse
@@ -22,8 +24,13 @@ partial def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : L
                     if seq.length == 4 || seq.length == 8
                     then substituteBackslashTailH dummy inString rem (seq.reverse ++ ['x', '0'] ++ accum)
                       -- \hhhh or \hhhhhhhh
-                    else substituteBackslashTailH dummy inString rem (seq.reverse ++ ['0'] ++ accum)
+                    else
+                    let seq := cs.takeWhile isOct
+                    let rem := cs.dropWhile isOct
+                    if seq.length >= 1 && seq.length <= 3
+                    then substituteBackslashTailH dummy inString rem (seq.reverse ++ ['0'] ++ accum)
                       -- \ooo or \oo or \o
+                    else substituteBackslashTailH dummy inString cs ('\\' :: accum)
     |  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
 
 def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=
