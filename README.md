@@ -27,10 +27,6 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 #define  __asm__(x)
 #include <byteswap.h>
 ```
-* Multiline strings/concatenated strings of the form
-```c
-"abc" "stu"
-```
 * [TODO] Blank statements (`;`) in the global scope.
 * [TODO] A backslash followed by `0-9` causes the parser to fail. All these occurrences have been replaced with `\\`.
 * One specific anomaly:

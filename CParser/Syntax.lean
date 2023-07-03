@@ -23,7 +23,7 @@ syntax type_name_token : primary_expression
 syntax extended_num : primary_expression
 syntax scientific : primary_expression
 syntax char : primary_expression
-syntax str : primary_expression
+syntax str+ : primary_expression
 syntax "(" expression ")" : primary_expression
 
 syntax "`[primary_expression| " primary_expression "]" : term

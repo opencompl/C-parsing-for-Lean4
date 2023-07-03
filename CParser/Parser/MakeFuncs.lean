@@ -20,7 +20,8 @@ partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:scientific) => let ⟨a, b, c⟩ := s.getScientific
                                             return PrimaryExpr.FloatConstant $ Float.ofScientific a b c 
   | `(primary_expression| $c:char) => return PrimaryExpr.CharLit c.getChar
-  | `(primary_expression| $s:str) => return PrimaryExpr.StringLit s.getString
+  | `(primary_expression| $[$xs]*) => return PrimaryExpr.StringLit $ xs |>.map (λ stx => stx.getString)
+                                                                        |>.foldl (λ s1 s2 => s1 ++ s2) ""
   | `(primary_expression| ($s:expression)) => PrimaryExpr.BracketExpr <$> (mkExpression s)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for primary expression " ++ x)
