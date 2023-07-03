@@ -310,7 +310,8 @@ syntax "typedef" : storage_class_specifier
 syntax "extern": storage_class_specifier
 syntax "static": storage_class_specifier
 syntax "auto": storage_class_specifier
-syntax "register": storage_class_specifier
+syntax "register" : storage_class_specifier
+syntax "inline" : storage_class_specifier
 syntax "`[storage_class_specifier| " storage_class_specifier "]" : term
 
 -- type_specifier

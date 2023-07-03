@@ -501,6 +501,7 @@ partial def mkStorClassSpec : Lean.Syntax → Except String StorClassSpec
   | `(storage_class_specifier| static) => return StorClassSpec.Static
   | `(storage_class_specifier| auto) => return StorClassSpec.Auto
   | `(storage_class_specifier| register) => return StorClassSpec.Register
+  | `(storage_class_specifier| inline) => return StorClassSpec.Inline
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for storage class specifier " ++ x)
           | .none => throw "unexpected syntax for storage class specifier" 

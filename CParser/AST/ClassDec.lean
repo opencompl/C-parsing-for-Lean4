@@ -287,6 +287,7 @@ partial def storClassSpecToString : StorClassSpec → String
   | .Static => "static"
   | .Auto => "auto"
   | .Register => "register"
+  | .Inline => "inline"
 
 partial def typeSpecToString : TypeSpec → String
   | .Void => "void"

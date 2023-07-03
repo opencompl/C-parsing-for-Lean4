@@ -255,6 +255,7 @@ inductive StorClassSpec where
   | Static : StorClassSpec
   | Auto : StorClassSpec
   | Register : StorClassSpec
+  | Inline : StorClassSpec
 
 inductive StructDecl where
   | Dec : Declarator → StructDecl
