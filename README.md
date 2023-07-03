@@ -32,9 +32,7 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 "abc" "stu"
 ```
 * [TODO] Blank statements (`;`) in the global scope.
-* Keywords which are reserved in Lean4 are not allowed to be identifiers. In this file, these include `open` and `in` (substituted with `open_` and `in_`).
 * [TODO] A backslash followed by `0-9` causes the parser to fail. All these occurrences have been replaced with `\\`.
-* [TODO] The character clusters `<-`, `,*` and `,+` have special meaning in Lean4 and cannot occur without a space between them.
 * One specific anomaly:
 ```c
 // Line 21496

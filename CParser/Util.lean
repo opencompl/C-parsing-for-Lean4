@@ -28,6 +28,85 @@ def makeSubstitution := substituteBackslash
 
 abbrev ParseError := String
 
+def addTokenTableOfCategory (accum : TokenTable) (cat : Name) : MetaM TokenTable := do
+  let categories := (parserExtension.getState (← getEnv)).categories
+  let cat := getCategory categories cat |>.get!
+  let mut tt := accum
+  for (k, _) in cat.kinds do
+    let (_, p) ← mkParserOfConstant categories k
+    tt := p.info.collectTokens [] |>.foldl (fun tt tk => tt.insert tk tk) tt
+  return tt
+
+def categoriesList : List Name :=
+[`extended_num,
+`primary_expression,
+`postfix_expression,
+`argument_expression_list,
+`unary_expression,
+`unary_operator,
+`cast_expression,
+`multiplicative_expression,
+`additive_expression,
+`shift_expression,
+`relational_expression,
+`equality_expression,
+`and_expression,
+`exclusive_or_expression,
+`inclusive_or_expression,
+`logical_and_expression,
+`logical_or_expression,
+`conditional_expression,
+`assignment_expression,
+`assignment_operator,
+`expression,
+`constant_expression,
+`declaration,
+`declaration_specifiers,
+`init_declarator_list,
+`init_declarator,
+`storage_class_specifier,
+`type_specifier,
+`struct_or_union_specifier,
+`struct_or_union,
+`struct_declaration_list,
+`struct_declaration,
+`specifier_qualifier,
+`specifier_qualifier_list,
+`struct_declarator_list,
+`struct_declarator,
+`enum_specifier,
+`enumerator_list,
+`enumerator,
+`type_qualifier,
+`declarator,
+`direct_declarator,
+`pointer,
+`type_qualifier_list,
+`parameter_type_list,
+`parameter_list,
+`parameter_declaration,
+`identifier_list,
+`type_name,
+`type_name_token,
+`abstract_declarator,
+`direct_abstract_declarator,
+`initializer,
+`initializer_list,
+`statement,
+`labeled_statement,
+`compound_statement,
+`declaration_list,
+`statement_list,
+`expression_statement,
+`selection_statement,
+`iteration_statement,
+`jump_statement,
+`translation_unit,
+`external_declaration,
+`function_definition]
+
+def cTokenTable := categoriesList.foldlM (addTokenTableOfCategory) ∅
+
 -- Get the identifier out of an init_declarator
 partial def getIdFrom (s : Syntax) : String := match s.getKind.toString, s.getArgs with
   | "«init_declarator_=_»", #[decl, _] => getIdFrom decl
@@ -54,13 +133,13 @@ partial def runParserCategoryTranslationUnitHelper
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
    do 
    let p := andthenFn CParser.whitespace (categoryParserFnImpl `external_declaration)
-   -- let ictx := mkInputContext input fileName
    let env ← getEnv
+   let tt ← liftTermElabM cTokenTable
    let s := p.run { ictx with
      env
      options := {}
      prec := 0
-     tokens := getTokenTable env
+     tokens := tt
      tokenFn := CParser.tokenFnCore
    } (s.setCache $ initCacheForInput ictx.input)
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
@@ -81,7 +160,7 @@ partial def runParserCategoryTranslationUnitHelper
                      initDeclList]]),
              (Lean.Syntax.atom _ ";")])]) => let newTypeNames : Array String := .filter (λ s => s.length > 0) $
                                                                                   .map getIdFrom initDeclList
-                                             let _ ← Array.mapM (stringToCommand stx) newTypeNames
+                                             let _ ←  Array.mapM (stringToCommand stx) newTypeNames
                                              runParserCategoryTranslationUnitHelper ictx s fileName stack
     | _ => runParserCategoryTranslationUnitHelper ictx s fileName stack
 
