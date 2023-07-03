@@ -111,6 +111,7 @@ inductive AssmtExpr where
   | Cond : CondExpr → AssmtExpr
   | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
   | CompStmt : CompStmt → AssmtExpr
+  | VaArgCall : Expression → TypeName → AssmtExpr 
 
 inductive ArgExprList where
   | AssmtExprList : List AssmtExpr → ArgExprList

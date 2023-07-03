@@ -197,6 +197,8 @@ partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
   | `(assignment_expression| $c:conditional_expression) => AssmtExpr.Cond <$> (mkCondExpression c)
   | `(assignment_expression| $un:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression un) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
   | `(assignment_expression| ( $c:compound_statement )) => AssmtExpr.CompStmt <$> (mkCompStmt c)
+  | `(assignment_expression| va_arg ( $e:expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkExpression e) <*> (mkTypeName tn)
+  | `(assignment_expression| __builtin_va_arg ( $e:expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkExpression e) <*> (mkTypeName tn)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for assignment expression " ++ x)
           | .none => throw "unexpected syntax for assignment expression" 
@@ -205,7 +207,7 @@ partial def mkArgExprList : Lean.Syntax → Except String ArgExprList
   | `(argument_expression_list| $[$xs],*) => do
       let aes <- xs.mapM mkAssmtExpression
       return ArgExprList.AssmtExprList aes.toList
---  | `(argument_expression_list| $a:assignment_expression) => ArgExprList.AssmtExpr <$> (mkAssmtExpression a)
+--  | `(argument_expressionlist| $a:assignment_expression) => ArgExprList.AssmtExpr <$> (mkAssmtExpression a)
 --  | `(argument_expression_list| $ael:argument_expression_list , $ae:assignment_expression) => ArgExprList.ArgExprListAssign <$> (mkArgExprList ael) <*> (mkAssmtExpression ae)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for argument expression list " ++ x)

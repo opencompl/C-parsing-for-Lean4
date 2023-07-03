@@ -148,6 +148,8 @@ syntax "`[assignment_operator| " assignment_operator "]" : term
 syntax conditional_expression : assignment_expression
 syntax unary_expression assignment_operator assignment_expression : assignment_expression
 syntax "(" compound_statement ")" : assignment_expression
+syntax "va_arg" "(" expression "," type_name ")" : assignment_expression
+syntax "__builtin_va_arg" "(" expression "," type_name ")" : assignment_expression
 
 syntax "`[assignment_expression| " assignment_expression "]" : term
 
@@ -565,3 +567,14 @@ let newDec := Lean.Syntax.node info `Lean.Parser.Command.syntax
 -- #check `(declaration| HashTable *CreateMyHashTable(int n);)
 -- 
 -- #check `(declaration| ProbingHashTable *Create(int n);)
+
+def mkTokenTableOfCategory (cat : Name) : MetaM TokenTable := do
+  let categories := (parserExtension.getState (← getEnv)).categories
+  let cat := getCategory categories cat |>.get!
+  let mut tt := ∅
+  for (k, _) in cat.kinds do
+    let (_, p) ← mkParserOfConstant categories k
+    tt := p.info.collectTokens [] |>.foldl (fun tt tk => tt.insert tk tk) tt
+  return tt
+
+#eval mkTokenTableOfCategory `type_specifier
