@@ -5,10 +5,11 @@ import CParser.Token
 
 open Lean Parser Elab.Command
 
-def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
+def isHex (c : Char) : Bool := c.isDigit || "abcdefABCDEF".contains c
+
+partial def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char) (accum : List Char) : List Char :=
   match input with
     | []               => accum.reverse
---    | '\\' :: '0' :: cs => substituteBackslashTailH dummy inString cs ('\u0000' :: accum)
     | '\\' :: 'a' :: cs => substituteBackslashTailH dummy inString cs ('\u0007' :: accum)
     | '\\' :: 'b' :: cs => substituteBackslashTailH dummy inString cs ('\u0008' :: accum)
     | '\\' :: 'e' :: cs => substituteBackslashTailH dummy inString cs ('\u001B' :: accum)
@@ -16,6 +17,13 @@ def substituteBackslashTailH (dummy : Bool) (inString : Bool) (input : List Char
     | '\\' :: 'v' :: cs => substituteBackslashTailH dummy inString cs ('\u000B' :: accum)
     | '\\' :: '?' :: cs => substituteBackslashTailH dummy inString cs ('\u003F' :: accum)
     | '\\' :: '\\' :: cs => substituteBackslashTailH dummy inString cs ('\\' :: '\\' :: accum)
+    | '\\' :: cs => let seq := cs.takeWhile isHex
+                    let rem := cs.dropWhile isHex
+                    if seq.length == 4 || seq.length == 8
+                    then substituteBackslashTailH dummy inString rem (seq.reverse ++ ['x', '0'] ++ accum)
+                      -- \hhhh or \hhhhhhhh
+                    else substituteBackslashTailH dummy inString rem (seq.reverse ++ ['0'] ++ accum)
+                      -- \ooo or \oo or \o
     |  c   :: cs    => substituteBackslashTailH dummy inString cs (c :: accum)
 
 def wrapHelperTail (helper : Bool → Bool → List Char → List Char → List Char) : (String → String) :=

@@ -16,7 +16,7 @@ Failed tests can be filtered by piping the output of the command through `grep` 
 ```./build/bin/cParser | grep error```
 
 ## Limitations
-The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`, with some changes. Some of these can be fixed in a straightforward way by string manipulation or extending the grammar (these are marked as TODO).
+The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`, with some changes. Some of these can be fixed in a straightforward way by string manipulation or extending the grammar.
 
 * Before preprocessing, add the following directives to eliminate these macros from the code and include certain type definitions:
 ```c
@@ -27,7 +27,6 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 #define  __asm__(x)
 #include <byteswap.h>
 ```
-* [TODO] A backslash followed by `0-9` causes the parser to fail. All these occurrences have been replaced with `\\`.
 * One specific anomaly:
 ```c
 // Line 21496
