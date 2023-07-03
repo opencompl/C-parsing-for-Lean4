@@ -35,12 +35,8 @@ The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalga
 * Keywords which are reserved in Lean4 are not allowed to be identifiers. In this file, these include `open` and `in` (substituted with `open_` and `in_`).
 * [TODO] A backslash followed by `0-9` causes the parser to fail. All these occurrences have been replaced with `\\`.
 * [TODO] The character clusters `<-`, `,*` and `,+` have special meaning in Lean4 and cannot occur without a space between them.
-* Two specific anomalies:
+* One specific anomaly:
 ```c
-//Line 14281
-int iVal = __builtin_va_arg(ap, int);
-// A typename is not sufficient for an argument in a function call
-
 // Line 21496
 fprintf(stderr,
       "Digest includes %d invalidly encoded text field%s.\n",
