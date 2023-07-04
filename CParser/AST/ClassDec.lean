@@ -180,17 +180,12 @@ partial def assmtExprToString : AssmtExpr → String
   | .Cond c => (condExprToString c)
   | .AssignAssmtOp u ao ae => (unaryExprToString u) ++ " " ++ (assmtOpToString ao) ++ " " ++ (assmtExprToString ae)
   | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
---  | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
 
 partial def aelToString : ArgExprList → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
---  | .AssmtExpr a => (assmtExprToString a)
---  | .ArgExprListAssign ael ae => (aelToString ael) ++ " , " ++ (assmtExprToString ae)
 
 partial def expressionToString : Expression → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)
---  | .ExprAssmtExpr a => (assmtExprToString a)
---  | .ExprAssign e a => (expressionToString e) ++ " , " ++ (assmtExprToString a)
 
 partial def constantExprToString : ConstantExpr → String
   | .ConExpr c => (condExprToString c)
@@ -213,8 +208,6 @@ partial def abstrDeclToString : AbstrDecl → String
 
 partial def identListToString : IdentList → String
   | .IdentList idents => " , ".intercalate (idents)
---  | .Identifier s => s
---  | .IdentListIdent i s => (identListToString i) ++ " , " ++ s
 
 partial def dirDeclToString : DirDecl → String
   | .Identifier s => s
@@ -227,8 +220,6 @@ partial def dirDeclToString : DirDecl → String
 
 partial def tqlToString : TypeQualList → String
   | .TypeQualList tqs => " ".intercalate (tqs.map typeQualToString)
---  | .TypeQual tq => (typeQualToString tq)
---  | .TypeQuaListTypeQuq tql tq => (tqlToString tql) ++ " " ++ (typeQualToString tq)
 
 partial def typeQualToString : TypeQual → String
   | .Const => "const"
@@ -258,19 +249,11 @@ partial def declarationToString : Declaration → String
 
 partial def declListToString : DeclList → String
   | .DeclList ds => "\n".intercalate (ds.map declarationToString)
---  | .Decl d => (declarationToString d)
---  | .DeclListDecl d i => (declListToString d) ++ (declarationToString i)
 
 partial def initDeclListToString : InitDeclList → String
   | .InitDeclList ids => " , ".intercalate (ids.map initDeclToString)
---  | .InitDecl d => (initDeclToString d)
---  | .InitDeclListInitDecl d i => (initDeclListToString d) ++ " , " ++ (initDeclToString i)
 
 partial def declSpecToString : DeclSpec → String
---   | .DeclSpec ds => " ".intercalate (ds.map (λ x => match x with
---                                               | .inl scs => storClassSpecToString scs
---                                               | .inr (.inl ts) => typeSpecToString ts
---                                               | .inr (.inr tq) => typeQualToString tq))
   | .StorClassSpec d => (storClassSpecToString d)
   | .StorClassSpecDeclSpec d i => (storClassSpecToString d) ++ " " ++ (declSpecToString i)
   | .TypeSpec d => (typeSpecToString d)
@@ -318,8 +301,6 @@ partial def structDeclarationToString : StructDeclaration → String
 
 partial def structDeclarationListToString : StructDeclarationList → String
   | .StructDeclarationList sdls => " ".intercalate (sdls.map structDeclarationToString)
---  | .StructDeclaration d => (structDeclarationToString d)
---  | .StructDeclListStructDecl d i => (structDeclarationListToString d) ++ (structDeclarationToString i)
 
 partial def enumeratorToString : Enumerator → String
   | .Ident s => s
@@ -327,8 +308,6 @@ partial def enumeratorToString : Enumerator → String
 
 partial def enumListToString : EnumList → String
   | .EnumList es => " , ".intercalate (es.map enumeratorToString)
---  | .Enum d => (enumeratorToString d)
---  | .EnumListEnum d i => (enumListToString d) ++ " , " ++ (enumeratorToString i)
 
 partial def enumSpecToString : EnumSpec → String
   | .EnumList d => "enum " ++ "{ " ++ (enumListToString d) ++ " }"
@@ -355,10 +334,6 @@ partial def specQualToString : SpecQual → String
 
 partial def specQualListToString : SpecQualList → String
   | .SpecQualList ts => " ".intercalate (ts.map specQualToString)
---  | .TypeSpecSpecQualList d i => (typeSpecToString d) ++ " " ++ (specQualListToString i)
---  | .TypeSpec d => (typeSpecToString d)
---  | .TypeQualSpecQualList d i => (typeQualToString d) ++ " " ++ (specQualListToString i)
---  | .TypeQual d => (typeQualToString d)
 
 partial def structDeclToString : StructDecl → String
   | .Dec d => (declaratorToString d)
@@ -367,8 +342,6 @@ partial def structDeclToString : StructDecl → String
 
 partial def structDeclListToString : StructDeclList → String
   | .StructDeclList sds => " , ".intercalate (sds.map structDeclToString)
---  | .StructDecl d => (structDeclToString d)
---  | .StructDecListStructDec d i => (structDeclListToString d) ++ " , " ++ (structDeclToString i)
 
 partial def typeNameToString : TypeName → String
   | .SpecQualList a => (specQualListToString a)
@@ -417,8 +390,6 @@ partial def statementToString : Statement → String
 
 partial def stmtListToString : StmtList → String
   | .StmtList ss => "\n".intercalate (ss.map statementToString)
---  | .Statement s => (statementToString s)
---  | .StmtListStmt sl s => (stmtListToString sl) ++ (statementToString s)
 
 partial def funcDefToString : FuncDef → String
   | .DecSpecDeclDecListCompStmt ds d dl cs => (declSpecToString ds) ++ " "
@@ -439,9 +410,7 @@ partial def externDeclToString : ExternDecl → String
   | .Semicolon => ";"
 
 partial def translUnitToString : TranslUnit → String
-  | .ExternDeclList eds => " ".intercalate (eds.map externDeclToString)
---  | .ExternDecl ed => (externDeclToString ed)
---  | .TranslUnitExternDecl tu ed => (translUnitToString tu) ++ (externDeclToString ed)
+  | .ExternDeclList eds => "\n".intercalate (eds.map externDeclToString)
 
 end
 

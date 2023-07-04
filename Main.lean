@@ -106,7 +106,6 @@ def checkFileParse (env: Lean.Environment)
   let lines <- IO.FS.lines filepath
   let preprocessed := Array.filter (λ line => line.length > 0 && line.get 0 ≠ '#') lines --preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
-  -- let pipeline := Lean.quote [file]
 
 -- Extracting string from CommandElabM
   let parsed := checker fileStr env
@@ -120,13 +119,6 @@ def checkFileParse (env: Lean.Environment)
                                             IO.println (← msg.toString)
                         | _ => IO.println s!"{filepath}, internal error" -- should be unreachable
                     return TestResult.Failure
---  match (checker fileStr env) with
---    | .error => do 
---       IO.println $ s!"{filepath}, error, {e}"
---       return TestResult.Failure
---    | .ok ast => do
---      IO.println $ s!"{filepath}, ok,\nAST:\n" ++ ast
---      return TestResult.Success
 
 def runTestHarness: IO UInt32 := do
   let isFile (p: FilePath) : IO Bool := do

@@ -18,7 +18,6 @@ open Lean.Parser
 open Lean.Parser.ParserState
 open Lean.PrettyPrinter
 open Lean.PrettyPrinter.Formatter
-open Regex
 
 declare_syntax_cat extended_num
 declare_syntax_cat primary_expression
@@ -86,51 +85,3 @@ declare_syntax_cat jump_statement
 declare_syntax_cat translation_unit
 declare_syntax_cat external_declaration
 declare_syntax_cat function_definition
-
--- Syntax Category Declarations
-def constRegex : Regex :=
-  Union [Concat [Base '0', Union [Base 'x', Base 'X'], plus h, qmark is],
-         Concat [qmark $ Base '0', plus d, qmark is],
-         Concat [plus d, e, qmark fs],
-         Concat [Star d, Base '.', plus d, qmark e, qmark fs],
-         Concat [plus d, Base '.', Star d, qmark e, qmark fs]]
-
-partial def constFnAux (startPos : String.Pos)
-                       (i : String.Pos)
-                       (r : Regex)
-                       (input : String)
-                       (ctx : ParserContext)
-                       (s : ParserState) : ParserState :=
-  if input.atEnd i then s.mkError "found EOF"
-  else let rest := regexConsume r input
-        if (rest.elem "") then (Lean.Parser.mkNodeToken `const startPos CParser.whitespace ctx.toTokenParserContext (s.setPos (input.next i)))
-        else s.mkError $ "failed to parse " ++ input ++ "; found " ++ rest.toString
-
-def constFnEntry (r : Regex) (ctx: ParserContext) (s: ParserState): ParserState :=
-  constFnAux
-   (startPos := s.pos)
-   (i := s.pos)
-   (r := r)
-   (input := ctx.input)
-   ctx s
-
-open Lean Parser in 
-@[inline]
-def const : Parser :=
-   withAntiquot (mkAntiquot "const" `const) {
-       fn := constFnEntry constRegex,
-       info := mkAtomicInfo "const"
-    }
-
-@[combinator_formatter const]
-def const.formatter : Formatter := pure ()
-
-@[combinator_parenthesizer const]
-def const.parenthesizer : Parenthesizer := pure ()
-
--- #print const
-
--- macro "[const|" c:const "]" : term => do
---   match c[0] with
---     | .atom _ val => return Lean.quote val
---     | _  => Macro.throwError "expected const to have atom"

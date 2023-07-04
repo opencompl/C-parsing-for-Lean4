@@ -66,7 +66,6 @@ syntax "`[unary_expression| " unary_expression "]" : term
 
 syntax unary_expression : cast_expression
 syntax "(" type_name ")" cast_expression : cast_expression
--- syntax "(" type_name_token ")" cast_expression : cast_expression
 
 syntax "`[cast_expression| " cast_expression "]" : term
 
@@ -150,19 +149,13 @@ syntax "`[assignment_operator| " assignment_operator "]" : term
 syntax conditional_expression : assignment_expression
 syntax unary_expression assignment_operator assignment_expression : assignment_expression
 syntax "(" compound_statement ")" : assignment_expression
--- syntax "va_arg" "(" assignment_expression "," type_name ")" : assignment_expression
--- syntax "__builtin_va_arg" "(" assignment_expression "," type_name ")" : assignment_expression
 
 syntax "`[assignment_expression| " assignment_expression "]" : term
 
--- syntax assignment_expression : argument_expression_list
--- syntax argument_expression_list "," assignment_expression : argument_expression_list
 syntax sepBy(assignment_expression, ",", ", ") : argument_expression_list
 
 syntax "`[argument_expression_list| " argument_expression_list "]" : term
 
--- syntax assignment_expression : expression
--- syntax expression "," assignment_expression : expression
 syntax sepBy(assignment_expression, ",", ", ") : expression
 
 syntax "`[expression| " expression "]" : term
@@ -189,8 +182,6 @@ syntax pointer direct_abstract_declarator : abstract_declarator
 
 syntax "`[abstract_declarator| " abstract_declarator "]" : term
 
--- syntax ident : identifier_list
--- syntax identifier_list "," ident : identifier_list
 syntax sepBy(ident, ",", ", ") : identifier_list
 
 syntax "`[identifier_list| " identifier_list "]" : term
@@ -206,8 +197,6 @@ syntax direct_declarator "(" ") " : direct_declarator
 
 syntax "`[direct_declarator| " direct_declarator "]" : term
 
--- syntax type_qualifier : type_qualifier_list
--- syntax type_qualifier_list type_qualifier : type_qualifier_list
 syntax type_qualifier+ : type_qualifier_list
 
 syntax "`[type_qualifier_list| " type_qualifier_list "]" : term
@@ -217,15 +206,11 @@ syntax "volatile" : type_qualifier
 
 syntax "`[type_qualifier| " type_qualifier "]" : term
 
--- syntax "*" : pointer
--- syntax "*" type_qualifier_list : pointer
--- syntax "*" pointer : pointer
 syntax "*" (type_qualifier_list)? (pointer)? : pointer
 
 syntax "`[pointer| " pointer "]" : term
 
 syntax (pointer)? direct_declarator : declarator
--- syntax direct_declarator : declarator
 
 syntax "`[declarator| " declarator "]" : term
 
@@ -267,18 +252,10 @@ syntax "{" initializer_list "}" : initializer
 
 syntax "`[initializer| " initializer "]" : term
 
-/-
-Original:
----------
-syntax declarator : init_declarator
-syntax declarator "=" initializer : init_declarator
--/
-
 syntax declarator ("=" initializer)? : init_declarator
 syntax "`[init_declarator| " init_declarator "]" : term
 
--- syntax declaration
--- syntax declaration_specifiers ";" : declaration
+-- declaration
 syntax declaration_specifiers (init_declarator_list)? ";" : declaration
 syntax "`[declaration| " declaration "]" : term
 
@@ -296,13 +273,10 @@ syntax type_specifier : declaration_specifiers
 syntax type_specifier declaration_specifiers: declaration_specifiers
 syntax type_qualifier : declaration_specifiers
 syntax type_qualifier declaration_specifiers: declaration_specifiers
--- syntax (storage_class_specifier <|> type_specifier <|> type_qualifier)+ : declaration_specifiers
 syntax "`[declaration_specifiers| " declaration_specifiers "]" : term
 
 
 -- init_declarator_list
--- syntax init_declarator : init_declarator_list
--- syntax init_declarator_list "," init_declarator : init_declarator_list
 syntax sepBy(init_declarator, ",", ", ") : init_declarator_list
 
 syntax "`[init_declarator_list| " init_declarator_list "]" : term
@@ -331,18 +305,6 @@ syntax enum_specifier: type_specifier
 syntax type_name_token : type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
 
--- Ignore following
-  -- Excluding the code between the /-*-/ makes 6 "unexpected element" and 6 "expected ';'" errors
-  -- Including them makes 11 "unexpected element" errors
-  --   These are all removed by modifying the testcases to
-  --     have the first statement in a compound_statement
-  --     either be ";" or be wrapped in "(" ")"
-  --   Effectively, it has to be made clear that the statement
-  --     is not a declaration but a statement, so that the first
-  --     token is not seen as a type_name
--- syntax notFollowedBy(",") notFollowedBy(")") notFollowedBy(";") notFollowedBy(":") notFollowedBy("(") notFollowedBy("[") /-*-/ notFollowedBy("=") notFollowedBy(unary_operator) notFollowedBy("->") notFollowedBy(".") /- *-/ : type_name_token
------
-
 syntax "__builtin_va_list" : type_name_token
 syntax "`[type_name_token| " type_name_token "]" : term
 
@@ -358,8 +320,6 @@ syntax "union" : struct_or_union
 syntax "`[struct_or_union| " struct_or_union "]" : term
 
 -- struct_declaration_list
--- syntax struct_declaration : struct_declaration_list
--- syntax struct_declaration_list struct_declaration : struct_declaration_list
 syntax struct_declaration+ : struct_declaration_list
 
 syntax "`[struct_declaration_list| " struct_declaration_list "]" : term
@@ -376,12 +336,9 @@ syntax "`[specifier_qualifier| " specifier_qualifier "]" : term
 -- specifier_qualifier_list
 syntax specifier_qualifier : specifier_qualifier_list
 syntax specifier_qualifier specifier_qualifier_list : specifier_qualifier_list
---syntax specifier_qualifier* : specifier_qualifier_list
 syntax "`[specifier_qualifier_list| " specifier_qualifier_list "]" : term
 
 -- struct_declarator_list
--- syntax struct_declarator : struct_declarator_list
--- syntax struct_declarator_list "," struct_declarator : struct_declarator_list
 syntax struct_declarator,* : struct_declarator_list
 
 syntax "`[struct_declarator_list| " struct_declarator_list "]" : term
@@ -401,27 +358,21 @@ syntax "enum" type_name_token : enum_specifier
 syntax "`[enum_specifier| " enum_specifier "]" : term
 
 -- enumerator_list
--- syntax enumerator : enumerator_list
--- syntax enumerator_list "," enumerator : enumerator_list
 syntax sepBy(enumerator, ",", ", ") : enumerator_list
 
 syntax "`[enumerator_list| " enumerator_list "]" : term
 
 
 -- enumerator
--- syntax ident : enumerator
 syntax ident ("=" constant_expression)? : enumerator
 syntax type_name_token ("=" constant_expression)? : enumerator
 syntax "`[enumerator| " enumerator "]" : term
 
 -- parameter_type_list
--- syntax parameter_list : parameter_type_list
 syntax parameter_list ("," "...")? : parameter_type_list
 syntax "`[parameter_type_list| " parameter_type_list "]" : term
 
 -- parameter_list
--- syntax parameter_declaration : parameter_list
--- syntax parameter_list "," parameter_declaration : parameter_list
 syntax sepBy(parameter_declaration, ",", ", " notFollowedBy("...")) : parameter_list
 
 syntax "`[parameter_list| " parameter_list "]" : term
@@ -433,17 +384,14 @@ syntax declaration_specifiers : parameter_declaration
 syntax "`[parameter_declaration| " parameter_declaration "]" : term
 
 -- type_name
--- syntax specifier_qualifier_list : type_name
 syntax specifier_qualifier_list (abstract_declarator)? : type_name
 syntax "`[type_name| " type_name "]" : term
 
 -- expression statement
--- syntax ";" : expression_statement
 syntax (expression)? ";" : expression_statement
 syntax "`[expression_statement| " expression_statement "]" : term
 
 -- selection statement
--- syntax "if" "(" expression ")" statement : selection_statement
 syntax "if" "(" expression ")" statement ("else" statement)? : selection_statement
 syntax "switch" "(" expression ")" statement : selection_statement
 syntax "`[selection_statement| " selection_statement "]" : term
@@ -451,7 +399,6 @@ syntax "`[selection_statement| " selection_statement "]" : term
 -- iteration statement
 syntax "while" "(" expression ")" statement : iteration_statement
 syntax "do" statement "while" "(" expression ")" ";" : iteration_statement
--- syntax "for" "(" expression_statement expression_statement ")" statement : iteration_statement
 syntax "for" "(" expression_statement expression_statement (expression)? ")" statement : iteration_statement
 syntax "`[iteration_statement| " iteration_statement "]" : term
 
@@ -490,15 +437,11 @@ syntax "`[statement| " statement "]" : term
 -- statement list
 syntax statement : statement_list
 syntax statement statement_list : statement_list
--- syntax statement+ : statement_list
 
 syntax "`[statement_list| " statement_list "]" : term
 
 -- function definition
 syntax (declaration_specifiers)? declarator (declaration_list)? compound_statement : function_definition
--- syntax declaration_specifiers declarator compound_statement : function_definition
--- syntax declarator declaration_list compound_statement : function_definition
--- syntax declarator compound_statement : function_definition
 syntax "`[function_definition| " function_definition "]" : term
 
 -- external declaration
@@ -508,66 +451,6 @@ syntax ";" : external_declaration
 syntax "`[external_declaration| " external_declaration "]" : term
 
 -- translation unit
--- syntax external_declaration : translation_unit
--- syntax translation_unit external_declaration : translation_unit
 syntax external_declaration+ : translation_unit
 
 syntax "`[translation_unit| " translation_unit "]" : term
-
--- macro "typedef" type_specifier id:ident ";" : command => do
---   let stratom : TSyntax `str := ⟨Syntax.mkStrLit id.getId.toString⟩
---   let stxstx : Array (TSyntax `stx) := #[( ← `(stx| $stratom:str)) ]
---   let cat := mkIdentFrom id `type_name_token
---   `(syntax  $[$stxstx]* : $cat)
---  return mkNullNode #[stxDecl]
-
--- #check `(command| syntax Foo : type_name_token)
--- 
--- #check `(external_declaration| typedef struct Foo Foo;)
--- #check `(external_declaration| typedef long ll;)
--- #check `(external_declaration| typedef void (*sqlite3_syscal_ptr)(void);)
--- #check `(external_declaration| typedef int *p, q, (*foo)(void), bar[], baz();)
--- #check `(external_declaration| typedef long long int sqlite_int64;)
--- 
--- 
--- #check `(translation_unit| int char x, y, z = x /= y *= z++;
--- char int (*foo)[42] {
---     bar->baz.foo = z;
---     goto y;
---     label: x += z;
---     for (i = 0; i <= 10; i++)
---     {
---         foo++;
---     }
---     ;
--- })
-
-/-
-let newDec := Lean.Syntax.node info `Lean.Parser.Command.syntax
-                #[Syntax.node info `null #[], Syntax.node info `null #[],
-                  Syntax.node1 info `Lean.Parser.Term.attrKind (Syntax.node info `null #[]), Lean.Syntax.atom info "syntax",
-                  Syntax.node info `null #[], Syntax.node info `null #[], Syntax.node info `null #[],
-                  Syntax.node1 info `null
-                    (Syntax.node2 info `Lean.Parser.Syntax.cat
-                      (Syntax.ident info id n [])
-                      (Syntax.node info `null #[])),
-                  Lean.Syntax.atom info ":",
-                  Syntax.ident info (String.toSubstring' "type_name_token") n
-                    [Syntax.Preresolved.namespace `type_name_token]]
--/
-
--- 
--- typedef struct Node Node;
--- 
--- #check `(type_name_token| Node)
--- 
--- #check `(struct_or_union_specifier| struct Node {
---   int Element;
---   Node x;
--- })
--- 
--- typedef struct HashTable HashTable;
--- typedef struct ProbingHashTable ProbingHashTable;
--- #check `(declaration| HashTable *CreateMyHashTable(int n);)
--- 
--- #check `(declaration| ProbingHashTable *Create(int n);)
