@@ -15,7 +15,7 @@ def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  -- | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
+  | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
   | `(primary_expression| $n:extended_num) => return PrimaryExpr.Constant (n.raw.getArg 0).toNat
   | `(primary_expression| $s:scientific) => let ⟨a, b, c⟩ := s.getScientific
                                             return PrimaryExpr.FloatConstant $ Float.ofScientific a b c 
