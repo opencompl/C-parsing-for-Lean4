@@ -63,9 +63,18 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| sizeof $un:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression un)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
   | `(unary_expression| sizeof ( $t:type_name_token )) => UnaryExpr.SizeOfTypeName <$> (getIdent t)
-  | s => match s.reprint with
-          | .some x => throw ("unexpected syntax for unary expression " ++ x)
-          | .none => throw "unexpected syntax for unary expression" 
+  | s => 
+          if s.getKind == "choice" then
+            let args := s.getArgs
+            let c := args.find? (λ stx => stx.getKind.toString == "«unary_expressionSizeof(_)»")
+            match c with
+              | .some stx => mkUnaryExpression stx
+              | .none => match s.reprint with
+                          | .some x => throw ("unexpected syntax for unary expression " ++ x)
+                          | .none => throw "unexpected syntax for unary expression" 
+         else match s.reprint with
+                | .some x => throw ("unexpected syntax for unary expression " ++ x)
+                | .none => throw "unexpected syntax for unary expression" 
 
 -- -- partial def mkCastExpression : Lean.Syntax → Except String CastExpr
 -- partial def mkCastExpression : Lean.Syntax → Except String CastExpr := λ stx => dbg_trace stx
