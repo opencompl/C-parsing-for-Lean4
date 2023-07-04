@@ -84,6 +84,7 @@ partial def postfixExprToString : PostfixExpr → String
   | .SquareBrack p e => (postfixExprToString p) ++ "[" ++ (expressionToString e) ++ "]"
   | .CurlyBrack p => (postfixExprToString p) ++ "()"
   | .AEL p ael => (postfixExprToString p) ++ "(" ++ (aelToString ael) ++ ")"
+  | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
   | .Identifier p s => (postfixExprToString p) ++ "." ++ s
   | .PtrIdent p s => (postfixExprToString p) ++ "->" ++ s
   | .IncOp p => (postfixExprToString p) ++ "++"
@@ -179,7 +180,7 @@ partial def assmtExprToString : AssmtExpr → String
   | .Cond c => (condExprToString c)
   | .AssignAssmtOp u ao ae => (unaryExprToString u) ++ " " ++ (assmtOpToString ao) ++ " " ++ (assmtExprToString ae)
   | .CompStmt c => "( " ++ (compStmtToString c) ++ " )"
-  | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
+--  | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
 
 partial def aelToString : ArgExprList → String
   | .AssmtExprList aes => " , ".intercalate (aes.map assmtExprToString)

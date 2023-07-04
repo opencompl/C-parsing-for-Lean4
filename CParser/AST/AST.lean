@@ -16,6 +16,7 @@ inductive PostfixExpr where
   | SquareBrack : PostfixExpr → Expression → PostfixExpr
   | CurlyBrack : PostfixExpr → PostfixExpr
   | AEL : PostfixExpr → ArgExprList → PostfixExpr
+  | VaArgCall : AssmtExpr → TypeName → PostfixExpr 
   | Identifier : PostfixExpr → String → PostfixExpr
   | PtrIdent : PostfixExpr → String → PostfixExpr
   | IncOp : PostfixExpr → PostfixExpr
@@ -111,7 +112,7 @@ inductive AssmtExpr where
   | Cond : CondExpr → AssmtExpr
   | AssignAssmtOp : UnaryExpr → AssmtOp → AssmtExpr → AssmtExpr
   | CompStmt : CompStmt → AssmtExpr
-  | VaArgCall : AssmtExpr → TypeName → AssmtExpr 
+--  | VaArgCall : AssmtExpr → TypeName → AssmtExpr 
 
 inductive ArgExprList where
   | AssmtExprList : List AssmtExpr → ArgExprList

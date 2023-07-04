@@ -34,6 +34,8 @@ partial def mkPostfixExpression : Lean.Syntax → Except String PostfixExpr
   | `(postfix_expression| $p:postfix_expression . $i:ident) => PostfixExpr.Identifier <$> (mkPostfixExpression p) <*> (return i.getId.toString)
   | `(postfix_expression| $p:postfix_expression . $i:type_name_token) => PostfixExpr.Identifier <$> (mkPostfixExpression p) <*> (getIdent i)
   | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) <*> (mkArgExprList args)
+  | `(postfix_expression| va_arg ( $ae:assignment_expression , $tn:type_name)) => PostfixExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
+  | `(postfix_expression| __builtin_va_arg ( $ae:assignment_expression , $tn:type_name)) => PostfixExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
   | `(postfix_expression| $p:postfix_expression -> $i:ident) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (return i.getId.toString)
   | `(postfix_expression| $p:postfix_expression -> $i:type_name_token) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (getIdent i)
   | `(postfix_expression| $p:postfix_expression ++) => PostfixExpr.IncOp <$> (mkPostfixExpression p)
@@ -198,8 +200,8 @@ partial def mkAssmtExpression : Lean.Syntax → Except String AssmtExpr
   | `(assignment_expression| $c:conditional_expression) => AssmtExpr.Cond <$> (mkCondExpression c)
   | `(assignment_expression| $un:unary_expression $ao:assignment_operator $ae:assignment_expression) => AssmtExpr.AssignAssmtOp <$> (mkUnaryExpression un) <*> (mkAssmtOperator ao) <*> (mkAssmtExpression ae)
   | `(assignment_expression| ( $c:compound_statement )) => AssmtExpr.CompStmt <$> (mkCompStmt c)
-  | `(assignment_expression| va_arg ( $ae:assignment_expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
-  | `(assignment_expression| __builtin_va_arg ( $ae:assignment_expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
+--  | `(assignment_expression| va_arg ( $ae:assignment_expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
+--  | `(assignment_expression| __builtin_va_arg ( $ae:assignment_expression , $tn:type_name)) => AssmtExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
   | s => match s.reprint with
           | .some x => throw ("unexpected syntax for assignment expression " ++ x)
           | .none => throw "unexpected syntax for assignment expression" 
