@@ -241,6 +241,12 @@ typedef struct sqlite3 sqlite3;
 
 typedef sqlite_int64 sqlite3_int64;
 typedef sqlite_uint64 sqlite3_uint64;
+
+typedef void(*LOGFUNC_t)(void*,int,const char*);
+typedef int(*sqlite3FaultFuncType)(int);
+typedef void (*void_function)(void);
+typedef int(*sqlite3LocaltimeType)(const void*,void*);
+
 # 674 "sqlite3.c"
            int sqlite3_close(sqlite3*);
            int sqlite3_close_v2(sqlite3*);
@@ -105141,7 +105147,7 @@ static int (*const sqlite3BuiltinExtensions[])(sqlite3*) = {
 
 
 
-      typedef void(*LOGFUNC_t)(void*,int,const char*);
+      //typedef void(*LOGFUNC_t)(void*,int,const char*);
       LOGFUNC_t xLog = __builtin_va_arg(ap, LOGFUNC_t);
       void *pLogArg = __builtin_va_arg(ap, void*);
       __atomic_store_n((&sqlite3Config.xLog),(xLog),0);
@@ -107803,7 +107809,7 @@ error_out:
 # 178995 "sqlite3.c"
     case 9: {
 # 179004 "sqlite3.c"
-      typedef int(*sqlite3FaultFuncType)(int);
+      //typedef int(*sqlite3FaultFuncType)(int);
       sqlite3Config.xTestCallback = __builtin_va_arg(ap, sqlite3FaultFuncType);
       rc = sqlite3FaultSim(0);
       break;
@@ -107816,7 +107822,7 @@ error_out:
 
 
     case 10: {
-      typedef void (*void_function)(void);
+      //typedef void (*void_function)(void);
       void_function xBenignBegin;
       void_function xBenignEnd;
       xBenignBegin = __builtin_va_arg(ap, void_function);
@@ -107864,7 +107870,7 @@ error_out:
     case 18: {
       sqlite3Config.bLocaltimeFault = __builtin_va_arg(ap, int);
       if( sqlite3Config.bLocaltimeFault==2 ){
-        typedef int(*sqlite3LocaltimeType)(const void*,void*);
+        //typedef int(*sqlite3LocaltimeType)(const void*,void*);
         sqlite3Config.xAltLocaltime = __builtin_va_arg(ap, sqlite3LocaltimeType);
       }else{
         sqlite3Config.xAltLocaltime = 0;

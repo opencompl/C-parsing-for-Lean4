@@ -16,16 +16,39 @@ Failed tests can be filtered by piping the output of the command through `grep` 
 ```./build/bin/cParser | grep error```
 
 ## Limitations
-The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`.
+The file `Tests/SQLite/shell_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/shell.c`.  
+The file `Tests/SQLite/sqlite3_clanged.c` is the output of `clang -E sqlite-amalgamation-3420000/sqlite3.c`.
 
 Before preprocessing, add the following directives to eliminate these macros from the code and include certain type definitions:
 ```c
 #define __attribute__(x)
 #define __extension__
 #define __restrict
+#define restrict
 #define __inline
 #define  __asm__(x)
-#include <byteswap.h>
+#define __asm(x)
+#define _Nonnull
+#define _Nullable
+#define _Null_unspecified
+#include <byteswap.h> // for non-Mac OS; else
+#  include <libkern/OSByteOrder.h>
+
+ /* We assume little endian. */
+#  define htobe64(x) OSSwapHostToBigInt64(x)
+#  define htobe32(x) OSSwapHostToBigInt32(x)
+#  define htobe16(x) OSSwapHostToBigInt16(x)
+
+#  define be64toh(x) OSSwapBigToHostInt64(x)
+#  define be32toh(x) OSSwapBigToHostInt32(x)
+#  define be16toh(x) OSSwapBigToHostInt16(x)
+
+// The following are for sqlite3.c
+typedef unsigned long long __uint128_t;
+typedef void(*LOGFUNC_t)(void*,int,const char*);
+typedef int(*sqlite3FaultFuncType)(int);
+typedef void (*void_function)(void);
+typedef int(*sqlite3LocaltimeType)(const void*,void*);
 ```
 
 ## The `typedef` Issue
