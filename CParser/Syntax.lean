@@ -262,7 +262,6 @@ syntax "`[declaration| " declaration "]" : term
 -- declaration_list
 syntax declaration : declaration_list
 syntax declaration declaration_list : declaration_list
--- syntax declaration+ : declaration_list
 
 syntax "`[declaration_list| " declaration_list "]" : term
 
