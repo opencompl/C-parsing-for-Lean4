@@ -105,6 +105,46 @@ struct Foo add_and_wrap(int a, int b)
 ```
 do not.
 
+## Control Flow
+When `main` is run, it calls `runTestHarness`, which runs `checkFileParse` on each file in each directory of `Tests/`. All these functions are defined in `Main.lean`.  
+`runTestHarness` removes lines starting with `#` (preprocessing directives) and passes the file to the corresponding `parseNonTerminal` function (defined in `CParser/Parser/ParseFuncs.lean`). These functions are responsible for *both parsing and elaboration*.
+
+`mkParseFun` creates the function responsible for this (which is called by `mkNonTerminalParser`), defined in `CParser/Util.lean`. The parsing is done by `runParserCategory`, and the elaboration by the argument `ntparser` (one of the `mk<NonTerminal>` functions defined in `CParser/Parser/MakeFuncs.lean`).
+
+Note that we use a custom version of `runParserCategory` for the `translation_unit` nonterminal. This is in order to allow for global typedef statements.  
+`runParserCategoryTranslationUnit` works exactly the same as its built-in counterpart, except that if the statement being parsed is a typedef, then we use the `stringToCommand` function to define a new `type_name_token` for each identifier given. For example, the statement
+```c
+typedef struct Foo Foo;
+```
+causes the command
+```lean
+syntax "Foo" : type_name_token
+```
+to be elaborated.
+
+`addTokenTableOfCategory` finds all the keywords used in the syntax definitions of a category, and these are the only keywords recognised during parsing. This is done so that Lean keywords do not block C identifiers.
+
+We use custom tokenisation functions defined in `Token.lean` to account for differences between C tokens and Lean tokens. The major divergences are
+
+* C identifiers cannot include `!` or `?`.
+* Quotable characters are `\"'rntabefv?0`
+* C comments are delimited by `//` (single line) and `/* ... */` (multiline).
+
+Numbers with arithmetic type specifiers (`u`, `U`, `l` and `L`) following them are accounted for by the nonterminal `extended_num`, which allows for any number of these specifiers to follow any number.
+
+## Error Reporting
+If the *parsing* fails, an error of the form `expected ...` will be thrown. For example, in a statement like
+```c
+static inline func(void);
+```
+if `inline` is not defined as a `declaration_specifier`, then it will be parsed as an `ident`, and the parser will then throw an error at `func`: `expected '(' or ';'`.
+
+If the *elaboration* fails, an error of the form `unexpected syntax for <nonterminal>` will be thrown, followed by the syntax tree which was passed to the failing function. Usually, this will be because the parser has identified two possible parses and so the syntax node has kind `choice` instead of the required nonterminal. In such cases, a preference for one of the choices can be hardcoded by filtering them based on the kind. This has been done for
+
+* `mkUnaryExpression`: a preference to include the brackets in the `unary_expression` instead of a `primary_expression`
+* `mkCastExpression`: a preference to avoid reading the `type_name_token` as an `ident` and the expression as a `postfix_expression`
+* `mkCompStmt`: a preference to have at least one `declaration`
+
 ## Group-wise list of non-terminals
 The order in which the nonterminals of the C grammar ([reference](https://www.lysator.liu.se/c/ANSI-C-grammar-y.html)) is as follows:
 ```
