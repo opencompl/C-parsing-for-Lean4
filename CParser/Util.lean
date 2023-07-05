@@ -5,12 +5,6 @@ import CParser.Token
 
 open Lean Parser Elab.Command
 
-def isHex (c : Char) : Bool := c.isDigit || "abcdefABCDEF".contains c
-
-def isOct (c : Char) : Bool := "01234567".contains c
-
-def makeSubstitution (s : String) : String := s
-
 abbrev ParseError := String
 
 def addTokenTableOfCategory (accum : TokenTable) (cat : Name) : MetaM TokenTable := do
@@ -161,13 +155,12 @@ private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Exc
 String → Environment → CommandElabM α := λ s env =>
   if syntaxcat == `translation_unit then do
   let stx ← runParserCategoryTranslationUnit s
-  IO.ofExcept (ntparser stx)
- else IO.ofExcept ((runParserCategory env syntaxcat s (tokenFn := CParser.tokenFnCore)) >>= ntparser)
+  IO.ofExcept $ ntparser stx
+ else IO.ofExcept $ runParserCategory env syntaxcat s (tokenFn := CParser.tokenFnCore) >>= ntparser
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.
 def mkNonTerminalParser {α : Type}  (syntaxcat : Name) (ntparser : Syntax → Except ParseError α)
 (s : String) (env : Environment) : CommandElabM α :=
   let parseFun := mkParseFun syntaxcat ntparser
-  let s := makeSubstitution s
   parseFun s env
