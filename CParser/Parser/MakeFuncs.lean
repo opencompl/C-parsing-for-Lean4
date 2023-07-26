@@ -15,7 +15,6 @@ def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  | `(primary_expression| $s:type_name_token) => PrimaryExpr.Identifier <$> (getIdent s)
   | `(primary_expression| $n:extended_num) => return PrimaryExpr.Constant (n.raw.getArg 0).toNat
   | `(primary_expression| $s:scientific) => let ⟨a, b, c⟩ := s.getScientific
                                             return PrimaryExpr.FloatConstant $ Float.ofScientific a b c 
@@ -34,6 +33,7 @@ partial def mkPostfixExpression : Lean.Syntax → Except String PostfixExpr
   | `(postfix_expression| $p:postfix_expression ( $args:argument_expression_list )) => PostfixExpr.AEL <$> (mkPostfixExpression p) <*> (mkArgExprList args)
   | `(postfix_expression| va_arg ( $ae:assignment_expression , $tn:type_name)) => PostfixExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
   | `(postfix_expression| __builtin_va_arg ( $ae:assignment_expression , $tn:type_name)) => PostfixExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
+  | `(postfix_expression| __builtin_offsetof ( $tn:type_name , $ae:assignment_expression )) => PostfixExpr.VaArgCall <$> (mkAssmtExpression ae) <*> (mkTypeName tn)
   | `(postfix_expression| $p:postfix_expression -> $i:ident) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (return i.getId.toString)
   | `(postfix_expression| $p:postfix_expression -> $i:type_name_token) => PostfixExpr.PtrIdent <$> (mkPostfixExpression p) <*> (getIdent i)
   | `(postfix_expression| $p:postfix_expression ++) => PostfixExpr.IncOp <$> (mkPostfixExpression p)
@@ -57,24 +57,26 @@ partial def mkUnaryExpression : Lean.Syntax → Except String UnaryExpr
   | `(unary_expression| sizeof $un:unary_expression) => UnaryExpr.SizeOf <$> (mkUnaryExpression un)
   | `(unary_expression| sizeof ( $t:type_name )) => UnaryExpr.SizeOfType <$> (mkTypeName t)
   | `(unary_expression| sizeof ( $t:type_name_token )) => UnaryExpr.SizeOfTypeName <$> (getIdent t)
-  | s => if s.getKind == "choice" then
-            let args := s.getArgs
-            let c := args.find? (λ stx => stx.getKind.toString == "«unary_expressionSizeof(_)»")
-            match c with
-              | .some stx => mkUnaryExpression stx
-              | .none => throw ("unexpected syntax for unary expression " ++ s!"{s}")
-         else throw ("unexpected syntax for unary expression " ++ s!"{s}")
+  | s => -- if s.getKind == "choice" then
+         --    let args := s.getArgs
+         --    let c := args.find? (λ stx => stx.getKind.toString == "«unary_expressionSizeof(_)»")
+         -- match c with
+         --   | .some stx => mkUnaryExpression stx
+         --   | .none => throw ("unexpected syntax for unary expression " ++ s!"{s}")
+         -- else throw ("unexpected syntax for unary expression " ++ s!"{s}")
+         throw ("unexpected syntax for unary expression " ++ s!"{s}")
 
 partial def mkCastExpression : Lean.Syntax → Except String CastExpr
   | `(cast_expression| $un:unary_expression) => CastExpr.Unary <$> (mkUnaryExpression un)
   | `(cast_expression| ( $t:type_name ) $c:cast_expression) => CastExpr.TypeNameCast <$> (mkTypeName t) <*> (mkCastExpression c)
-  | s => if s.getKind == "choice" then
-            let args := s.getArgs
-            let c := args.find? (λ stx => stx.getKind.toString == "«cast_expression(_)_»")
-            match c with
-              | .some stx => mkCastExpression stx
-              | .none => throw ("unexpected syntax for cast expression " ++ s!"{s}")
-         else throw ("unexpected syntax for cast expression " ++ s!"{s}")
+  | s => -- if s.getKind == "choice" then
+         --    let args := s.getArgs
+         --    let c := args.find? (λ stx => stx.getKind.toString == "«cast_expression(_)_»")
+         --    match c with
+         --      | .some stx => mkCastExpression stx
+         --      | .none => throw ("unexpected syntax for cast expression " ++ s!"{s}")
+         -- else throw ("unexpected syntax for cast expression " ++ s!"{s}")
+         throw ("unexpected syntax for unary expression " ++ s!"{s}")
 
 partial def mkMultExpression : Lean.Syntax → Except String MultExpr
   | `(multiplicative_expression| $c:cast_expression) => MultExpr.Cast <$> (mkCastExpression c)
@@ -428,13 +430,14 @@ partial def mkCompStmt : Lean.Syntax → Except String CompStmt
   | `(compound_statement| { $sl:statement_list }) => CompStmt.StmtList <$> (mkStmtList sl)
   | `(compound_statement| { $dl:declaration_list }) => CompStmt.DeclList <$> (mkDeclList dl)
   | `(compound_statement| { $dl:declaration_list $sl:statement_list }) => CompStmt.DeclListStmtList <$> (mkDeclList dl) <*> (mkStmtList sl)
-  | s => if s.getKind.toString == "choice"
-         then let args := s.getArgs
-              let c := args.find? (λ stx => stx.getKind.toString == "«compound_statement{__}»")
-              match c with
-                | .some stx => mkCompStmt stx
-                | .none => throw ("unexpected syntax for compound statement " ++ s!"{s}")
-         else throw ("unexpected syntax for compound statement " ++ s!"{s}")
+  | s => -- if s.getKind.toString == "choice"
+         -- then let args := s.getArgs
+         --      let c := args.find? (λ stx => stx.getKind.toString == "«compound_statement{__}»")
+         --      match c with
+         --        | .some stx => mkCompStmt stx
+         --        | .none => throw ("unexpected syntax for compound statement " ++ s!"{s}")
+         -- else throw ("unexpected syntax for compound statement " ++ s!"{s}")
+         throw ("unexpected syntax for unary expression " ++ s!"{s}")
 
 partial def mkStatement : Lean.Syntax → Except String Statement
   | `(statement| $ls:labeled_statement) => Statement.LabelStmt <$> (mkLabelStmt ls)

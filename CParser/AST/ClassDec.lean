@@ -85,6 +85,7 @@ partial def postfixExprToString : PostfixExpr → String
   | .CurlyBrack p => (postfixExprToString p) ++ "()"
   | .AEL p ael => (postfixExprToString p) ++ "(" ++ (aelToString ael) ++ ")"
   | .VaArgCall ae tn => "va_arg(" ++ (assmtExprToString ae) ++ ", " ++ (typeNameToString tn) ++ ")"
+  | .OffsetOfCall tn ae => "__builtin_offsetof(" ++ (typeNameToString tn) ++ ", " ++ (assmtExprToString ae) ++ ")"
   | .Identifier p s => (postfixExprToString p) ++ "." ++ s
   | .PtrIdent p s => (postfixExprToString p) ++ "->" ++ s
   | .IncOp p => (postfixExprToString p) ++ "++"

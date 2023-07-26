@@ -19,7 +19,6 @@ attribute [combinator_parenthesizer arith_type_specs] PrettyPrinter.Parenthesize
 syntax num (noWs arith_type_specs)?: extended_num
 
 syntax ident : primary_expression
-syntax type_name_token : primary_expression
 syntax extended_num : primary_expression
 syntax scientific : primary_expression
 syntax char : primary_expression
@@ -36,6 +35,7 @@ syntax postfix_expression "(" ")"  : postfix_expression
 syntax postfix_expression "(" argument_expression_list ")" : postfix_expression
 syntax "va_arg" "(" assignment_expression "," type_name ")" : postfix_expression
 syntax "__builtin_va_arg" "(" assignment_expression "," type_name ")" : postfix_expression
+syntax "__builtin_offsetof" "(" type_name "," assignment_expression ")" : postfix_expression
 syntax postfix_expression "." ident : postfix_expression
 syntax postfix_expression "." type_name_token : postfix_expression
 syntax postfix_expression "->" ident : postfix_expression

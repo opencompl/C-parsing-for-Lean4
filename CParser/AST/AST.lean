@@ -17,6 +17,7 @@ inductive PostfixExpr where
   | CurlyBrack : PostfixExpr → PostfixExpr
   | AEL : PostfixExpr → ArgExprList → PostfixExpr
   | VaArgCall : AssmtExpr → TypeName → PostfixExpr 
+  | OffsetOfCall : TypeName → AssmtExpr → PostfixExpr
   | Identifier : PostfixExpr → String → PostfixExpr
   | PtrIdent : PostfixExpr → String → PostfixExpr
   | IncOp : PostfixExpr → PostfixExpr
