@@ -30,11 +30,15 @@ $$G = \mu(A, G).$$
 
 $\mu$ can have one of two behaviours: it can delete a nonterminal
 
-$$\mu(A, G) = \lambda P \implies \begin{cases} !. & P = P_j \\ G(P) & P \neq P_j, \end{cases}$$
+$$\mu(A, G) = \lambda P \implies
+\begin{cases} !. & P = P_j \\
+G(P) & P \neq P_j, \end{cases}$$
 
 where $P_j$ may depend on $A$, or it can add an expression to the production rule associated with a nonterminal
 
-$$\mu(A, G) = \lambda P \implies \begin{cases} \Lambda(A) / G(P) & P = P_j \\ G(P) & P \neq P_j. \end{cases}$$
+$$\mu(A, G) = \lambda P \implies
+\begin{cases} \Lambda(A) / G(P) & P = P_j \\
+G(P) & P \neq P_j. \end{cases}$$
 
 $\Lambda$ as defined above is a function from ASTs to PEG expressions, with the additional constraint that it can only reduce tree structure (the result tree must be isomorphic, either to the input tree, or to one of its subtrees at some depth).
 
