@@ -13,8 +13,8 @@ We describe here a tentative way to define a _modifiable_ (we avoid the term _ex
 ## Definitions
 A modifiable grammar $\Gamma$ is defined as a tuple $(G, \mu, \Lambda)$, where
 
-$$\mu : \text{AST} \to G \to G$$
-$$\lambda : \text{AST} \to \text{PEG}$$
+$$\mu : \text{AST} \to G \to G \\
+\Lambda : \text{AST} \to \text{PEG}$$
 
 Note that `PEG` here refers to the type of PEG expressions, constructed using nonterminals, terminals, and the combinators of sequence, repetition, lookahead and prioritised choice.
 
