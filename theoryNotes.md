@@ -29,9 +29,9 @@ We define the domain to be $\Sigma*$ so as to allow any string to act as a nonte
 
 Some production rules have the additional semantics that whenever their expansion is successfully used to parse a string (giving an AST $A$ as output), we use $\mu$ to modify the grammar
 
-$$G = \mu(A, G).$$
+$$G' = \mu(A, G).$$
 
-$\mu$ can have one of two behaviours: it can delete a nonterminal
+$\mu$ can have one of two behaviors: it can delete a nonterminal
 
 $$\mu(A, G) = \lambda P \implies
 \begin{cases} !. & P = P_j \\
@@ -49,6 +49,12 @@ $\Lambda$ as defined above is a function from ASTs to PEG expressions, with the 
 The $\Lambda$ function is the one that does the actual "lifting" of expressions from the program to the grammar. It is constrained to reduce tree structure so as to ensure that its running time is linear in the number of symbols in the input; if it was allowed to arbitrarily blow up the tree, we could not place bounds on parsing time.
 
 As it is, we can now claim (?) that the parsing will not exceed linear time, as the processing time for a program with $n$ symbols has increased by at most $\mathcal{O}(n)$ operations (the time it takes to run $\Lambda$).
+
+# Issues/Questions
+
+- In the above we describe the functions $\mu, \Lambda$ by their signatures, but we do not give a structural way to define them. If we allow *arbitrary* functions for $\mu$ and $\Lambda$, we will not be able to reason about (nor prove anything) about the class of grammars we define: e.g. how do we know that $\mu$ doesn't require us to solve the halting problem for deciding how to change the grammar?
+- It's unclear wether we want $\Lambda : \text{AST} \to \text{PEG}$ or vice-versa, $\Lambda : \text{PEG} \to \text{AST}$. Morally we want the former, but it is not clear how we'd define this for arbitrary $AST$s. The latter allows us to know precisely what combinators we want to expose on the grammar.
+- To address the above two points, we would ideally want to define extensions to $\text{PEG}$ (i.e. the meta-grammar) that allow us to construct these operators. For example, an operator $\rho : \{ /, *, ! \} \to \text{AST}$ that allows us to reflect the $\text{PEG}$ combinators in the grammar. How we'd define $\mu$ is still unclear.
 
 ## Describing C and Lean4
 ### C
