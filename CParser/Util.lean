@@ -13,77 +13,14 @@ def addTokenTableOfCategory (accum : TokenTable) (cat : Name) : MetaM TokenTable
   let mut tt := accum
   for (k, _) in cat.kinds do
     let (_, p) ← mkParserOfConstant categories k
-    tt := p.info.collectTokens [] |>.filter (λ t => t ≠ ",*" && t ≠ ",+")
-                                  |>.foldl (fun tt tk => tt.insert tk tk) tt
+    tt := p.info.collectTokens ["char"] |>.filter (λ t => t ≠ ",*" && t ≠ ",+")
+                                        |>.foldl (fun tt tk => tt.insert tk tk) tt
   return tt
 
 def categoriesList : List Name :=
 [`extended_num,
 `primary_expression,
-`postfix_expression,
-`argument_expression_list,
-`unary_expression,
-`unary_operator,
-`cast_expression,
-`multiplicative_expression,
-`additive_expression,
-`shift_expression,
-`relational_expression,
-`equality_expression,
-`and_expression,
-`exclusive_or_expression,
-`inclusive_or_expression,
-`logical_and_expression,
-`logical_or_expression,
-`conditional_expression,
-`assignment_expression,
-`assignment_operator,
-`expression,
-`constant_expression,
-`declaration,
-`declaration_specifiers,
-`init_declarator_list,
-`init_declarator,
-`storage_class_specifier,
-`type_specifier,
-`struct_or_union_specifier,
-`struct_or_union,
-`struct_declaration_list,
-`struct_declaration,
-`specifier_qualifier,
-`specifier_qualifier_list,
-`struct_declarator_list,
-`struct_declarator,
-`enum_specifier,
-`enumerator_list,
-`enumerator,
-`type_qualifier,
-`declarator,
-`direct_declarator,
-`pointer,
-`type_qualifier_list,
-`parameter_type_list,
-`parameter_list,
-`parameter_declaration,
-`identifier_list,
-`type_name,
-`type_name_token,
-`abstract_declarator,
-`direct_abstract_declarator,
-`initializer,
-`initializer_list,
-`statement,
-`labeled_statement,
-`compound_statement,
-`declaration_list,
-`statement_list,
-`expression_statement,
-`selection_statement,
-`iteration_statement,
-`jump_statement,
-`translation_unit,
-`external_declaration,
-`function_definition]
+`translation_unit]
 
 def cTokenTable := categoriesList.foldlM (addTokenTableOfCategory) ∅
 
@@ -112,9 +49,10 @@ partial def runParserCategoryTranslationUnitHelper
                                                    (fileName := "<input>")
                                                    (stack : List Syntax) : CommandElabM $ List Syntax :=
    do 
-   let p := andthenFn CParser.whitespace (categoryParserFnImpl `external_declaration)
+   let p := andthenFn CParser.whitespace (categoryParserFnImpl `primary_expression)
    let env ← getEnv
    let tt ← liftTermElabM cTokenTable
+  --  throwError s!"{tt}"
    let s := p.run { ictx with
      env
      options := {}
@@ -125,24 +63,25 @@ partial def runParserCategoryTranslationUnitHelper
    if s.hasError then throwError (s.toErrorMsg ictx ++ " " ++ toString s.stxStack.back) else
    let stx := s.stxStack.back
    let stack := stack.cons stx
-   if (s.pos.byteIdx ≥ ictx.input.length) then return stack else
-   match stx with
-    | (Syntax.node _ _ -- external declaration
-        #[(Syntax.node _ _ -- declaration
-           #[(Syntax.node _ _ -- declaration specifiers
-               #[(Syntax.node _ _ -- storage class specifier
-                   #[Lean.Syntax.atom _ "typedef"]),
-                 (Syntax.node _ _ _ -- declaration specifiers
-                 )]),
-             (Syntax.node _ _ -- null
-               #[Syntax.node _ _ -- init declarator list
-                  #[Syntax.node _ _ -- null
-                     initDeclList]]),
-             (Lean.Syntax.atom _ ";")])]) => let newTypeNames : Array String := .filter (λ s => s.length > 0) $
-                                                                                  .map getIdFrom initDeclList
-                                             let _ ←  Array.mapM (stringToCommand stx) newTypeNames
-                                             runParserCategoryTranslationUnitHelper ictx s fileName stack
-    | _ => runParserCategoryTranslationUnitHelper ictx s fileName stack
+   return stack 
+  --  if (s.pos.byteIdx ≥ ictx.input.length) then return stack else
+  --  match stx with
+  --   | (Syntax.node _ _ -- external declaration
+  --       #[(Syntax.node _ _ -- declaration
+  --          #[(Syntax.node _ _ -- declaration specifiers
+  --              #[(Syntax.node _ _ -- storage class specifier
+  --                  #[Lean.Syntax.atom _ "typedef"]),
+  --                (Syntax.node _ _ _ -- declaration specifiers
+  --                )]),
+  --            (Syntax.node _ _ -- null
+  --              #[Syntax.node _ _ -- init declarator list
+  --                 #[Syntax.node _ _ -- null
+  --                    initDeclList]]),
+  --            (Lean.Syntax.atom _ ";")])]) => let newTypeNames : Array String := .filter (λ s => s.length > 0) $
+  --                                                                                 .map getIdFrom initDeclList
+  --                                            let _ ←  Array.mapM (stringToCommand stx) newTypeNames
+  --                                            runParserCategoryTranslationUnitHelper ictx s fileName stack
+  --   | _ => runParserCategoryTranslationUnitHelper ictx s fileName stack
 
 def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : CommandElabM Syntax :=
    do
