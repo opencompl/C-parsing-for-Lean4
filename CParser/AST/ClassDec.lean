@@ -3,8 +3,7 @@ import CParser.AST.AST
 open AST
 instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
 instance : Inhabited TypeSpec where default := TypeSpec.Void
-instance : Inhabited ExternDecl where default := ExternDecl.Semicolon
-instance : Inhabited TranslUnit where default := TranslUnit.ExternDeclList []
+instance : Inhabited TranslUnit where default := TranslUnit.Semicolon
 
 mutual
 partial def primaryExprToString : PrimaryExpr → String
@@ -19,11 +18,8 @@ partial def typeSpecToString : TypeSpec → String
   | .Char => "char"
   -- | .Int => "int"
 
-partial def externDeclToString : ExternDecl → String
-  | .Semicolon => ";"
-
 partial def translUnitToString : TranslUnit → String
-  | .ExternDeclList eds => "\n".intercalate (eds.map externDeclToString)
+  | .Semicolon => ";"
 
 end
 

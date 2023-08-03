@@ -15,11 +15,8 @@ inductive TypeSpec where
   | Char : TypeSpec
   -- | Int : TypeSpec
 
-inductive ExternDecl where
-  | Semicolon : ExternDecl
-
 inductive TranslUnit where
-  | ExternDeclList : List ExternDecl → TranslUnit
+  | Semicolon : TranslUnit
 
 end
 

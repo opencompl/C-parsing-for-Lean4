@@ -15,7 +15,6 @@ def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
 mutual
 partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
-  | `(primary_expression| $n:extended_num) => return PrimaryExpr.Constant (n.raw.getArg 0).toNat
   | `(primary_expression| $s:scientific) => let ⟨a, b, c⟩ := s.getScientific
                                             return PrimaryExpr.FloatConstant $ Float.ofScientific a b c 
   | `(primary_expression| $c:char) => return PrimaryExpr.CharLit c.getChar
@@ -29,14 +28,8 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   -- | `(type_specifier| int) => return TypeSpec.Int
   | s => throw ("unexpected syntax for type specifier " ++ s!"{s}")
 
-partial def mkExternDecl : Lean.Syntax → Except String ExternDecl
-  | `(external_declaration| ;) => return ExternDecl.Semicolon
-  | s => throw ("unexpected syntax for external declaration " ++ s!"{s}")
-
 partial def mkTranslUnit : Lean.Syntax → Except String TranslUnit
-  | `(translation_unit| $[$xs]*) => do
-      let es <- xs.mapM mkExternDecl
-      return TranslUnit.ExternDeclList es.toList
+  | `(translation_unit| ;) => return TranslUnit.Semicolon
   | s => throw ("unexpected syntax for translation unit " ++ s!"{s}")
 
 end

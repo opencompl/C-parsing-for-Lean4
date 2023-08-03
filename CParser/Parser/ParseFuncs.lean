@@ -17,9 +17,6 @@ def parsePrimaryExpression : String → Lean.Environment → CommandElabM Primar
 def parseTypeSpec : String → Lean.Environment → CommandElabM TypeSpec := 
   mkNonTerminalParser `type_specifier mkTypeSpec
 
-def parseExternDecl : String → Lean.Environment → CommandElabM ExternDecl :=
-  mkNonTerminalParser `external_declaration mkExternDecl
-
 def parseTranslUnit : String → Lean.Environment → CommandElabM TranslUnit :=
   mkNonTerminalParser `translation_unit mkTranslUnit
 
