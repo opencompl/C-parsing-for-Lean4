@@ -19,7 +19,3 @@ syntax "void" : type_specifier
 syntax "char": type_specifier
 -- syntax "int": type_specifier
 syntax "`[type_specifier| " type_specifier "]" : term
-
--- translation unit
-syntax ";" : translation_unit
-syntax "`[translation_unit| " translation_unit "]" : term

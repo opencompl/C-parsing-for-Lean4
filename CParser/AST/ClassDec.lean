@@ -3,7 +3,6 @@ import CParser.AST.AST
 open AST
 instance : Inhabited PrimaryExpr where default := PrimaryExpr.Constant 0
 instance : Inhabited TypeSpec where default := TypeSpec.Void
-instance : Inhabited TranslUnit where default := TranslUnit.Semicolon
 
 mutual
 partial def primaryExprToString : PrimaryExpr → String
@@ -17,9 +16,6 @@ partial def typeSpecToString : TypeSpec → String
   | .Void => "void"
   | .Char => "char"
   -- | .Int => "int"
-
-partial def translUnitToString : TranslUnit → String
-  | .Semicolon => ";"
 
 end
 

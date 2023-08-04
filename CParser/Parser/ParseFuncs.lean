@@ -17,11 +17,8 @@ def parsePrimaryExpression : String → Lean.Environment → CommandElabM Primar
 def parseTypeSpec : String → Lean.Environment → CommandElabM TypeSpec := 
   mkNonTerminalParser `type_specifier mkTypeSpec
 
-def parseTranslUnit : String → Lean.Environment → CommandElabM TranslUnit :=
-  mkNonTerminalParser `translation_unit mkTranslUnit
-
 -- Parse the top-level nonterminal of our grammar.
-def parseToplevelNonterminal := parseTranslUnit
+def parseToplevelNonterminal := parsePrimaryExpression
 
 -- C parser, which invokes the top level nonterminal parser.
 def parse := parseToplevelNonterminal

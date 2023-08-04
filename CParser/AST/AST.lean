@@ -15,9 +15,6 @@ inductive TypeSpec where
   | Char : TypeSpec
   -- | Int : TypeSpec
 
-inductive TranslUnit where
-  | Semicolon : TranslUnit
-
 end
 
 end AST

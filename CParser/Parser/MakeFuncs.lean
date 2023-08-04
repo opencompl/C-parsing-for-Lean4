@@ -28,8 +28,4 @@ partial def mkTypeSpec : Lean.Syntax → Except String TypeSpec
   -- | `(type_specifier| int) => return TypeSpec.Int
   | s => throw ("unexpected syntax for type specifier " ++ s!"{s}")
 
-partial def mkTranslUnit : Lean.Syntax → Except String TranslUnit
-  | `(translation_unit| ;) => return TranslUnit.Semicolon
-  | s => throw ("unexpected syntax for translation unit " ++ s!"{s}")
-
 end

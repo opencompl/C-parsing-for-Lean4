@@ -19,7 +19,5 @@ open Lean.Parser.ParserState
 open Lean.PrettyPrinter
 open Lean.PrettyPrinter.Formatter
 
--- declare_syntax_cat extended_num
 declare_syntax_cat primary_expression
 declare_syntax_cat type_specifier
-declare_syntax_cat translation_unit
