@@ -91,10 +91,28 @@ def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : 
               Syntax.node info `null extDecls.toArray.reverse
 
 
+-- helper decl to work around inlining issue https://github.com/leanprover/lean4/commit/3f6de2af06dd9a25f62294129f64bc05a29ea912#r41340377
+@[inline] private def mkCategoryAntiquotParserFn (kind : Name) : ParserFn :=
+  (mkCategoryAntiquotParser kind).fn
+
+def categoryParserFnImplDbg (catName : Name) : ParserFn := fun ctx s =>
+  let catName := if catName == `syntax then `stx else catName
+  let categories := (parserExtension.getState ctx.env).categories
+  -- dbg_trace catName
+  match getCategory categories catName with
+  | some cat =>
+    -- dbg_trace cat.declName -- Lean.Parser.Category.primary_expression for both
+    prattParser catName cat.tables cat.behavior (mkCategoryAntiquotParserFn catName) ctx s
+  | none     => s.mkUnexpectedError ("unknown parser category '" ++ toString catName ++ "'")
+
+def mkParserStateDbg (input : String) : ParserState :=
+  dbg_trace input.endPos
+  { cache := initCacheForInput input }
+
 -- Note: Problem might be here
 def runParserCategoryDbg (env : Environment) (catName : Name) (input : String) (fileName := "<input>")
     (tokenFn := tokenFnCore) : Except String Syntax :=
-  let p := andthenFn whitespace (categoryParserFnImpl catName)
+  let p := andthenFn whitespace (categoryParserFnImplDbg catName)
   let c := { mkInputContext input fileName with
     tokens := getTokenTable env
     env
@@ -105,7 +123,8 @@ def runParserCategoryDbg (env : Environment) (catName : Name) (input : String) (
   
   -- dbg_trace input -- char: char, void: void
 
-  let s := p.run c (mkParserState input)
+  let s := p.run c (mkParserStateDbg input)
+  -- let s := p.run c (mkParserState input)
 
   -- dbg_trace c.tokens         -- this does contain char
   dbg_trace s.hasError          -- char: false, void: true
