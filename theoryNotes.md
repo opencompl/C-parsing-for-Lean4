@@ -15,7 +15,7 @@ In essence, we define four new combinators:
 
 * $\mu : \text{PEG} \times \text{NT} \times \text{PEG} \to \text{PEG}$. An expression $\mu(E, T, E')$ has the semantics that after $E$ is parsed, the production rule associated with $T$ takes $E'$ as its new RHS.
 * $\$ : \text{PEG} \times \Sigma* \to \text{PEG}$. This is a sort of antiquotation combinator. If the expression $\$(E_1, n)$ occurs in the first argument of $\mu$, then $n$ can be used to refer to the string of terminals associated with $E$ in the parse.
-* $` : \Sigma* \to \text{PEG}$. This complements the $\$$ combinator. If $`n$ occurs in the third argument of $\mu$, it indicates the string of terminals associated with the expression bound to $n$ by $\$$ in the first argument.
+* $\% : \Sigma* \to \text{PEG}$. This complements the $\$$ combinator. If $\%n$ occurs in the third argument of $\mu$, it indicates the string of terminals associated with the expression bound to $n$ by $\$$ in the first argument.
 * $\gamma : \text{NT} \to \text{PEG}$. This gives access to the production associated with a nonterminal before the modification.
 
 ## Issues/Questions
@@ -26,15 +26,18 @@ In essence, we define four new combinators:
 ### C
 Consider the `typedef` statement. We define the expansion of the `declaration` nonterminal as follows:
 ```
-declaration <- μ("typedef" type_specifier $(I, idt) ";",
+declaration <- μ("typedef" type_specifier $(ident, n) ";",
                  type_name_token,
-                 `idt / γ(type_name_token))
+                 %n / γ(type_name_token))
 ```
-This has the effect of adding the identifier referred to by `idt` to the beginning of the RHS of `type_name_token`.
+This has the effect of adding the identifier referred to by `n` to the beginning of the RHS of `type_name_token`.
 
 However, the problem of ending a scope is more difficult. We know that if we want `type_name_token` to not include `foo` anymore, say, we can simply let $E'$ be
+
 ```!("foo"); γ(t)```
+
 But at the end of a scope, we do not have access to the identifier that we want removed.
+
 Note to self: this may be solvable by using $\mu$ in $E'$ itself, though potentially a bit cursed. Will hash this out.
 
 # Tentative Theory of Modifiable Grammar
