@@ -107,6 +107,9 @@ def checkFileParse (env: Lean.Environment)
   let lines <- IO.FS.lines filepath
   let preprocessed := Array.filter (λ line => line.length > 0 && line.get 0 ≠ '#') lines --preprocess lines
   let fileStr := preprocessed.foldl (λ s₁ s₂ => s₁ ++ "\n" ++ s₂) ""
+  
+  -- dbg_trace fileStr
+  -- char: char, void: void
 
 -- Extracting string from CommandElabM
   let parsed := checker fileStr env
@@ -114,6 +117,9 @@ def checkFileParse (env: Lean.Environment)
   let runTwice := runOnce.run {env := env, maxRecDepth := defaultMaxRecDepth}
   match (runTwice .unit) with
     | .ok (ast, _) _ => do IO.println $ s!"{filepath}, ok, AST:\n" ++ ast
+                        -- dbg_trace ast
+                        -- char : 'A', void does not reach here because of error
+                        -- Note: need to find where ast is coming from
                         return TestResult.Success
     | .error e _ => do match e with
                         | .error ref msg => IO.println s!"{filepath}, error {ref}"

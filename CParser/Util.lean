@@ -85,16 +85,49 @@ partial def runParserCategoryTranslationUnitHelper
 def runParserCategoryTranslationUnit (input : String) (fileName := "<input>") : CommandElabM Syntax :=
    do
       let extDecls ← runParserCategoryTranslationUnitHelper (mkInputContext input fileName) (mkParserState input) fileName []
+      -- dbg_trace extDecls
       let info := (extDecls.get! 0).getHeadInfo
       return Syntax.node1 info `translation_unit_ $
               Syntax.node info `null extDecls.toArray.reverse
+
+
+-- Note: Problem might be here
+def runParserCategoryDbg (env : Environment) (catName : Name) (input : String) (fileName := "<input>")
+    (tokenFn := tokenFnCore) : Except String Syntax :=
+  let p := andthenFn whitespace (categoryParserFnImpl catName)
+  let c := { mkInputContext input fileName with
+    tokens := getTokenTable env
+    env
+    options := {}
+    prec := 0
+    tokenFn := tokenFn
+  }
+  
+  -- dbg_trace input -- char: char, void: void
+
+  let s := p.run c (mkParserState input)
+
+  -- dbg_trace c.tokens         -- this does contain char
+  dbg_trace s.hasError          -- char: false, void: true
+  dbg_trace s.stxStack.back     -- char: (primary_expression__2 "char"), void: <missing>
+
+  if s.hasError then
+    Except.error (s.toErrorMsg c.toInputContext)
+  else if input.atEnd s.pos then
+    Except.ok s.stxStack.back
+  else
+    Except.error ((s.mkError "end of input").toErrorMsg c.toInputContext)
+
 
 private def mkParseFun {α : Type} (syntaxcat : Name) (ntparser : Syntax → Except ParseError α) :
 String → Environment → CommandElabM α := λ s env =>
   if syntaxcat == `translation_unit then do
   let stx ← runParserCategoryTranslationUnit s
   IO.ofExcept $ ntparser stx
- else IO.ofExcept $ runParserCategory env syntaxcat s (tokenFn := CParser.tokenFnCore) >>= ntparser
+ else
+  dbg_trace s
+  IO.ofExcept $ runParserCategoryDbg env syntaxcat s (tokenFn := CParser.tokenFnCore) >>= ntparser
+  -- IO.ofExcept $ runParserCategory env syntaxcat s (tokenFn := CParser.tokenFnCore) >>= ntparser
 
 -- Create a parser for a syntax category named `syntaxcat`, which uses `ntparser` to read a syntax node and produces a value α, or an error.
 -- This returns a function that given a string `s` and an environment `env`, tries to parse the string, and produces an error.

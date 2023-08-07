@@ -4,6 +4,26 @@ open Lean Parser
 
 namespace CParser
 
+@[specialize]
+def pushToken (f : Substring → SourceInfo → Syntax) (startPos : String.Pos) (whitespaceFn : TokenParserFn) :
+    TokenParserFn := fun c s => Id.run do
+  if s.hasError then
+    return s
+  let input     := c.input
+  let stopPos   := s.pos
+  let leading   := mkEmptySubstringAt input startPos
+  let rawVal    := { str := input, startPos := startPos, stopPos := stopPos  : Substring }
+  let s         := whitespaceFn c s
+  let wsStopPos := s.pos
+  let trailing  := { str := input, startPos := stopPos, stopPos := wsStopPos : Substring }
+  let info      := SourceInfo.original leading startPos trailing stopPos
+  -- dbg_trace rawVal
+  -- dbg_trace leading
+  -- dbg_trace wsStopPos
+  -- dbg_trace stopPos
+  -- used dbg_trace on the variables and found that these aren't the ones causing a problem either
+  s.pushSyntax (f rawVal info)
+
 partial def whitespace : TokenParserFn := fun c s =>
   s
   -- let input := c.input
@@ -53,6 +73,7 @@ def isIdCont : String → ParserState → Bool := fun input s =>
     false
 
 private def isToken (idStartPos idStopPos : String.Pos) (tk : Option Token) : Bool :=
+  -- true
   match tk with
   | none    => false
   | some tk =>
@@ -61,6 +82,7 @@ private def isToken (idStartPos idStopPos : String.Pos) (tk : Option Token) : Bo
     tk.endPos ≥ idStopPos - idStartPos
 
 -- Note: This is causing the problem maybe
+-- On further analysis, it appears that this is not causing the problem
 def mkTokenAndFixPos (startPos : String.Pos) (tk : Option Token) : TokenParserFn := fun c s =>
   match tk with
   | none    => s.mkErrorAt "token" startPos
@@ -69,12 +91,17 @@ def mkTokenAndFixPos (startPos : String.Pos) (tk : Option Token) : TokenParserFn
       s.mkErrorAt "forbidden token" startPos
     else
       let stopPos := startPos + tk
+      -- dbg_trace startPos    -- char: 1      void: 1 
+      -- dbg_trace stopPos     -- char: 5      void: 5
+      -- dbg_trace tk          -- char: char   int: void
+      -- These dbg_traces are consistent for char and void, yet void throws an error and char does not
+      -- So this should not be causing the problem
       let s       := s.setPos stopPos
       pushToken (fun _ info => mkAtom info tk) startPos whitespace c s
 
 def mkIdResult (startPos : String.Pos) (tk : Option Token) (val : Name) : TokenParserFn := fun c s =>
   let stopPos           := s.pos
-  -- Note: isToken is true for char
+  -- Note: isToken is true for char (as it should be)
   if isToken startPos stopPos tk then
     mkTokenAndFixPos startPos tk c s
   else
@@ -102,6 +129,8 @@ partial def identFnAux (startPos : String.Pos) (tk : Option Token) (r : Name) : 
             let s := s.next input s.pos
             parse r c s
           else
+            -- dbg_trace startPos
+            -- This is not the one being called
             mkIdResult startPos tk r c s
       else if isIdFirst curr then
         let startPart := i
@@ -112,6 +141,10 @@ partial def identFnAux (startPos : String.Pos) (tk : Option Token) (r : Name) : 
           let s := s.next input s.pos
           parse r c s
         else
+          -- dbg_trace startPos
+          -- dbg_trace tk
+          -- dbg_trace r
+          -- These are fine as well
           mkIdResult startPos tk r c s
       else
         mkTokenAndFixPos startPos tk c s
@@ -119,19 +152,6 @@ partial def identFnAux (startPos : String.Pos) (tk : Option Token) (r : Name) : 
 
 private def isIdFirstOrBeginEscape (c : Char) : Bool :=
   isIdFirst c || isIdBeginEscape c
-
-private def nameLitAux (startPos : String.Pos) : TokenParserFn := fun c s =>
-  let input := c.input
-  let s     := identFnAux startPos none .anonymous c (s.next input startPos)
-  if s.hasError then
-    s
-  else
-    let stx := s.stxStack.back
-    match stx with
-    | .ident info rawStr _ _ =>
-      let s := s.popSyntax
-      s.pushSyntax (Syntax.mkNameLit rawStr.toString info)
-    | _ => s.mkError "invalid Name literal"
 
 def tokenFnCore : TokenParserFn := fun c s =>
   let input := c.input
@@ -141,4 +161,7 @@ def tokenFnCore : TokenParserFn := fun c s =>
     charLitFnAux i c (s.next input i)
   else
     let (_, tk) := c.tokens.matchPrefix input i
+    -- dbg_trace i
+    -- dbg_trace tk
+    -- These don't have a problem either
     identFnAux i tk .anonymous c s
