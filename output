@@ -1,0 +1,37 @@
+info: [2/24] Building CParser.Util
+info: stdout:
+./././CParser/Util.lean:159:6: warning: unused variable `stx2` [linter.unusedVariables]
+info: [3/24] Compiling CParser.Util
+info: [3/24] Building CParser.SyntaxDecl
+info: [5/24] Building CParser.AST.AST
+info: [7/24] Building CParser.AST.ClassDec
+info: [9/24] Building CParser.AST
+info: [11/24] Building CParser.Syntax
+info: [13/24] Compiling CParser.Syntax
+info: [13/24] Building CParser.Parser.MakeFuncs
+info: [15/24] Compiling CParser.Parser.MakeFuncs
+info: [15/24] Building CParser.Parser.ParseFuncs
+info: [18/24] Building CParser.Parser
+info: [20/24] Building CParser
+info: [22/24] Building Main
+info: [24/24] Linking cParser
+ctx
+
+void
+<missing>
+ctx
+
+char
+(primary_expression__2 "char")
+(primary_expression__2 "char")
+ctx
+
+'c'
+(primary_expression__2 (char "'c'"))
+(primary_expression__2 (char "'c'"))
+./Tests/GroupOne/PrimaryExpr/primary_expression_2.c, error <missing>
+<input>:2:0: expected primary_expression
+./Tests/GroupOne/PrimaryExpr/primary_expression_1.c, ok, AST:
+'A'
+./Tests/GroupOne/PrimaryExpr/primary_expression_3.c, ok, AST:
+'c'

@@ -13,7 +13,8 @@ def getIdent (x : TSyntax [`ident, `type_name_token]) : Except String String :=
     | _ => throw s!"{x.raw}"
 
 mutual
-partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr
+partial def mkPrimaryExpression : Lean.Syntax → Except String PrimaryExpr := fun x => dbg_trace x
+  match x with
   | `(primary_expression| $s:ident) => return (PrimaryExpr.Identifier s.getId.toString)
   | `(primary_expression| $s:scientific) => let ⟨a, b, c⟩ := s.getScientific
                                             return PrimaryExpr.FloatConstant $ Float.ofScientific a b c 

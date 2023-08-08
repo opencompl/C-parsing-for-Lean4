@@ -20,3 +20,4 @@ partial def typeSpecToString : TypeSpec → String
 end
 
 instance : ToString PrimaryExpr where toString := primaryExprToString
+instance : ToString TypeSpec where toString := typeSpecToString
