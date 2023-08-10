@@ -107,8 +107,8 @@ def indexedDbg (map : TokenMap (Parser × Nat)) (c : ParserContext) (s : ParserS
     | _       => dbg_trace ("not found " ++ n.toString)   -- void: not found void, does not reach here for char
                  (s, [])
   match stx with
-  -- | .ok (.atom _ sym)      => dbg_trace ("atom " ++ sym)
-  --                             find (.mkSimple sym)
+  | .ok (.atom _ sym)      => dbg_trace ("atom " ++ sym)
+                              find (.mkSimple sym)
   -- Commenting this out seems to have fixed the issue
   -- We suspect that it is because the input passed was mapping to the possible Lean identifiers that are present in the syntax
   -- Since char is the only atom in lean which is also in our token table, the issue only arises for char

@@ -4,6 +4,8 @@ open Lean Parser
 
 namespace CParser
 
+abbrev cCharLitKind : SyntaxNodeKind := `cchar
+
 @[specialize]
 def pushToken (f : Substring → SourceInfo → Syntax) (startPos : String.Pos) (whitespaceFn : TokenParserFn) :
     TokenParserFn := fun c s => Id.run do
@@ -44,8 +46,15 @@ partial def whitespace : TokenParserFn := fun c s =>
 
 def isQuotableCharDefault (c : Char) : Bool := "\\\"'rntabefv?0".contains c || c.isDigit
 
+def cCharLitFn : ParserFn := fun c s =>
+  dbg_trace "CALLED"
+  let initStackSz := s.stackSize
+  let iniPos := s.pos
+  let s := tokenFn ["char literal"] c s
+  if !s.hasError && !(s.stxStack.back.isOfKind cCharLitKind) then s.mkErrorAt "character literal" iniPos initStackSz else s
+
 -- Needed
-def charLitFnAux (startPos : String.Pos) : TokenParserFn := fun c s =>
+def cCharLitFnAux (startPos : String.Pos) : TokenParserFn := fun c s =>
   let input := c.input
   let i     := s.pos
   if h : input.atEnd i then s.mkEOIError
@@ -56,7 +65,7 @@ def charLitFnAux (startPos : String.Pos) : TokenParserFn := fun c s =>
       let i    := s.pos
       let curr := input.get i
       let s    := s.setPos (input.next i)
-      if curr == '\'' then mkNodeToken charLitKind startPos whitespace c s
+      if curr == '\'' then mkNodeToken cCharLitKind startPos whitespace c s
       else s.mkUnexpectedError "missing end of character literal"
 
 def isIdCont : String → ParserState → Bool := fun input s =>
@@ -158,7 +167,7 @@ def tokenFnCore : TokenParserFn := fun c s =>
   let i     := s.pos
   let curr  := input.get i
   if curr == '\'' && getNext input i != '\'' then
-    charLitFnAux i c (s.next input i)
+    cCharLitFnAux i c (s.next input i)
   else
     let (_, tk) := c.tokens.matchPrefix input i
     -- dbg_trace i

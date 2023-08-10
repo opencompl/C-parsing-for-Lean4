@@ -1,5 +1,6 @@
 import CParser.SyntaxDecl
 import CParser.AST
+import CParser.Token
 open AST
 
 open Lean -- for (sepBy ...)
