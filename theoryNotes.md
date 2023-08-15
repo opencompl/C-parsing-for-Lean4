@@ -24,6 +24,15 @@ compound_statement <- μ("{" declaration* statement* "}",
 ```
 Note that if `n` did not have global scope, we would (a) have to copy the entire RHS of `declaration` into the rule for `compound_statement`, and (b) not be able to refer to the bound names at the end of the compound statement.
 
+Note on 14 Aug: This can be done more simply and elegantly by using nonterminals as scopes in reference.
+```
+typedef_nont <- "typedef" type_specifier $(ident, n) ";"
+declaration <- μ(typedef_nont / ... ,
+                 [type_name :-> %typedef_nont:n / γ(type_name)])
+compound_statement <- μ("{" declaration* statement* "}",
+                        [type_name :-> !%declaration:typedef_nont:n ; γ(type_name)])
+```
+
 ## Issues/Questions
 * `!%n`, when `n` is a list, has the semantics of `!n1 !n2 ...`. How to generalise this to other combinators applie to lists? Is this hacky?
 * `%n` refers in the RHS of `declaration` to a single name, but in the RHS of `compound_statement` to a list of names, since `declaration` is under a `*` there. Is this acceptable?
@@ -36,7 +45,7 @@ In essence, we define four new combinators:
 
 * $\mu : \text{PEG} \times \text{NT} \times \text{PEG} \to \text{PEG}$. An expression $\mu(E, T, E')$ has the semantics that after $E$ is parsed, the production rule associated with $T$ takes $E'$ as its new RHS.
 * $\$ : \text{PEG} \times \Sigma* \to \text{PEG}$. This is a sort of antiquotation combinator. If the expression $\$(E_1, n)$ occurs in the first argument of $\mu$, then $n$ can be used to refer to the string of terminals associated with $E$ in the parse.
-* $\% : \Sigma* \to \text{PEG}$. This complements the $\$$ combinator. If $\%n$ occurs in the third argument of $\mu$, it indicates the string of terminals associated with the expression bound to $n$ by $\$$ in the first argument.
+* $\% : \Sigma* \to \text{PEG}$. This complements the $\$$ combinator. If $\%n$ occurs in the third argument of $\mu$, it indicates the string of terminals associated with the expression bound to $n$ by $\$$ in the first argument. [Note on 14 Aug: Use the nonterminal in which the identifier is bound as a kind of scope (see the example of C above).]
 * $\gamma : \text{NT} \to \text{PEG}$. This gives access to the production associated with a nonterminal before the modification.
 
 ## Issues/Questions
